@@ -3,7 +3,7 @@ export class NMReDATA {
     this.molfile = undefined;
   }
 
-  addJcamp() {}
+  addJcamp() { }
 
   setMOlfile(molfile) {
     this.molfile = molfile;
