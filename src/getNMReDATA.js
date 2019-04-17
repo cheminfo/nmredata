@@ -1,0 +1,3 @@
+export class getNMReDATA {
+  // here julien can include his code analysing the NMReDATA tags...
+}
