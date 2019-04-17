@@ -1,4 +1,4 @@
-import { NMReDATA } from '..';
+// import { NMReDATA } from '..';
 
 import { readFileSync } from 'fs';
 
@@ -9,3 +9,8 @@ test('Test call all NMRrecords', () => {
   let this_NMRrecord = nmr_record(...)
   expect();
 }
+describe('test myModule', () => {
+  it('should return 42', () => {
+    expect(true).toBe(true);
+  });
+});
