@@ -13,11 +13,11 @@
 
     if (count_at_least_one_backslash > 0) {
     curr_tag_content=curr_tag_content.replace(10,"");// this is to ignore the
-    curr_tag_content=curr_tag_content.replace("BACK_SLASH",10);// this is to replace backslash with 10.
+    curr_tag_content=curr_tag_content.replace("\",10);// this is to replace backslash with 10.
       //  here put curr_tag_content in an array and return...
     }else{
-        //display warning that should use backslash as line separator in NMREDATAT_ tags
+        //display warning that should use "\"" as line separator in NMREDATAT_ tags
     }
     //}
-}
-*/
+
+}*/
