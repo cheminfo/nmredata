@@ -2,8 +2,13 @@ import {getNMReDATAtags} from './';
 import {getNMReDATA} from './';
 export class nmr_record {
 
-  // here a  loop testing all .sdf files in the zip_object goes into subfolders
-  // in particulare should find compound1.dsf and if more than one 
+  // here: loop testing all .sdf files in the zip_object 
+  // As an option ig should explore subfolders
+  // When the zip is an NMReDATA racord, it should find the file
+  // compound1.dsf in the root of the zip file
+  // Important note: when more than one compound is assiged to
+  // the spectrum (see glucose where we have alpha and beta.
+  // this function should get each .sdf file separately...) 
   // one coumpound, should get compound2.sdf...
   // to start we could skip the loop and wire "compound1.sdf"
 
