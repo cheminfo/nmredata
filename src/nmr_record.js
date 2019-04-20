@@ -29,7 +29,7 @@ let all_sdf_tags={};// initialize table of NMReDATA tags
      //if the .assignment does not exist, don't complain... it can be created and added !? but the list is empty
 }
 
-    if molbllock.is3d{ 
+    if molblock.is3d{ 
       structures.d3.molblok=molblock;
       structures.d3.label_to_atom_table=make_list_refs_atom_to_NMRlabel(nmredata_tags.assignment);;
     }
@@ -45,6 +45,6 @@ let all_sdf_tags={};// initialize table of NMReDATA tags
   
   let nmredata = getNMReDATA(nmredata_tags);
 // create a nmredata class...
-  nmredata.display('all content')// medium term... shows the NMReDATA
+  nmredata.display('all content')// to be developped laters...
 
     
