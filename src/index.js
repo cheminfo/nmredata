@@ -1,11 +1,1 @@
-export class NMReDATA {
-  constructor() {
-    this.molfile = undefined;
-  }
-
-  addJcamp() {}
-
-  setMOlfile(molfile) {
-    this.molfile = molfile;
-  }
-}
+// export { nmr_record } from './nmr_record';

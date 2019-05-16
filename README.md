@@ -14,18 +14,19 @@ NMReDATA parser.
 ## Usage
 
 ```js
-import NMReDATA from 'nmredata';
+import nmr_record from 'nmredata';
 
-const nmrEData = new NMReDATA();
+const cur_NMRrecord = new nmr_record();
 
-nmrEdata.addJcamp();
-nmrEdata.addZip();
-nmrEdata.addMolfile();
 ...
 
 ```
 
 ## [API Documentation](https://cheminfo.github.io/nmredata/)
+
+* point a
+
+
 
 ## License
 
