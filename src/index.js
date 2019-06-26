@@ -1,1 +1,1 @@
-// export { nmr_record } from './nmr_record';
+export { nmredata } from './getNMReDATA';

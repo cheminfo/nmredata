@@ -1,18 +1,11 @@
+import { readFileSync } from 'fs';
+import { nmredata } from '..';
+import { resolve } from 'path';
 
-// import { NMReDATA } from '..';
-
-// import { readFileSync } from 'fs';
-
-/*
-test('Test call all NMRrecords', () => {
-// here a loop over the zip files in the ../testFiles folder
-// verify not generate eror when callin nmr_record.js
-  let this_NMRrecord = nmr_record(...)
-  expect();
-}*/
 describe('test myModule', () => {
   it('should return 42', () => {
+    var zipData = readFileSync(resolve('testFiles/menthol_1D_1H_assigned_J_original.zip'), 'base64');
+    nmredata.readNmrRecord(zipData);
     expect(true).toBe(true);
   });
 });
-
