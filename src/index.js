@@ -1,1 +1,1 @@
-export { nmredata } from './getNMReDATA';
+module.exports = require('./getNMReDATA')

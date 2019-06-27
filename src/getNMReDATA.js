@@ -7,9 +7,9 @@
 const Jszip = require("jszip");
 const OCLfull = require('openchemlib-extended');
 
-export function readNmrRecord(zipData, options = {}) {
+async function readNmrRecord(zipData, options = {}) {
   var zip = new Jszip();
-  zip.loadAsync(zipData, {base64: true}).then(async (zipFiles) => {
+  return zip.loadAsync(zipData, {base64: true}).then(async (zipFiles) => {
     var folders = zipFiles.filter(function (relativePath, file) {
         if(relativePath.indexOf("ser")>=0||relativePath.indexOf("fid")>=0
             ||relativePath.indexOf("1r")>=0||relativePath.indexOf("2rr")>=0) {
@@ -17,7 +17,7 @@ export function readNmrRecord(zipData, options = {}) {
         }
         return false;
     });
-    
+    let result = [];
     for (let file in zipFiles.files) {
         let pathFile = file.split('/');
         if (pathFile[pathFile.length - 1].match(/^[^\.].+sdf$/)) {
@@ -34,10 +34,10 @@ export function readNmrRecord(zipData, options = {}) {
             let map = tempMol.map;
             let molecule = OCLfull.Molecule.fromMolfile(parserResult.molecules[0].molfile);
             var nmrRecord = nmredataToSampleEln(parserResult, map);
-            // console.log('nmrRecord', nmrRecord)
-            break
+            result.push(nmrRecord);
         }
     }
+    return result;
   })
 }
 
@@ -600,3 +600,5 @@ function getSpectrumType(pulse) {
 
   return '';
 };
+
+module.exports = readNmrRecord
