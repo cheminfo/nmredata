@@ -1,1 +1,1 @@
-module.exports = require('./getNMReDATA')
+module.exports = require('./getNMReDATA');
