@@ -1,6 +1,6 @@
 const { readFileSync, writeFileSync } = require('fs');
-
 const { resolve } = require('path');
+
 const readNmrRecord = require('./src/index');
 
 console.log(readNmrRecord);
