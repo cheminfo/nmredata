@@ -1,9 +1,7 @@
-// import {getNMReDATAtags} from './'; //to delete
-// import {getNMReDATA} from './'; //to delete
 import jszip from 'jszip';
 import {parse} from './parser/parseSDF';
 import * as OCLfull from 'openchemlib-extended';
-// import * as getNMReData from 'getNMReData';
+import {processContent} from './processor';
 
 export class nmrRecord {
   constructor(nmrRecord) {
@@ -14,6 +12,7 @@ export class nmrRecord {
     this.folders = folders;
     this.sdfFiles = sdfFiles;
     this.activeElement = 0;
+    this.nbSamples = sdfFiles.length
     return this;
   }
 
@@ -36,8 +35,7 @@ export class nmrRecord {
     let nmredataTags = {};
     let sdfFile = this.sdfFiles[i];
     let version = parseFloat(sdfFile.molecules[0]['NMREDATA_VERSION']);
-    let toReplace = version > 1 ? [new RegExp(/\\\n*/g), '\n'] : []
-    // Object.keys(sdfFile.molecules[0]).map((tag) => { //should give the same result that the next line
+    let toReplace = version > 1 ? [new RegExp(/\\\n*/g), '\n'] : [];
     sdfFile.labels.forEach((tag) => {
       if (tag.toLowerCase().match('nmredata')) {
         let key = tag.replace(/NMREDATA\_/, '')
@@ -48,25 +46,49 @@ export class nmrRecord {
     return nmredataTags;
   }
 
-  // getNMReData(i = this.activeElement) {
-  //   let nmredataTags =  this.getNMReDATAtags(i);
-  //   //not implemented
-  // }
+  getNMReData(i = this.activeElement) {
+    let result = {name: this.sdfFiles[i].filename};
+    let nmredataTags = this.getNMReDATAtags(i);
+    Object.keys(nmredataTags).forEach((tag, index) => {
+      if (!result[tag]) result[tag] = {data: []};
+      let tagData = result[tag];
+      let dataSplited = nmredataTags[tag].split('\n');
+      dataSplited.forEach(e => {
+        let content = e.replace(/\;.*/g, '');
+        let comment = e.match('\;') ? e.replace(/.*\;+(.*)/g, '$1') : '';
+        if (content.length === 0) { // may be a head comment. is it always true?
+          if (!tagData.headComment) tagData.headComment = []; // should this be array for several head comments?
+          tagData.headComment.push(comment)
+          return
+        } 
+        
+        let value = processContent(content, {tag: tag});
+        tagData.data.push({comment, value})
+        
+      })
+    })
+    return result;
+  }
 
+  getFileName(i = this.activeElement) {
+    let sdf =this.sdfFiles[i];
+
+  }
   getAllTags(i = this.activeElement) {
     let allTags = {};
     let sdfFile = this.sdfFiles[i];
-    // Object.keys(sdfFile.molecules[0]).map((tag) => { //should give the same result that the next line
     sdfFile.labels.forEach((tag) => {
-      if (tag.toLowerCase() !== 'molfile') {
-        allTags[tag] = sdfFile.molecules[0][tag];
-      }
+      allTags[tag] = sdfFile.molecules[0][tag];
     })
     return allTags;
   }
 
   toJSON(i = this.activeElement) {
     
+  }
+
+  setActiveElement(nactiveSDF) {
+    this.activeElement = nactiveSDF;
   }
 }
 
@@ -102,16 +124,10 @@ async function getSDF(zipFiles, options = {}) {
   for (let file in zipFiles.files) {
       let pathFile = file.split('/');
       if (pathFile[pathFile.length - 1].match(/^[^\.].+sdf$/)) {
-          var sdfPathFile = [];
-          if (file.indexOf('/') > -1) {
-              let index = file.lastIndexOf('/');
-              let tempPath = file.substring(0,index).toLowerCase().split('/');
-              if (tempPath !== '.') sdfPathFile = tempPath;
-          }
+          var filename = pathFile[pathFile.length - 1].replace(/\.sdf/, '');
           let sdf = await zipFiles.file(file).async('string');
-          // sdf = sdf.replace(/\\/g, '')
-          // console.log(parse)
           let parserResult = parse(sdf + '', {mixedEOL: true});
+          parserResult.filename = filename;
           result.push(parserResult);
       }
   }
