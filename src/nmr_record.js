@@ -2,14 +2,15 @@ import jszip from 'jszip';
 import {parse} from './parser/parseSDF';
 import * as OCLfull from 'openchemlib-extended';
 import {processContent} from './processor';
+import {convertFolder} from 'brukerconverter';
 
 export class nmrRecord {
   constructor(nmrRecord) {
     if (!nmrRecord instanceof Object) {
       throw new Error('Cannot be called directly');
     }
-    let {folders, sdfFiles} = nmrRecord
-    this.folders = folders;
+    let {spectra, sdfFiles} = nmrRecord;
+    this.spectra = spectra;
     this.sdfFiles = sdfFiles;
     this.activeElement = 0;
     this.nbSamples = sdfFiles.length
@@ -61,7 +62,6 @@ export class nmrRecord {
           tagData.headComment.push(comment)
           return
         } 
-        
         let value = processContent(content, {tag: tag});
         tagData.data.push({comment, value})
         
@@ -70,9 +70,13 @@ export class nmrRecord {
     return result;
   }
 
+  getSpectraList(i = this.activeElement) {
+
+  }
+
   getFileName(i = this.activeElement) {
     let sdf =this.sdfFiles[i];
-
+    return sdf.filename;
   }
   getAllTags(i = this.activeElement) {
     let allTags = {};
@@ -101,16 +105,75 @@ export class nmrRecord {
 async function readNmrRecord(zipData, options = {}) {
   var zip = new jszip();
   return zip.loadAsync(zipData, {base64: true}).then(async (zipFiles) => {
-    let sdfFiles = await getSDF(zipFiles, options);;
-    var folders = zipFiles.filter(function (relativePath, file) {
-        if(relativePath.indexOf("ser")>=0||relativePath.indexOf("fid")>=0
-            ||relativePath.indexOf("1r")>=0||relativePath.indexOf("2rr")>=0) {
-            return true;
-        }
-        return false;
+    let sdfFiles = await getSDF(zipFiles, options);
+    let folders = zipFiles.filter((relativePath) => {
+      if (relativePath.match('__MACOSX')) return false;
+      if (
+        relativePath.endsWith('ser') ||
+        relativePath.endsWith('fid') ||
+        relativePath.endsWith('1r') ||
+        relativePath.endsWith('2rr')
+      ) {
+        return true;
+      }
+      return false;
     });
-    return {folders, sdfFiles}
+    let spectra = await convertSpectra(folders, zipFiles, options);
+    return {spectra, sdfFiles}
   })
+}
+
+async function convertSpectra(folders, zipFiles, options) {
+    var BINARY = 1;
+    var TEXT = 2;
+    var files = {
+        'ser': BINARY,
+        'fid': BINARY,
+        'acqus': TEXT,
+        'acqu2s': TEXT,
+        'procs': TEXT,
+        'proc2s': TEXT,
+        '1r': BINARY,
+        '1i': BINARY,
+        '2rr': BINARY
+    };
+    var spectra = new Array(folders.length);
+    for (let i = 0; i < folders.length; ++i) {
+      console.log(folders[i].name)
+      var promises = [];
+      let name = folders[i].name;
+      name = name.substr(0, name.lastIndexOf('/') + 1);
+      promises.push(name);
+      var currFolder = zipFiles.folder(name);
+      var currFiles = currFolder.filter((relativePath) => {
+        return files[relativePath] ? true : false;
+      });
+      if (name.indexOf('pdata') >= 0) {
+        promises.push('acqus');
+        promises.push(
+          zipFiles.file(name.replace(/pdata\/[0-9]+\//, 'acqus')).async('string')
+        );
+      }
+      for (var j = 0; j < currFiles.length; ++j) {
+        var idx = currFiles[j].name.lastIndexOf('/');
+        let name = currFiles[j].name.substr(idx + 1);
+        promises.push(name);
+        if (files[name] === BINARY) {
+          promises.push(currFiles[j].async('arraybuffer'));
+        } else {
+          promises.push(currFiles[j].async('string'));
+        }
+      }
+      spectra[i] = Promise.all(promises).then((result) => {
+        let brukerFiles = {};
+        for (let i = 1; i < result.length; i += 2) {
+          let name = result[i];
+          brukerFiles[name] = result[i + 1];
+        }
+        return { filename: result[0], value: convertFolder(brukerFiles, options) };
+      });
+    }
+    return Promise.all(spectra);
 }
 
 /**

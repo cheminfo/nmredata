@@ -42,6 +42,7 @@
     "rollup": "^1.10.0"
   },
   "dependencies": {
+    "brukerconverter": "^1.1.2",
     "jcampconverter": "^3.0.1",
     "jszip": "^3.2.1",
     "openchemlib": "^7.0.1",
