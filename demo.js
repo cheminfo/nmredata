@@ -1,13 +1,19 @@
 const { readFileSync, writeFileSync } = require('fs');
 const { resolve } = require('path');
+const { nmrRecord } = require('./lib/index');
 
-const readNmrRecord = require('./src/index');
-
-console.log(readNmrRecord);
 var zipData = readFileSync(resolve('testFiles/menthol_1D_1H_assigned_J.zip'), 'base64');
 
-readNmrRecord(zipData).then((result) => {
-  console.log(result);
-  writeFileSync('nmredataToElnSample.json', JSON.stringify(result));
+nmrRecord.fromZipFile(zipData).then((record) => {
+  // record has all sdf files and spectra data inside of nmrRecord file
+  let nbSDFFiles = record.nbSamples;
+  let nmredata = record.getNMReData();
+  let allTags = record.getAllTags();
+  let stringOfNMReDATATags = record.getNMReDATAtags();
+
+  //you can get the information of each sdf file 
+  for (let i = 0; i < record.nbSamples; i++) {
+    let nmredata = record.getNMReData(i);
+    let molfile = record.getNMReData(i);
+  }
 });
-// fs.appendFileSync('data.json', JSON.stringify(toExport) + ',');

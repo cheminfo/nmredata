@@ -1,1 +1,1 @@
-module.exports = require('./getNMReDATA');
+export { nmrRecord } from './nmr_record';
