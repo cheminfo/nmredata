@@ -23,24 +23,30 @@ export class nmrRecord {
   }
 
   getMol(i = this.activeElement) {
+    i = this.checkIndex(i);
     let parserResult = this.sdfFiles[i];
     return parserResult.molecules[0].molfile;
   }
 
   getMoleculeAndMap(i = this.activeElement) {
+    i = this.checkIndex(i);
     let molfile = this.getMol(i);
     return OCLfull.Molecule.fromMolfileWithAtomMap(molfile);
   }
 
   getNMReDATAtags(i = this.activeElement) {
+    i = this.checkIndex(i);
     let nmredataTags = {};
     let sdfFile = this.sdfFiles[i];
     let version = parseFloat(sdfFile.molecules[0]['NMREDATA_VERSION']);
+
     let toReplace = version > 1 ? [new RegExp(/\\\n*/g), '\n'] : [];
     sdfFile.labels.forEach((tag) => {
       if (tag.toLowerCase().match('nmredata')) {
-        let key = tag.replace(/NMREDATA\_/, '')
-        let data = sdfFile.molecules[0][tag].replace(toReplace[0], toReplace[1]);
+
+        let key = tag.replace(/NMREDATA\_/, '');
+        let data = version > 1 ? sdfFile.molecules[0][tag].replace(/\n*/g, '') : sdfFile.molecules[0][tag];
+        data = sdfFile.molecules[0][tag].replace(toReplace[0], toReplace[1]);
         nmredataTags[key] = data;
       }
     });
@@ -48,6 +54,7 @@ export class nmrRecord {
   }
 
   getNMReData(i = this.activeElement) {
+    i = this.checkIndex(i);
     let result = {name: this.sdfFiles[i].filename};
     let nmredataTags = this.getNMReDATAtags(i);
     Object.keys(nmredataTags).forEach((tag, index) => {
@@ -75,10 +82,12 @@ export class nmrRecord {
   }
 
   getFileName(i = this.activeElement) {
+    i = this.checkIndex(i);
     let sdf =this.sdfFiles[i];
     return sdf.filename;
   }
   getAllTags(i = this.activeElement) {
+    i = this.checkIndex(i);
     let allTags = {};
     let sdfFile = this.sdfFiles[i];
     sdfFile.labels.forEach((tag) => {
@@ -87,14 +96,38 @@ export class nmrRecord {
     return allTags;
   }
 
+  getSDFList() {
+    let sdfFiles = this.sdfFiles;
+    return sdfFiles.map((sdf) => sdf.filename);
+  }
+
   toJSON(i = this.activeElement) {
     
   }
 
   setActiveElement(nactiveSDF) {
+    nactiveSDF = this.checkIndex(nactiveSDF);
     this.activeElement = nactiveSDF;
   }
+
+  getSDFIndexOf(filename) {
+    let index = this.sdfFiles.findIndex((sdf) => sdf.filename === filename);
+    if (index === -1) throw new Error('There is not sdf with this filename: ', filename);
+    return index;
+  }
+
+  checkIndex(index) {
+    let result;
+    if (Number.isInteger(index)) {
+      if (index >= this.sdfFiles.length) throw new Error('Index out of range');
+      result = index;
+    } else {
+      result = this.getSDFIndexOf(index);
+    }
+    return result;
+  }
 }
+
 
 /**
  * Read nmr record file asynchronously
@@ -139,7 +172,6 @@ async function convertSpectra(folders, zipFiles, options) {
     };
     var spectra = new Array(folders.length);
     for (let i = 0; i < folders.length; ++i) {
-      console.log(folders[i].name)
       var promises = [];
       let name = folders[i].name;
       name = name.substr(0, name.lastIndexOf('/') + 1);
