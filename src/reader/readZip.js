@@ -142,7 +142,7 @@ function convertSpectraSync(folders, zip, options = {}) {
           let name = currFiles[j].name.substr(idx + 1);
           promises.push(name);
           if (files[name] === BINARY) {
-            promises.push(currFiles[j].async('arraybuffer'));
+            promises.push(currFiles[j].async('arraybuffer').then(r => new IOBuffer(r))); //@TODO: check the error - file.setLittleEndian is not a function -
           } else {
             promises.push(currFiles[j].async('string'));
           }
