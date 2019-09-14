@@ -43,10 +43,12 @@
   },
   "dependencies": {
     "brukerconverter": "^1.1.2",
+    "iobuffer": "^4.0.1",
     "jcampconverter": "^3.0.1",
     "jszip": "^3.2.1",
     "openchemlib": "^7.0.1",
     "openchemlib-extended": "^6.0.0",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "zip-local": "^0.3.4"
   }
 }
