@@ -1,24 +1,52 @@
 
 
 export function nmredataToSampleEln(nmredata, molecule) {
-    var data = {molfile: '', spectra: [], atoms: [], highlight: []};
-    var nmr = data.spectra;
+    var data = {molfile: '', spectra: {nmr: []}, atoms: [], highlight: []};
+    var nmr = data.spectra.nmr;
     let labels = getLabels(nmredata['ASSIGNMENT']);
     labels = addDiaIDtoLabels(labels, molecule);
     for (let key in labels) {
-        let diaID = labels[key][0].diaID;
-        data.atoms[diaID] = labels[key][0].position;
+        let diaID = labels[key].diaID;
+        data.atoms[diaID] = labels[key].position;
         data.highlight.push(diaID);
     }
     for (let tag in nmredata) {
         if (!tag.toLowerCase().match(/1d/s)) continue;
         let spectrum = {range: [], experiment: '1d', headComment: nmredata[tag].headComment};
-        let range = spectrum.range;
-        nmredata[tag].data.forEach(signal => {
-            range.push({from: signal.delta - 0.01, to: signal.delta + 0.01, signal})
-        })
+        let ranges = spectrum.range;
+        let rangeData = nmredata[tag].data.filter(e => e.value.delta);
+        rangeData.forEach(rangeD => {
+            let {value, comment} = rangeD;
+            let signalData = getSignalData(value);
+            let range = getRangeData(value);
+            let from = Number(signalData.delta) - 0.01;
+            let to = Number(signalData.delta) + 0.01;
+            ranges.push({from: from.toFixed(3), to: to.toFixed(3), signal: signalData, comment});
+        });
+        nmr.push(spectrum);
     }
-    let signals = nmredata['']
+    return data;
+}
+
+function getRangeData(rangeData) {
+    let integral;
+    let delta = Number(rangeData['delta']);
+    let [from, to] = [delta - 0.01, delta + 0.01];
+    if (rangeData['nbAtoms']) {
+        integral = Number(rangeData['nbAtoms'])
+    } else if (rangeData['pubIntegral']) {
+        integral = Number(rangeData['pubIntegral'])
+    }
+    
+}
+function getSignalData(rangeData) {
+    let result = {};
+    let signalKeys = ['delta', 'nbAtoms', 'multiplicity', 'J', 'pubAssignment'];
+    signalKeys.forEach(key => {
+        let data = rangeData[key];
+        if (data) result[key] = data;
+    })
+    return result;
 }
 
 function getNucleus(label) {

@@ -11,11 +11,16 @@ var zipData = readFileSync(resolve('testFiles/menthol_1D_1H_assigned_J.zip'), 'b
 nmrRecord.read(zipData).then((record) => {
   // record has all sdf files and spectra data inside of nmrRecord file
   // let nbSDFFiles = record.nbSamples;
-  // let nmredata = record.getNMReData();
+  let nmredata = record.getNMReData();
   // let allTags = record.getAllTags();
   // let stringOfNMReDATATags = record.getNMReDATAtags();
-  console.log('hela')
-  console.log(record.toJSON())
+  console.log(nmredata['1D_1H'].data[3].value)
+  // nmredata['1D_1H'].data.forEach(e => {
+  //   console.log(e.value)
+  // })
+  var json = record.toJSON();
+  console.log(json.spectra.nmr[0].range[0].signal)
+  //JSON.stringify()
   
   // console.log(record.getNMReData('compound1.nmredata'))
   //you can get the information of each sdf file 

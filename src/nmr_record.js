@@ -108,7 +108,7 @@ export class nmrRecord {
   toJSON(i = this.activeElement) {
     let nmredata = this.getNMReData(i);
     let molecule = this.getMoleculeAndMap(i);
-    nmredataToSampleEln(nmredata, molecule)
+    return nmredataToSampleEln(nmredata, molecule);
   }
 
   setActiveElement(nactiveSDF) {

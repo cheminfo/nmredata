@@ -26,7 +26,7 @@ function choseKey(entry) {
             key= 'multiplicity';
             break
         case 'l':
-            key= 'label';
+            key= 'pubAssignment';
             break
         case 'n':
             key= 'nbAtoms';
