@@ -1,6 +1,7 @@
 import {readZipFileSync, readZipFile} from './reader/readZip';
 import * as OCLfull from 'openchemlib-extended';
 import {processContent} from './processor';
+import {nmredataToSampleEln} from './converter/toJSON';
 
 export class nmrRecord {
   constructor(nmrRecord) {
@@ -105,7 +106,9 @@ export class nmrRecord {
   }
 
   toJSON(i = this.activeElement) {
-    
+    let nmredata = this.getNMReData(i);
+    let molecule = this.getMoleculeAndMap(i);
+    nmredataToSampleEln(nmredata, molecule)
   }
 
   setActiveElement(nactiveSDF) {
