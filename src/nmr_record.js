@@ -1,4 +1,5 @@
-import {readZipFileSync, readZipFile} from './reader/readZip';
+// import {readZipFileSync, readZipFile} from './reader/readZip';
+import { readZipFile } from './reader/readZip';
 import * as OCLfull from 'openchemlib-extended';
 import {processContent} from './processor';
 import {nmredataToSampleEln} from './converter/toJSON';
@@ -21,10 +22,10 @@ export class nmrRecord {
     return new this(data);
   }
 
-  static readSync(path) {
-    var data = readZipFileSync(path);
-    return new this(data);
-  }
+  // static readSync(path) {
+  //   var data = readZipFileSync(path);
+  //   return new this(data);
+  // }
 
   getMol(i = this.activeElement) {
     i = this.checkIndex(i);
@@ -108,7 +109,7 @@ export class nmrRecord {
   toJSON(i = this.activeElement) {
     let nmredata = this.getNMReData(i);
     let molecule = this.getMoleculeAndMap(i);
-    return nmredataToSampleEln(nmredata, molecule);
+    return nmredataToSampleEln(nmredata, this.spectra, molecule);
   }
 
   setActiveElement(nactiveSDF) {

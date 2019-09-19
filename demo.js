@@ -19,7 +19,9 @@ nmrRecord.read(zipData).then((record) => {
   //   console.log(e.value)
   // })
   var json = record.toJSON();
+  console.log(json)
   console.log(json.spectra.nmr[0].range[0].signal)
+  console.log(record.spectra[0].filename);
   //JSON.stringify()
   
   // console.log(record.getNMReData('compound1.nmredata'))

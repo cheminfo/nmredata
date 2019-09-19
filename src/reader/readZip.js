@@ -19,25 +19,25 @@ const files = {
     '2rr': BINARY
 };
 
-export function readZipFileSync(path) {
-    let zipData = zipper.sync.unzip(resolve(path)).memory();
-    let zipFiles = zipData.unzipped_file;
-    //obtain sdf files
-    let sdfFiles = [];
-    for (let file in zipFiles.files) {
-        let pathFile = file.split('/');
-        if (pathFile[pathFile.length - 1].match(/^[^\.].+sdf$/)) {
-            var filename = pathFile[pathFile.length - 1].replace(/\.sdf/, '');
-            let sdf = zipData.read(file, 'text');
-            let parserResult = parse(sdf + '', {mixedEOL: true});
-            parserResult.filename = filename;
-            sdfFiles.push(parserResult);
-        }
-    }
-    let folders = getSpectraFolders(zipFiles);
-    let spectra = convertSpectraSync(folders, zipFiles);
-    return {sdfFiles, spectra}
-}
+// export function readZipFileSync(path) {
+//     let zipData = zipper.sync.unzip(resolve(path)).memory();
+//     let zipFiles = zipData.unzipped_file;
+//     //obtain sdf files
+//     let sdfFiles = [];
+//     for (let file in zipFiles.files) {
+//         let pathFile = file.split('/');
+//         if (pathFile[pathFile.length - 1].match(/^[^\.].+sdf$/)) {
+//             var filename = pathFile[pathFile.length - 1].replace(/\.sdf/, '');
+//             let sdf = zipData.read(file, 'text');
+//             let parserResult = parse(sdf + '', {mixedEOL: true});
+//             parserResult.filename = filename;
+//             sdfFiles.push(parserResult);
+//         }
+//     }
+//     let folders = getSpectraFolders(zipFiles);
+//     let spectra = convertSpectraSync(folders, zipFiles);
+//     return {sdfFiles, spectra}
+// }
 
 /**
  * Read nmr record file asynchronously

@@ -1,6 +1,6 @@
 
 
-export function nmredataToSampleEln(nmredata, molecule) {
+export function nmredataToSampleEln(nmredata, spectra, molecule) {
     var data = {molfile: '', spectra: {nmr: []}, atoms: [], highlight: []};
     var nmr = data.spectra.nmr;
     let labels = getLabels(nmredata['ASSIGNMENT']);
@@ -12,7 +12,8 @@ export function nmredataToSampleEln(nmredata, molecule) {
     }
     for (let tag in nmredata) {
         if (!tag.toLowerCase().match(/1d/s)) continue;
-        let spectrum = {range: [], experiment: '1d', headComment: nmredata[tag].headComment};
+        let jcamp = getJcamp(nmredata[tag], spectra);
+        let spectrum = {jcamp, range: [], experiment: '1d', headComment: nmredata[tag].headComment};
         let ranges = spectrum.range;
         let rangeData = nmredata[tag].data.filter(e => e.value.delta);
         rangeData.forEach(rangeD => {
@@ -28,6 +29,14 @@ export function nmredataToSampleEln(nmredata, molecule) {
     return data;
 }
 
+function getJcamp(tag, spectra) {
+    let locationLine = tag.data.find(e => e.value.key === 'Spectrum_Location');
+    let path = locationLine.value.value.replace(/file\:/s, '');
+    let jcamp = spectra.find(e => e.filename === path);
+    if (!jcamp) throw new Error('There is not jcamp with path: ' + path);
+    return jcamp;
+}
+
 function getRangeData(rangeData) {
     let integral;
     let delta = Number(rangeData['delta']);
@@ -37,7 +46,6 @@ function getRangeData(rangeData) {
     } else if (rangeData['pubIntegral']) {
         integral = Number(rangeData['pubIntegral'])
     }
-    
 }
 function getSignalData(rangeData) {
     let result = {};

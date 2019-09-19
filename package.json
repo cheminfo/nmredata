@@ -11,6 +11,7 @@
   "scripts": {
     "eslint": "eslint src",
     "eslint-fix": "npm run eslint -- --fix",
+    "local-build": "node_modules/.bin/cheminfo build --entry src/index.js --root dist --out-name 'nmredata'",
     "prepublishOnly": "rollup -c",
     "test": "run-s test-only eslint",
     "test-travis": "eslint src && jest --coverage && codecov",
@@ -31,7 +32,12 @@
     "testEnvironment": "node"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-jest": "^24.8.0",
+    "babel-plugin-remove-comments": "^2.0.0",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
+    "babel-preset-babili": "^0.1.4",
+    "cheminfo-tools": "^1.23.3",
     "codecov": "^3.3.0",
     "eslint": "^5.16.0",
     "eslint-config-cheminfo": "^1.20.1",
