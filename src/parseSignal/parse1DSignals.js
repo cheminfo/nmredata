@@ -32,6 +32,7 @@ function choseKey(entry) {
             key= 'nbAtoms';
             break
         case 'e':
+        case 'i':
             key= 'pubIntegral';
             break
     }

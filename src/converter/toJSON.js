@@ -1,10 +1,11 @@
 
 
-export function nmredataToSampleEln(nmredata, spectra, molecule) {
-    var data = {molfile: '', spectra: {nmr: []}, atoms: [], highlight: []};
+export function nmredataToSampleEln(nmredata, options) {
+    var moleculeAndMap = options.molecule;
+    var data = {molfile: moleculeAndMap.molecule.toMolfile(), spectra: {nmr: []}, atoms: [], highlight: []};
     var nmr = data.spectra.nmr;
     let labels = getLabels(nmredata['ASSIGNMENT']);
-    labels = addDiaIDtoLabels(labels, molecule);
+    labels = addDiaIDtoLabels(labels, moleculeAndMap);
     for (let key in labels) {
         let diaID = labels[key].diaID;
         data.atoms[diaID] = labels[key].position;
@@ -12,26 +13,29 @@ export function nmredataToSampleEln(nmredata, spectra, molecule) {
     }
     for (let tag in nmredata) {
         if (!tag.toLowerCase().match(/1d/s)) continue;
-        let jcamp = getJcamp(nmredata[tag], spectra);
+        let jcamp = ''//getJcamp(nmredata[tag], options);
         let spectrum = {jcamp, range: [], experiment: '1d', headComment: nmredata[tag].headComment};
         let ranges = spectrum.range;
         let rangeData = nmredata[tag].data.filter(e => e.value.delta);
         rangeData.forEach(rangeD => {
             let {value, comment} = rangeD;
             let signalData = getSignalData(value);
+            let label = labels[signalData.pubAssignment];
+            signalData.diaID = label ? label.diaID : [];
             let range = getRangeData(value);
             let from = Number(signalData.delta) - 0.01;
             let to = Number(signalData.delta) + 0.01;
-            ranges.push({from: from.toFixed(3), to: to.toFixed(3), signal: signalData, comment});
+            ranges.push({from: from.toFixed(3), to: to.toFixed(3), signal: [signalData], comment});
         });
         nmr.push(spectrum);
     }
     return data;
 }
 
-function getJcamp(tag, spectra) {
+function getJcamp(tag, options) {
+    let {spectra, root} = options;
     let locationLine = tag.data.find(e => e.value.key === 'Spectrum_Location');
-    let path = locationLine.value.value.replace(/file\:/s, '');
+    let path = root + locationLine.value.value.replace(/file\:/s, '');
     let jcamp = spectra.find(e => e.filename === path);
     if (!jcamp) throw new Error('There is not jcamp with path: ' + path);
     return jcamp;
@@ -47,6 +51,7 @@ function getRangeData(rangeData) {
         integral = Number(rangeData['pubIntegral'])
     }
 }
+
 function getSignalData(rangeData) {
     let result = {};
     let signalKeys = ['delta', 'nbAtoms', 'multiplicity', 'J', 'pubAssignment'];
@@ -61,7 +66,7 @@ function getNucleus(label) {
     let nucleus = [];
     let dimensions = label.match(/NMREDATA_([0-9])\w_/s)[1];
     if (dimensions === '1') {
-        nucleus = label.substring(12, label.length).split('_');
+        // nucleus = label.substring(12, label.length).split('_');
     } else if (dimensions === '2') {
         let data = label.substring(12, label.length).split('_')
         for (let i = 0; i < data.length; i+=2) nucleus.push(data[i]);
@@ -79,7 +84,7 @@ function getLabels(content) {
         if (!labels[value.label]) {
             labels[value.label] = [];
         }
-        labels[value.label].push({shift, atoms});
+        labels[value.label] = {shift, atoms};
     })
     return labels;
   }
@@ -98,7 +103,7 @@ function getLabels(content) {
     if (debugg) console.log('min of labels', minLabels);
     for (let l in labels) {
         let label = labels[l];
-        let atoms = label[0].atoms;
+        let atoms = label.atoms;
         label.position = [];
         if (debugg) console.log('label', label)
         if (atoms[0].toLowerCase().includes('h')) {
@@ -143,7 +148,7 @@ function getLabels(content) {
     let min = Number.MAX_SAFE_INTEGER;
     for (let l in labels) {
         let label = labels[l];
-        label[0].atoms.forEach((p) => {
+        label.atoms.forEach((p) => {
             let pt = Number(p.replace(/[a-z]/g, ''));
             if (pt < min) min = pt;
         });

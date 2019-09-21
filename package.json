@@ -2,8 +2,8 @@
   "name": "nmredata",
   "version": "0.0.2",
   "description": "NMReDATA parser",
-  "main": "lib/index.js",
-  "module": "src/index.js",
+  "main": "./lib/index.js",
+  "module": "./src/index.js",
   "files": [
     "lib",
     "src"
@@ -11,7 +11,8 @@
   "scripts": {
     "eslint": "eslint src",
     "eslint-fix": "npm run eslint -- --fix",
-    "local-build": "node_modules/.bin/cheminfo build --entry src/index.js --root dist --out-name 'nmredata'",
+    "build": "npm run prepublishOnly && npm run local-build",
+    "local-build": "node_modules/.bin/cheminfo build --no-uglify --root nmredata",
     "prepublishOnly": "rollup -c",
     "test": "run-s test-only eslint",
     "test-travis": "eslint src && jest --coverage && codecov",
@@ -54,7 +55,6 @@
     "jszip": "^3.2.1",
     "openchemlib": "^7.0.1",
     "openchemlib-extended": "^6.0.0",
-    "path": "^0.12.7",
-    "zip-local": "^0.3.4"
+    "path": "^0.12.7"
   }
 }
