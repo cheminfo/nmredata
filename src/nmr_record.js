@@ -61,6 +61,7 @@ export class nmrRecord {
     let result = {name: this.sdfFiles[i].filename};
     let nmredataTags = this.getNMReDataTags(i);
     Object.keys(nmredataTags).forEach((tag, index) => {
+      if (tag.match(/2D/)) return;
       if (!result[tag]) result[tag] = {data: []};
       let tagData = result[tag];
       let dataSplited = nmredataTags[tag].split('\n');
@@ -105,9 +106,13 @@ export class nmrRecord {
   }
 
   toJSON(i = this.activeElement) {
-    let nmredata = this.getNMReData(i);
-    let molecule = this.getMoleculeAndMap(i);
-    return nmredataToSampleEln(nmredata, this.spectra, molecule);
+    let index = this.checkIndex(i);
+    let nmredata = this.getNMReData(index);
+    return nmredataToSampleEln(nmredata, {
+      spectra: this.spectra,
+      molecule: this.getMoleculeAndMap(index),
+      root: this.sdfFiles[index].root
+    });
   }
 
   setActiveElement(nactiveSDF) {

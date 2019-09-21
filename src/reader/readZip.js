@@ -1,5 +1,5 @@
 import jszip from 'jszip';
-import zipper from 'zip-local';
+// import zipper from 'zip-local';
 import {parse} from '../parser/parseSDF';
 import {IOBuffer} from 'iobuffer';
 import {resolve} from 'path';
@@ -111,9 +111,11 @@ function convertSpectraSync(folders, zip, options = {}) {
         let pathFile = file.split('/');
         if (pathFile[pathFile.length - 1].match(/^[^\.].+sdf$/)) {
             var filename = pathFile[pathFile.length - 1].replace(/\.sdf/, '');
+            var root = pathFile.slice(0,pathFile.length - 1).join('/');
             let sdf = await zipFiles.file(file).async('string');
             let parserResult = parse(sdf + '', {mixedEOL: true});
             parserResult.filename = filename;
+            parserResult.root = root + '/';
             result.push(parserResult);
         }
     }
