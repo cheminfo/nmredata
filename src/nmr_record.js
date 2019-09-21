@@ -39,19 +39,17 @@ export class nmrRecord {
     return OCLfull.Molecule.fromMolfileWithAtomMap(molfile);
   }
 
-  getNMReDATAtags(i = this.activeElement) {
+  getNMReDataTags(i = this.activeElement) {
     i = this.checkIndex(i);
     let nmredataTags = {};
     let sdfFile = this.sdfFiles[i];
     let version = parseFloat(sdfFile.molecules[0]['NMREDATA_VERSION']);
-
     let toReplace = version > 1 ? [new RegExp(/\\\n*/g), '\n'] : [];
     sdfFile.labels.forEach((tag) => {
       if (tag.toLowerCase().match('nmredata')) {
-
         let key = tag.replace(/NMREDATA\_/, '');
         let data = version > 1 ? sdfFile.molecules[0][tag].replace(/\n*/g, '') : sdfFile.molecules[0][tag];
-        data = sdfFile.molecules[0][tag].replace(toReplace[0], toReplace[1]);
+        data = data.replace(toReplace[0], toReplace[1]);
         nmredataTags[key] = data;
       }
     });
@@ -61,7 +59,7 @@ export class nmrRecord {
   getNMReData(i = this.activeElement) {
     i = this.checkIndex(i);
     let result = {name: this.sdfFiles[i].filename};
-    let nmredataTags = this.getNMReDATAtags(i);
+    let nmredataTags = this.getNMReDataTags(i);
     Object.keys(nmredataTags).forEach((tag, index) => {
       if (!result[tag]) result[tag] = {data: []};
       let tagData = result[tag];
@@ -152,8 +150,8 @@ export class nmrRecord {
   // loop over structures in a given .sdf file. We may have two when there is a flat and a 3D structures...
 
 // let molblock = currentSDFfile.getmol(loop);// replace with  existing modults to get molblock...
-// let all_tags = currentSDFfile.getNMReDATAtags(loop);// replace with existing module to read SDF tags....
-// let nmredata_tags = all_tags.getNMReDATAtags();// just keep the tags including "NMEDATA in the tag name"
+// let all_tags = currentSDFfile.getNMReDataTags(loop);// replace with existing module to read SDF tags....
+// let nmredata_tags = all_tags.getNMReDataTags();// just keep the tags including "NMEDATA in the tag name"
   //maybe it is faster if we directly read only the tags with "NMREDATA" in the tag name... is it possible?
 
 // if (molblock.is2D) { // test if the mol is 2d (see the nmredata/wiki page..??)
