@@ -13,7 +13,7 @@ export function nmredataToSampleEln(nmredata, options) {
     }
     for (let tag in nmredata) {
         if (!tag.toLowerCase().match(/1d/s)) continue;
-        let jcamp = ''//getJcamp(nmredata[tag], options);
+        let jcamp = getJcamp(nmredata[tag], options);
         let spectrum = {jcamp, range: [], experiment: '1d', headComment: nmredata[tag].headComment};
         let ranges = spectrum.range;
         let rangeData = nmredata[tag].data.filter(e => e.value.delta);
