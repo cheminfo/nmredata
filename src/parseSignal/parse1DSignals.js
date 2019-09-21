@@ -43,10 +43,17 @@ function getCoupling(d) {
     let jCoupling = [];
     d = d.split(':');
     d.forEach((c) => {
+        let value, withIt = '';
         let toValue = c.indexOf('(');
-        var value = Number(c.substring(0, toValue));
-        var withIt = c.substring(toValue + 1, c.length - 1);
-        jCoupling.push({coupling: value, diaID: withIt})
+        if (toValue === -1) {
+            value = Number(c);
+            jCoupling.push({coupling: value})
+        } else {
+            value = Number(c.substring(0, toValue));
+            withIt = c.substring(toValue + 1, c.length - 1);
+            jCoupling.push({coupling: value, label: withIt})
+        }
+        
     });
     return jCoupling;
 }

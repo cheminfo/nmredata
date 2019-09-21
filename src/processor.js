@@ -3,7 +3,6 @@ import {parse1DSignal} from './parseSignal/parse1DSignals';
 export function processContent(content, options) {
     let {tag} = options;
     let result;
-    console.log(tag)
     let processor = resultType(tag);
     let matchEqual = content.match(/=/g);
     if (!matchEqual && !content.match(',')) {

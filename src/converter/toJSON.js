@@ -13,13 +13,21 @@ export function nmredataToSampleEln(nmredata, options) {
     }
     for (let tag in nmredata) {
         if (!tag.toLowerCase().match(/1d/s)) continue;
+        let frequencyLine = nmredata[tag].data.find(e => e.value.key === 'Larmor');
+        let nucleus = getNucleus(tag);
         let jcamp = getJcamp(nmredata[tag], options);
-        let spectrum = {jcamp, range: [], experiment: '1d', headComment: nmredata[tag].headComment};
+        let spectrum = {
+            jcamp, 
+            range: [], 
+            nucleus,
+            frequency: frequencyLine.value.value,
+            experiment: '1d', 
+            headComment: nmredata[tag].headComment};
         let ranges = spectrum.range;
         let rangeData = nmredata[tag].data.filter(e => e.value.delta);
         rangeData.forEach(rangeD => {
             let {value, comment} = rangeD;
-            let signalData = getSignalData(value);
+            let signalData = getSignalData(value, labels);
             let label = labels[signalData.pubAssignment];
             signalData.diaID = label ? label.diaID : [];
             let range = getRangeData(value);
@@ -52,21 +60,33 @@ function getRangeData(rangeData) {
     }
 }
 
-function getSignalData(rangeData) {
+function getSignalData(rangeData, labels) {
     let result = {};
     let signalKeys = ['delta', 'nbAtoms', 'multiplicity', 'J', 'pubAssignment'];
     signalKeys.forEach(key => {
         let data = rangeData[key];
         if (data) result[key] = data;
     })
+    let needJdiaID = false;
+    if (result.J) needJdiaID = result.J.some(j => {
+        return Object.keys(j).some(e => e === 'label')
+    });
+    if (needJdiaID) {
+        result.J.forEach((j, i, arr) => {
+            if (j.label) {
+                let label = labels[j.label];
+                if (label) arr[i].diaID = label.diaID;
+            }
+        });
+    }
     return result;
 }
 
 function getNucleus(label) {
     let nucleus = [];
-    let dimensions = label.match(/NMREDATA_([0-9])\w_/s)[1];
+    let dimensions = label.match(/([0-9])\w_/s)[1];
     if (dimensions === '1') {
-        // nucleus = label.substring(12, label.length).split('_');
+        nucleus = label.substring(3, label.length)
     } else if (dimensions === '2') {
         let data = label.substring(12, label.length).split('_')
         for (let i = 0; i < data.length; i+=2) nucleus.push(data[i]);
@@ -155,3 +175,4 @@ function getLabels(content) {
     }
     return min;
   }
+  

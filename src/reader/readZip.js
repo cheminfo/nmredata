@@ -115,7 +115,7 @@ function convertSpectraSync(folders, zip, options = {}) {
             let sdf = await zipFiles.file(file).async('string');
             let parserResult = parse(sdf + '', {mixedEOL: true});
             parserResult.filename = filename;
-            parserResult.root = root + '/';
+            parserResult.root = root !== '' ? root + '/' : '';
             result.push(parserResult);
         }
     }
