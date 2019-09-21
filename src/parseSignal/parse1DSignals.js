@@ -7,7 +7,8 @@ export function parse1DSignal(content, labels) {
         d = d.toLowerCase();
         let value = d.replace(/^.*=/, '');
         let key = d.replace(/[=].*/, '');
-        if (value === key) {
+        
+        if (parseFloat(key)) {
             signal.delta = value
         } else {
             signal[choseKey(key)] = key === 'j' ? getCoupling(value) : value;
