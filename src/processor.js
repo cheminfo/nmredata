@@ -17,11 +17,13 @@ export function processContent(content, options) {
 
 function resultType(tag) {
     let processor;
-    switch (tag.toLowerCase()) {
+    let ctag = tag.toLowerCase();
+    if (ctag.match(/1d/)) ctag = '1d';
+    switch (ctag.toLowerCase()) {
         case 'id':  //it has property lines
             processor = propertyLinesProcessor;
             break;
-        case '1d_1h': //it has item list
+        case '1d': //it has item list
             processor = parse1DSignal;
             break;
         case 'assignment': //it has item list

@@ -7,7 +7,8 @@ export function parse1DSignal(content, labels) {
         d = d.toLowerCase();
         let value = d.replace(/^.*=/, '');
         let key = d.replace(/[=].*/, '');
-        if (value === key) {
+        
+        if (parseFloat(key)) {
             signal.delta = value
         } else {
             signal[choseKey(key)] = value === 'j' ? getCoupling(value) : value;
@@ -26,12 +27,13 @@ function choseKey(entry) {
             key= 'multiplicity';
             break
         case 'l':
-            key= 'label';
+            key= 'pubAssignment';
             break
         case 'n':
             key= 'nbAtoms';
             break
         case 'e':
+        case 'i':
             key= 'pubIntegral';
             break
     }
@@ -41,10 +43,17 @@ function getCoupling(d) {
     let jCoupling = [];
     d = d.split(':');
     d.forEach((c) => {
+        let value, withIt = '';
         let toValue = c.indexOf('(');
-        var value = Number(c.substring(0, toValue));
-        var withIt = c.substring(toValue + 1, c.length - 1);
-        jCoupling.push({coupling: value, diaID: withIt})
+        if (toValue === -1) {
+            value = Number(c);
+            jCoupling.push({coupling: value})
+        } else {
+            value = Number(c.substring(0, toValue));
+            withIt = c.substring(toValue + 1, c.length - 1);
+            jCoupling.push({coupling: value, label: withIt})
+        }
+        
     });
     return jCoupling;
 }
