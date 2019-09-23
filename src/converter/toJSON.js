@@ -15,6 +15,7 @@ export function nmredataToSampleEln(nmredata, options) {
         if (!tag.toLowerCase().match(/1d/s)) continue;
         let frequencyLine = nmredata[tag].data.find(e => e.value.key === 'Larmor');
         let nucleus = getNucleus(tag);
+        let width = nucleus.match(/13C/) ? 0.1 : 0.02;
         let jcamp = getJcamp(nmredata[tag], options);
         let spectrum = {
             jcamp, 
@@ -31,8 +32,8 @@ export function nmredataToSampleEln(nmredata, options) {
             let label = labels[signalData.pubAssignment];
             signalData.diaID = label ? label.diaID : [];
             let range = getRangeData(value);
-            let from = Number(signalData.delta) - 0.01;
-            let to = Number(signalData.delta) + 0.01;
+            let from = Number(signalData.delta) - width;
+            let to = Number(signalData.delta) + width;
             ranges.push({from: from.toFixed(3), to: to.toFixed(3), signal: [signalData], comment});
         });
         nmr.push(spectrum);
