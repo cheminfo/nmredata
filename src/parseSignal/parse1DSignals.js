@@ -7,10 +7,11 @@ export function parse1DSignal(content, labels) {
         d = d.toLowerCase();
         let value = d.replace(/^.*=/, '');
         let key = d.replace(/[=].*/, '');
-        if (value === key) {
+        
+        if (parseFloat(key)) {
             signal.delta = value
         } else {
-            signal[choseKey(key)] = value === 'j' ? getCoupling(value) : value;
+            signal[choseKey(key)] = key === 'j' ? getCoupling(value) : value;
         }        
     });
     return signal;
@@ -26,12 +27,13 @@ function choseKey(entry) {
             key= 'multiplicity';
             break
         case 'l':
-            key= 'label';
+            key= 'pubAssignment';
             break
         case 'n':
             key= 'nbAtoms';
             break
         case 'e':
+        case 'i':
             key= 'pubIntegral';
             break
     }
