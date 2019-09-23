@@ -18443,7 +18443,7 @@ async function getSDF(zipFiles) {
         mixedEOL: true
       });
       parserResult.filename = filename;
-      parserResult.root = root + '/';
+      parserResult.root = root !== '' ? root + '/' : '';
       result.push(parserResult);
     }
   }
@@ -18551,13 +18551,23 @@ function getCoupling(d) {
   let jCoupling = [];
   d = d.split(':');
   d.forEach(c => {
+    let value,
+        withIt = '';
     let toValue = c.indexOf('(');
-    var value = Number(c.substring(0, toValue));
-    var withIt = c.substring(toValue + 1, c.length - 1);
-    jCoupling.push({
-      coupling: value,
-      diaID: withIt
-    });
+
+    if (toValue === -1) {
+      value = Number(c);
+      jCoupling.push({
+        coupling: value
+      });
+    } else {
+      value = Number(c.substring(0, toValue));
+      withIt = c.substring(toValue + 1, c.length - 1);
+      jCoupling.push({
+        coupling: value,
+        label: withIt
+      });
+    }
   });
   return jCoupling;
 }
@@ -18567,7 +18577,6 @@ function processContent(content, options) {
     tag
   } = options;
   let result;
-  console.log(tag);
   let processor = resultType(tag);
   let matchEqual = content.match(/=/g);
 
@@ -18664,10 +18673,14 @@ function nmredataToSampleEln(nmredata, options) {
 
   for (let tag in nmredata) {
     if (!tag.toLowerCase().match(/1d/)) continue;
+    let frequencyLine = nmredata[tag].data.find(e => e.value.key === 'Larmor');
+    let nucleus = getNucleus(tag);
     let jcamp = getJcamp(nmredata[tag], options);
     let spectrum = {
       jcamp,
       range: [],
+      nucleus,
+      frequency: frequencyLine.value.value,
       experiment: '1d',
       headComment: nmredata[tag].headComment
     };
@@ -18678,7 +18691,7 @@ function nmredataToSampleEln(nmredata, options) {
         value,
         comment
       } = rangeD;
-      let signalData = getSignalData(value);
+      let signalData = getSignalData(value, labels);
       let label = labels[signalData.pubAssignment];
       signalData.diaID = label ? label.diaID : [];
       let range = getRangeData(value);
@@ -18720,14 +18733,43 @@ function getRangeData(rangeData) {
   }
 }
 
-function getSignalData(rangeData) {
+function getSignalData(rangeData, labels) {
   let result = {};
   let signalKeys = ['delta', 'nbAtoms', 'multiplicity', 'J', 'pubAssignment'];
   signalKeys.forEach(key => {
     let data = rangeData[key];
     if (data) result[key] = data;
   });
+  let needJdiaID = false;
+  if (result.J) needJdiaID = result.J.some(j => {
+    return Object.keys(j).some(e => e === 'label');
+  });
+
+  if (needJdiaID) {
+    result.J.forEach((j, i, arr) => {
+      if (j.label) {
+        let label = labels[j.label];
+        if (label) arr[i].diaID = label.diaID;
+      }
+    });
+  }
+
   return result;
+}
+
+function getNucleus(label) {
+  let nucleus = [];
+  let dimensions = label.match(/([0-9])[0-9A-Z_a-z]_/)[1];
+
+  if (dimensions === '1') {
+    nucleus = label.substring(3, label.length);
+  } else if (dimensions === '2') {
+    let data = label.substring(12, label.length).split('_');
+
+    for (let i = 0; i < data.length; i += 2) nucleus.push(data[i]);
+  }
+
+  return nucleus;
 }
 
 function getLabels(content) {
@@ -18976,40 +19018,7 @@ class nmrRecord {
     return result;
   }
 
-} // here: loop testing all .sdf files in the zip_object 
-// As an option ig should explore subfolders
-// When the zip is an NMReDATA record, it should find the file
-// compound1.dsf in the root of the zip file
-// Important note: when more than one compound is assiged to
-// the spectrum (see glucose where we have alpha and beta.
-// this function should get each .sdf file separately...) 
-// one coumpound, should get compound2.sdf...
-// to start we could skip the loop and wire "compound1.sdf"
-// .sdf files may include multiple structures... each has has its assiciated tags...
-// loop over structures in a given .sdf file. We may have two when there is a flat and a 3D structures...
-// let molblock = currentSDFfile.getmol(loop);// replace with  existing modults to get molblock...
-// let all_tags = currentSDFfile.getNMReDataTags(loop);// replace with existing module to read SDF tags....
-// let nmredata_tags = all_tags.getNMReDataTags();// just keep the tags including "NMEDATA in the tag name"
-//maybe it is faster if we directly read only the tags with "NMREDATA" in the tag name... is it possible?
-// if (molblock.is2D) { // test if the mol is 2d (see the nmredata/wiki page..??)
-//     structures.d2.molblok=molblock;
-//     structures.d2.label_to_atom_table=make_list_refs_atom_to_NMRlabel(nmredata_tags.assignment);
-//     //if the .assignment does not exist, don't complain... it can be created and added !? but the list is empty
-// }
-//     if molblock.is3d { 
-//       structures.d3.molblok=molblock;
-//       structures.d3.label_to_atom_table=make_list_refs_atom_to_NMRlabel(nmredata_tags.assignment);;
-//     }
-//      all_nmredata_tags=   nmredata_tags.addtags (all_sdf_tags);// fuse all NMReDATA tags found
-//   //end of loop over structures in a given .sdf file
-//   // to be included in a class "structures" 
-//   structures.highlight_on("Ha");// will add the yellow shadow about the atoms Ha...
-//   structures.highlight_off("Ha")
-//   display(structures)//we may have one or two structures
-//   let nmredata = getNMReDATA(nmredata_tags);
-// // create a nmredata class...
-//   nmredata.display('all content')// to be developped laters...
-
+}
 
 exports.nmrRecord = nmrRecord;
 
