@@ -1,5 +1,3 @@
-// import {readZipFileSync, readZipFile} from './reader/readZip';
-import { readZipFile } from './reader/readZip';
 import * as OCLfull from 'openchemlib-extended';
 import {processContent} from './processor';
 import {nmredataToSampleEln} from './converter/toJSON';
@@ -16,16 +14,6 @@ export class nmrRecord {
     this.nbSamples = sdfFiles.length
     return this;
   }
-
-  static async read(nmrRecord) {
-    let data = await readZipFile(nmrRecord)
-    return new this(data);
-  }
-
-  // static readSync(path) {
-  //   var data = readZipFileSync(path);
-  //   return new this(data);
-  // }
 
   getMol(i = this.activeElement) {
     i = this.checkIndex(i);

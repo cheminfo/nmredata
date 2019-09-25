@@ -1,9 +1,9 @@
 import jszip from 'jszip';
-// import zipper from 'zip-local';
 import {parse} from '../parser/parseSDF';
 import {IOBuffer} from 'iobuffer';
 import {resolve} from 'path';
 import {convertFolder} from 'brukerconverter';
+import {nmrRecord} from '../nmr_record'
 
 const BINARY = 1;
 const TEXT = 2;
@@ -19,39 +19,19 @@ const files = {
     '2rr': BINARY
 };
 
-// export function readZipFileSync(path) {
-//     let zipData = zipper.sync.unzip(resolve(path)).memory();
-//     let zipFiles = zipData.unzipped_file;
-//     //obtain sdf files
-//     let sdfFiles = [];
-//     for (let file in zipFiles.files) {
-//         let pathFile = file.split('/');
-//         if (pathFile[pathFile.length - 1].match(/^[^\.].+sdf$/)) {
-//             var filename = pathFile[pathFile.length - 1].replace(/\.sdf/, '');
-//             let sdf = zipData.read(file, 'text');
-//             let parserResult = parse(sdf + '', {mixedEOL: true});
-//             parserResult.filename = filename;
-//             sdfFiles.push(parserResult);
-//         }
-//     }
-//     let folders = getSpectraFolders(zipFiles);
-//     let spectra = convertSpectraSync(folders, zipFiles);
-//     return {sdfFiles, spectra}
-// }
-
 /**
  * Read nmr record file asynchronously
  * @param {*} zipData  data readed of zip file  
  * @param {*} options 
  * @return {} An Object with two properties folders and sdfFiles, folders has nmr spectra data, sdfFiles has all sdf files
  */
-export async function readZipFile(zipData, options = {}) {//@TODO: Be able to read from a path
+export async function readZip(zipData, options = {}) {//@TODO: Be able to read from a path
     var zip = new jszip();
     return zip.loadAsync(zipData, {base64: true}).then(async (zipFiles) => {
       let sdfFiles = await getSDF(zipFiles, options);
       let folders = getSpectraFolders(zipFiles)
       let spectra = await convertSpectra(folders, zipFiles, options);
-      return {spectra, sdfFiles}
+      return new nmrRecord({sdfFiles, spectra})
     })
 }
 
@@ -70,35 +50,6 @@ function getSpectraFolders(zipFiles) { // Folders should contain jcamp too
     });
 }
 
-function convertSpectraSync(folders, zip, options = {}) {
-    var spectra = new Array(folders.length);
-    
-    for(var i = 0; i < folders.length; ++i) {
-        var len = folders[i].name.length;
-        var name = folders[i].name;
-        name = name.substr(0,name.lastIndexOf("/")+1);
-        var currFolder = zip.folder(name);
-        var currFiles = currFolder.filter(function (relativePath, file) {
-            return files[relativePath] ? true : false;
-        });
-        var brukerFiles = {};
-        if(name.indexOf("pdata")>=0){
-            brukerFiles['acqus'] = zip.file(name.replace(/pdata\/[0-9]\//,"acqus")).asText();
-        }
-        for(var j = 0; j < currFiles.length; ++j) {
-            var idx = currFiles[j].name.lastIndexOf('/');
-            var name = currFiles[j].name.substr(idx + 1);
-            if(files[name] === BINARY) {
-                brukerFiles[name] = new IOBuffer(currFiles[j].asArrayBuffer());
-            } else {
-                brukerFiles[name] = currFiles[j].asText();
-            }
-        }
-        spectra[i] = {"filename":folders[i].name,value:convertFolder(brukerFiles,options)};
-    }
-    return spectra;
-}
-  
   /**
    * Extract sdf files from a class of jszip an parse it
    * @param {*} zipFiles 
