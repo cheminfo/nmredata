@@ -1,42 +1,38 @@
-# nmredata
-
-  [![NPM version][npm-image]][npm-url]
-  [![build status][travis-image]][travis-url]
-  [![Test coverage][codecov-image]][codecov-url]
-  [![npm download][download-image]][download-url]
-
-NMReDATA parser.
+# nmredata parser
+<p align="center">
+  A tool for reading nmrRecords.
+</p>
+<p align="center">
+  <img alt="NMReDATA" src="images/nmredataParser.png">
+</p>
 
 ## Installation
 
-`$ npm install --save nmredata`
+`$ npm install nmredata`
 
 ## Usage
 
 ```js
-import nmr_record from 'nmredata';
+// Synchronously, to be used locally
+const nmredata = require('nmredata');
 
-const cur_NMRrecord = new nmr_record();
+const path = 'pathToNMRRecordFile';
+var currentNMRrecord = nmredata.readNMRRSync(path);
+var json = currentNMRrecord.toJSON();
+
+// Asynchronously, to be used in the browser or another node packages
+const nmredata = require('nmredata');
+const FS = require('fs');
+const path = 'pathToNMRRecordFile'
+var zipData = FS.readFileSync(path);
+const cur_NMRrecord = nmredata.readNMRR(zipData).then(currentNMRrecord => {
+  var json = currentNMRrecord.toJSON();
+});
 
 ...
 
 ```
 
-## [API Documentation](https://cheminfo.github.io/nmredata/)
-
-* point a
-
-
-
 ## License
-
   [MIT](./LICENSE)
-
-[npm-image]: https://img.shields.io/npm/v/nmredata.svg?style=flat-square
-[npm-url]: https://www.npmjs.com/package/nmredata
-[travis-image]: https://img.shields.io/travis/cheminfo/nmredata/master.svg?style=flat-square
-[travis-url]: https://travis-ci.org/cheminfo/nmredata
-[codecov-image]: https://img.shields.io/codecov/c/github/cheminfo/nmredata.svg?style=flat-square
-[codecov-url]: https://codecov.io/gh/cheminfo/nmredata
-[download-image]: https://img.shields.io/npm/dm/nmredata.svg?style=flat-square
-[download-url]: https://www.npmjs.com/package/nmredata
+  
