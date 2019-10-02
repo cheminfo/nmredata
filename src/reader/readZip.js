@@ -3,6 +3,7 @@ import {parse} from '../parser/parseSDF';
 import {IOBuffer} from 'iobuffer';
 import {resolve} from 'path';
 import {convertFolder} from 'brukerconverter';
+import {convert} from 'jcampconverter';
 import {nmrRecord} from '../nmr_record'
 
 const BINARY = 1;
@@ -21,39 +22,46 @@ const files = {
 
 /**
  * Read nmr record file asynchronously
- * @param {*} zipData  data readed of zip file  
- * @param {*} options 
+ * @param {*} zipData  data readed of zip file
+ * @param {*} options
  * @return {} An Object with two properties folders and sdfFiles, folders has nmr spectra data, sdfFiles has all sdf files
  */
-export async function readZip(zipData, options = {}) {//@TODO: Be able to read from a path
+export async function readNMRR(zipData, options = {}) {//@TODO: Be able to read from a path
     var zip = new jszip();
     return zip.loadAsync(zipData, {base64: true}).then(async (zipFiles) => {
       let sdfFiles = await getSDF(zipFiles, options);
       let folders = getSpectraFolders(zipFiles)
-      let spectra = await convertSpectra(folders, zipFiles, options);
-      return new nmrRecord({sdfFiles, spectra})
+      let spectra = await convertSpectra(folders.brukerFolders, zipFiles, options);
+      let jcamps = await processJcamp(folders.jcampFolders, zipFiles, options);
+      spectra = spectra.concat(jcamps);
+      return new nmrRecord({sdfFiles, spectra});
     })
 }
 
-function getSpectraFolders(zipFiles) { // Folders should contain jcamp too
-    return zipFiles.filter((relativePath) => {
-        if (relativePath.match('__MACOSX')) return false;
-        if (
-          relativePath.endsWith('ser') ||
-          relativePath.endsWith('fid') ||
-          relativePath.endsWith('1r') ||
-          relativePath.endsWith('2rr')
-        ) {
+function getSpectraFolders(zipFiles) {
+  let brukerFolders = zipFiles.filter((relativePath) => {
+      if (relativePath.match('__MACOSX')) return false;
+      if (relativePath.endsWith('1r')) {
+        return true;
+      }
+      return false;
+  });
+  let jcampFolders = zipFiles.filter((relativePath) => {
+      if (relativePath.match('__MACOSX')) return false;
+      if (relativePath.endsWith('dx') ||
+          relativePath.endsWith('jcamp')
+      ) {
           return true;
-        }
-        return false;
-    });
+      }
+      return false;
+  })
+  return {jcampFolders, brukerFolders};
 }
 
   /**
    * Extract sdf files from a class of jszip an parse it
-   * @param {*} zipFiles 
-   * @param {*} options 
+   * @param {*} zipFiles
+   * @param {*} options
    * @returns {Array} Array of sdf parsed files
    */
   async function getSDF(zipFiles, options = {}) {
@@ -72,7 +80,7 @@ function getSpectraFolders(zipFiles) { // Folders should contain jcamp too
     }
     return result;
   }
-  
+
   async function convertSpectra(folders, zipFiles, options) {
       var spectra = new Array(folders.length);
       for (let i = 0; i < folders.length; ++i) {
@@ -110,4 +118,15 @@ function getSpectraFolders(zipFiles) { // Folders should contain jcamp too
         });
       }
       return Promise.all(spectra);
+  }
+
+  async function processJcamp(folders, zipFiles, options) {
+    var spectra = new Array(folders.length);
+    for (let i = 0; i < folders.length; ++i) {
+      let name = folders[i].name;
+      let jcamp = await zipFiles.file(name).async('string');
+      let value = convert(jcamp, { keepSpectra: true, keepRecordsRegExp: /^.+$/, xy: true });
+      spectra[i] = {filename: name, value}
+    }
+    return spectra;
   }
