@@ -1,17 +1,18 @@
 import * as OCLfull from 'openchemlib-extended';
-import {processContent} from './processor';
-import {nmredataToSampleEln} from './converter/toJSON';
+
+import { processContent } from './processor';
+import { nmredataToSampleEln } from './converter/toJSON';
 
 export class nmrRecord {
   constructor(nmrRecord) {
-    if (!nmrRecord instanceof Object) {
+    if (!(nmrRecord instanceof Object)) {
       throw new Error('Cannot be called directly');
     }
-    let {spectra, sdfFiles} = nmrRecord;
+    let { spectra, sdfFiles } = nmrRecord;
     this.spectra = spectra;
     this.sdfFiles = sdfFiles;
     this.activeElement = 0;
-    this.nbSamples = sdfFiles.length
+    this.nbSamples = sdfFiles.length;
     return this;
   }
 
@@ -31,7 +32,7 @@ export class nmrRecord {
     i = this.checkIndex(i);
     let nmredataTags = {};
     let sdfFile = this.sdfFiles[i];
-    let version = parseFloat(sdfFile.molecules[0]['NMREDATA_VERSION']);
+    let version = parseFloat(sdfFile.molecules[0].NMREDATA_VERSION);
     let toReplace = version > 1 ? [new RegExp(/\\\n*/g), '\n'] : [];
     sdfFile.labels.forEach((tag) => {
       if (tag.toLowerCase().match('nmredata')) {
@@ -46,36 +47,35 @@ export class nmrRecord {
 
   getNMReData(i = this.activeElement) {
     i = this.checkIndex(i);
-    let result = {name: this.sdfFiles[i].filename};
+    let result = { name: this.sdfFiles[i].filename };
     let nmredataTags = this.getNMReDataTags(i);
     Object.keys(nmredataTags).forEach((tag, index) => {
       if (tag.match(/2D/)) return;
-      if (!result[tag]) result[tag] = {data: []};
+      if (!result[tag]) result[tag] = { data: [] };
       let tagData = result[tag];
       let dataSplited = nmredataTags[tag].split('\n');
-      dataSplited.forEach(e => {
+      dataSplited.forEach((e) => {
         let content = e.replace(/\;.*/g, '');
         let comment = e.match('\;') ? e.replace(/.*\;+(.*)/g, '$1') : '';
         if (content.length === 0) { // may be a head comment. is it always true?
           if (!tagData.headComment) tagData.headComment = []; // should this be array for several head comments?
-          tagData.headComment.push(comment)
-          return
-        } 
-        let value = processContent(content, {tag: tag});
-        tagData.data.push({comment, value})
-        
-      })
-    })
+          tagData.headComment.push(comment);
+          return;
+        }
+        let value = processContent(content, { tag: tag });
+        tagData.data.push({ comment, value });
+      });
+    });
     return result;
   }
 
   getSpectraList(i = this.activeElement) {
-
+    return this.spectra.map(e => e.filename);
   }
 
   getFileName(i = this.activeElement) {
     i = this.checkIndex(i);
-    let sdf =this.sdfFiles[i];
+    let sdf = this.sdfFiles[i];
     return sdf.filename;
   }
   getAllTags(i = this.activeElement) {
@@ -84,7 +84,7 @@ export class nmrRecord {
     let sdfFile = this.sdfFiles[i];
     sdfFile.labels.forEach((tag) => {
       allTags[tag] = sdfFile.molecules[0][tag];
-    })
+    });
     return allTags;
   }
 

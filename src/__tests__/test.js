@@ -1,6 +1,7 @@
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-import {readNMRR, readNMRRSync} from '../index';
+
+import { readNMRR, readNMRRSync } from '../index';
 
 describe('NMReDATA reading', () => {
   var nmrRecordWithJcampFromSync = readNMRRSync(resolve('testFiles/generated.zip'));
@@ -24,18 +25,18 @@ describe('NMReDATA reading', () => {
     expect(sdfFileList[nmrRecordWithJcampFromSync.activeElement]).toBe(sdfFileList[0]);
   });
   it('nmrRecord to json, looking spectrum path', () => {
-    var filenames = ['MP-caryophyllene_oxide_small/11/pdata/1/','MP-caryophyllene_oxide_small/10/pdata/1/','jcampData/1H_spectrum.jdx'];
+    var filenames = nmrRecordWithJcampFromSync.getSpectraList();
     let json = nmrRecordWithJcampFromSync.toJSON();
     for (let nmr of json.spectra.nmr) {
-      expect(filenames.includes(nmr.jcamp.filename)).toBe(true);
+      expect(filenames).toContain(nmr.jcamp.filename);
     }
   });
   it('nmrRecord to json from async, looking spectrum path', async () => {
-    var nmrRecordWithJcampFromASync = await readNMRR(zipWithJcamp);    
-    var filenames = ['MP-caryophyllene_oxide_small/11/pdata/1/','MP-caryophyllene_oxide_small/10/pdata/1/','jcampData/1H_spectrum.jdx'];
+    var nmrRecordWithJcampFromASync = await readNMRR(zipWithJcamp);
+    var filenames = nmrRecordWithJcampFromASync.getSpectraList()
     let json = nmrRecordWithJcampFromASync.toJSON();
     for (let nmr of json.spectra.nmr) {
-      expect(filenames.includes(nmr.jcamp.filename)).toBe(true);
+      expect(filenames).toContain(nmr.jcamp.filename);
     }
   });
 });
