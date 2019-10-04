@@ -1,17 +1,19 @@
 export function parse1DSignal(content, labels) {
   let signal = {};
   content = content.replace(/ /g, '');
-  content = content.replace(/,([0-9])/g, ':$1');
-  let data = content.split(',');
+  content = content.replace(/[l=] /g, '')
+  content = content.replace(/,(\w=)/g,':$1')
+  console.log('this is content', content)
+  let data = content.split(':');
   data.forEach((d) => {
     d = d.toLowerCase();
     let value = d.replace(/^.*=/, '');
     let key = d.replace(/[=].*/, '');
-
+    console.log('value', value)
     if (parseFloat(key)) {
       signal.delta = value;
     } else {
-      signal[choseKey(key)] = key === 'j' ? getCoupling(value) : value;
+      signal[choseKey(key)] = choseProcess(value, key);
     }
   });
   return signal;
@@ -39,8 +41,29 @@ function choseKey(entry) {
   }
   return key;
 }
+
+function choseProcess(d, key) {
+  let result;
+  switch (key) {
+    case 'l':
+      result = getPubAssignment(d);
+      break;
+    case 'j':
+      result = getCoupling(d);
+      break;
+    default:
+      result = d;
+  }
+  return result;
+}
+
+function getPubAssignment(d) {
+  return d.replace(/\s*/g, '').split(',');
+}
+
 function getCoupling(d) {
   let jCoupling = [];
+  d = d.replace(/,([0-9])/g, ':$1');
   d = d.split(':');
   d.forEach((c) => {
     let value; let

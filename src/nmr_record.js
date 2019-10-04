@@ -65,6 +65,7 @@ export class nmrRecord {
           return;
         }
         let value = processContent(content, { tag: tag });
+        console.log('este es value', value)
         tagData.data.push({ comment, value });
       });
     });

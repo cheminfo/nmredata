@@ -109,11 +109,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 var support = __webpack_require__(3);
 
-var base64 = __webpack_require__(36);
+var base64 = __webpack_require__(37);
 
 var nodejsUtils = __webpack_require__(17);
 
-var setImmediate = __webpack_require__(77);
+var setImmediate = __webpack_require__(79);
 
 var external = __webpack_require__(14);
 /**
@@ -909,7 +909,7 @@ module.exports = GenericWorker;
 "use strict";
 
 
-__webpack_require__(123);
+__webpack_require__(127);
 
 var abstractMatrix = __webpack_require__(56);
 
@@ -1115,11 +1115,11 @@ if (typeof ArrayBuffer === "undefined") {
 }
 
 try {
-  exports.nodestream = !!__webpack_require__(29).Readable;
+  exports.nodestream = !!__webpack_require__(30).Readable;
 } catch (e) {
   exports.nodestream = false;
 }
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(11).Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(12).Buffer))
 
 /***/ }),
 /* 4 */
@@ -1319,7 +1319,7 @@ var util = __webpack_require__(13);
 util.inherits = __webpack_require__(10);
 /*</replacement>*/
 
-var Readable = __webpack_require__(30);
+var Readable = __webpack_require__(31);
 
 var Writable = __webpack_require__(21);
 
@@ -1788,6 +1788,219 @@ if (typeof Object.create === 'function') {
 
 /***/ }),
 /* 11 */
+/***/ (function(module, exports) {
+
+// shim for using process in browser
+var process = module.exports = {}; // cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+  throw new Error('setTimeout has not been defined');
+}
+
+function defaultClearTimeout() {
+  throw new Error('clearTimeout has not been defined');
+}
+
+(function () {
+  try {
+    if (typeof setTimeout === 'function') {
+      cachedSetTimeout = setTimeout;
+    } else {
+      cachedSetTimeout = defaultSetTimout;
+    }
+  } catch (e) {
+    cachedSetTimeout = defaultSetTimout;
+  }
+
+  try {
+    if (typeof clearTimeout === 'function') {
+      cachedClearTimeout = clearTimeout;
+    } else {
+      cachedClearTimeout = defaultClearTimeout;
+    }
+  } catch (e) {
+    cachedClearTimeout = defaultClearTimeout;
+  }
+})();
+
+function runTimeout(fun) {
+  if (cachedSetTimeout === setTimeout) {
+    //normal enviroments in sane situations
+    return setTimeout(fun, 0);
+  } // if setTimeout wasn't available but was latter defined
+
+
+  if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+    cachedSetTimeout = setTimeout;
+    return setTimeout(fun, 0);
+  }
+
+  try {
+    // when when somebody has screwed with setTimeout but no I.E. maddness
+    return cachedSetTimeout(fun, 0);
+  } catch (e) {
+    try {
+      // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+      return cachedSetTimeout.call(null, fun, 0);
+    } catch (e) {
+      // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+      return cachedSetTimeout.call(this, fun, 0);
+    }
+  }
+}
+
+function runClearTimeout(marker) {
+  if (cachedClearTimeout === clearTimeout) {
+    //normal enviroments in sane situations
+    return clearTimeout(marker);
+  } // if clearTimeout wasn't available but was latter defined
+
+
+  if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+    cachedClearTimeout = clearTimeout;
+    return clearTimeout(marker);
+  }
+
+  try {
+    // when when somebody has screwed with setTimeout but no I.E. maddness
+    return cachedClearTimeout(marker);
+  } catch (e) {
+    try {
+      // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+      return cachedClearTimeout.call(null, marker);
+    } catch (e) {
+      // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+      // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+      return cachedClearTimeout.call(this, marker);
+    }
+  }
+}
+
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+  if (!draining || !currentQueue) {
+    return;
+  }
+
+  draining = false;
+
+  if (currentQueue.length) {
+    queue = currentQueue.concat(queue);
+  } else {
+    queueIndex = -1;
+  }
+
+  if (queue.length) {
+    drainQueue();
+  }
+}
+
+function drainQueue() {
+  if (draining) {
+    return;
+  }
+
+  var timeout = runTimeout(cleanUpNextTick);
+  draining = true;
+  var len = queue.length;
+
+  while (len) {
+    currentQueue = queue;
+    queue = [];
+
+    while (++queueIndex < len) {
+      if (currentQueue) {
+        currentQueue[queueIndex].run();
+      }
+    }
+
+    queueIndex = -1;
+    len = queue.length;
+  }
+
+  currentQueue = null;
+  draining = false;
+  runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+  var args = new Array(arguments.length - 1);
+
+  if (arguments.length > 1) {
+    for (var i = 1; i < arguments.length; i++) {
+      args[i - 1] = arguments[i];
+    }
+  }
+
+  queue.push(new Item(fun, args));
+
+  if (queue.length === 1 && !draining) {
+    runTimeout(drainQueue);
+  }
+}; // v8 likes predictible objects
+
+
+function Item(fun, array) {
+  this.fun = fun;
+  this.array = array;
+}
+
+Item.prototype.run = function () {
+  this.fun.apply(null, this.array);
+};
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) {
+  return [];
+};
+
+process.binding = function (name) {
+  throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () {
+  return '/';
+};
+
+process.chdir = function (dir) {
+  throw new Error('process.chdir is not supported');
+};
+
+process.umask = function () {
+  return 0;
+};
+
+/***/ }),
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1801,11 +2014,11 @@ if (typeof Object.create === 'function') {
 /* eslint-disable no-proto */
 
 
-var base64 = __webpack_require__(64);
+var base64 = __webpack_require__(66);
 
-var ieee754 = __webpack_require__(65);
+var ieee754 = __webpack_require__(67);
 
-var isArray = __webpack_require__(28);
+var isArray = __webpack_require__(29);
 
 exports.Buffer = Buffer;
 exports.SlowBuffer = SlowBuffer;
@@ -3647,219 +3860,6 @@ function isnan(val) {
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(4)))
 
 /***/ }),
-/* 12 */
-/***/ (function(module, exports) {
-
-// shim for using process in browser
-var process = module.exports = {}; // cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-  throw new Error('setTimeout has not been defined');
-}
-
-function defaultClearTimeout() {
-  throw new Error('clearTimeout has not been defined');
-}
-
-(function () {
-  try {
-    if (typeof setTimeout === 'function') {
-      cachedSetTimeout = setTimeout;
-    } else {
-      cachedSetTimeout = defaultSetTimout;
-    }
-  } catch (e) {
-    cachedSetTimeout = defaultSetTimout;
-  }
-
-  try {
-    if (typeof clearTimeout === 'function') {
-      cachedClearTimeout = clearTimeout;
-    } else {
-      cachedClearTimeout = defaultClearTimeout;
-    }
-  } catch (e) {
-    cachedClearTimeout = defaultClearTimeout;
-  }
-})();
-
-function runTimeout(fun) {
-  if (cachedSetTimeout === setTimeout) {
-    //normal enviroments in sane situations
-    return setTimeout(fun, 0);
-  } // if setTimeout wasn't available but was latter defined
-
-
-  if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-    cachedSetTimeout = setTimeout;
-    return setTimeout(fun, 0);
-  }
-
-  try {
-    // when when somebody has screwed with setTimeout but no I.E. maddness
-    return cachedSetTimeout(fun, 0);
-  } catch (e) {
-    try {
-      // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-      return cachedSetTimeout.call(null, fun, 0);
-    } catch (e) {
-      // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-      return cachedSetTimeout.call(this, fun, 0);
-    }
-  }
-}
-
-function runClearTimeout(marker) {
-  if (cachedClearTimeout === clearTimeout) {
-    //normal enviroments in sane situations
-    return clearTimeout(marker);
-  } // if clearTimeout wasn't available but was latter defined
-
-
-  if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-    cachedClearTimeout = clearTimeout;
-    return clearTimeout(marker);
-  }
-
-  try {
-    // when when somebody has screwed with setTimeout but no I.E. maddness
-    return cachedClearTimeout(marker);
-  } catch (e) {
-    try {
-      // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-      return cachedClearTimeout.call(null, marker);
-    } catch (e) {
-      // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-      // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-      return cachedClearTimeout.call(this, marker);
-    }
-  }
-}
-
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-  if (!draining || !currentQueue) {
-    return;
-  }
-
-  draining = false;
-
-  if (currentQueue.length) {
-    queue = currentQueue.concat(queue);
-  } else {
-    queueIndex = -1;
-  }
-
-  if (queue.length) {
-    drainQueue();
-  }
-}
-
-function drainQueue() {
-  if (draining) {
-    return;
-  }
-
-  var timeout = runTimeout(cleanUpNextTick);
-  draining = true;
-  var len = queue.length;
-
-  while (len) {
-    currentQueue = queue;
-    queue = [];
-
-    while (++queueIndex < len) {
-      if (currentQueue) {
-        currentQueue[queueIndex].run();
-      }
-    }
-
-    queueIndex = -1;
-    len = queue.length;
-  }
-
-  currentQueue = null;
-  draining = false;
-  runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-  var args = new Array(arguments.length - 1);
-
-  if (arguments.length > 1) {
-    for (var i = 1; i < arguments.length; i++) {
-      args[i - 1] = arguments[i];
-    }
-  }
-
-  queue.push(new Item(fun, args));
-
-  if (queue.length === 1 && !draining) {
-    runTimeout(drainQueue);
-  }
-}; // v8 likes predictible objects
-
-
-function Item(fun, array) {
-  this.fun = fun;
-  this.array = array;
-}
-
-Item.prototype.run = function () {
-  this.fun.apply(null, this.array);
-};
-
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) {
-  return [];
-};
-
-process.binding = function (name) {
-  throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () {
-  return '/';
-};
-
-process.chdir = function (dir) {
-  throw new Error('process.chdir is not supported');
-};
-
-process.umask = function () {
-  return 0;
-};
-
-/***/ }),
 /* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -3978,7 +3978,7 @@ exports.isBuffer = Buffer.isBuffer;
 function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(11).Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(12).Buffer))
 
 /***/ }),
 /* 14 */
@@ -3995,7 +3995,7 @@ var ES6Promise = null;
 if (typeof Promise !== "undefined") {
   ES6Promise = Promise;
 } else {
-  ES6Promise = __webpack_require__(78);
+  ES6Promise = __webpack_require__(80);
 }
 /**
  * Let the user use/change some implementations.
@@ -4062,14 +4062,14 @@ function nextTick(fn, arg1, arg2, arg3) {
       });
   }
 }
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(12)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(11)))
 
 /***/ }),
 /* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* eslint-disable node/no-deprecated-api */
-var buffer = __webpack_require__(11);
+var buffer = __webpack_require__(12);
 
 var Buffer = buffer.Buffer; // alternative to using Object.keys for old browsers
 
@@ -4200,7 +4200,7 @@ module.exports = {
     return obj && typeof obj.on === "function" && typeof obj.pause === "function" && typeof obj.resume === "function";
   }
 };
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(11).Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(12).Buffer))
 
 /***/ }),
 /* 18 */
@@ -4794,13 +4794,13 @@ function unwrapListeners(arr) {
 /* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(30);
+exports = module.exports = __webpack_require__(31);
 exports.Stream = exports;
 exports.Readable = exports;
 exports.Writable = __webpack_require__(21);
 exports.Duplex = __webpack_require__(6);
-exports.Transform = __webpack_require__(35);
-exports.PassThrough = __webpack_require__(72);
+exports.Transform = __webpack_require__(36);
+exports.PassThrough = __webpack_require__(74);
 
 /***/ }),
 /* 21 */
@@ -4883,13 +4883,13 @@ util.inherits = __webpack_require__(10);
 /*<replacement>*/
 
 var internalUtil = {
-  deprecate: __webpack_require__(71)
+  deprecate: __webpack_require__(73)
 };
 /*</replacement>*/
 
 /*<replacement>*/
 
-var Stream = __webpack_require__(31);
+var Stream = __webpack_require__(32);
 /*</replacement>*/
 
 /*<replacement>*/
@@ -4909,7 +4909,7 @@ function _isUint8Array(obj) {
 /*</replacement>*/
 
 
-var destroyImpl = __webpack_require__(32);
+var destroyImpl = __webpack_require__(33);
 
 util.inherits(Writable, Stream);
 
@@ -5483,7 +5483,7 @@ Writable.prototype._destroy = function (err, cb) {
   this.end();
   cb(err);
 };
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(12), __webpack_require__(33).setImmediate, __webpack_require__(4)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(11), __webpack_require__(34).setImmediate, __webpack_require__(4)))
 
 /***/ }),
 /* 22 */
@@ -5494,13 +5494,13 @@ Writable.prototype._destroy = function (err, cb) {
 
 var external = __webpack_require__(14);
 
-var DataWorker = __webpack_require__(39);
+var DataWorker = __webpack_require__(40);
 
-var DataLengthProbe = __webpack_require__(40);
+var DataLengthProbe = __webpack_require__(41);
 
-var Crc32Probe = __webpack_require__(41);
+var Crc32Probe = __webpack_require__(42);
 
-var DataLengthProbe = __webpack_require__(40);
+var DataLengthProbe = __webpack_require__(41);
 /**
  * Represent a compressed object, with everything needed to decompress it.
  * @constructor
@@ -5975,6 +5975,587 @@ exports.getFilled2DArray = function (rows, columns, value) {
 
 /***/ }),
 /* 27 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "IOBuffer", function() { return IOBuffer; });
+/* harmony import */ var utf8__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(26);
+/* harmony import */ var utf8__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(utf8__WEBPACK_IMPORTED_MODULE_0__);
+
+const defaultByteLength = 1024 * 8;
+class IOBuffer {
+  /**
+   * @param data - The data to construct the IOBuffer with.
+   * If data is a number, it will be the new buffer's length<br>
+   * If data is `undefined`, the buffer will be initialized with a default length of 8Kb<br>
+   * If data is an ArrayBuffer, SharedArrayBuffer, an ArrayBufferView (Typed Array), an IOBuffer instance,
+   * or a Node.js Buffer, a view will be created over the underlying ArrayBuffer.
+   * @param options
+   */
+  constructor() {
+    let data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultByteLength;
+    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    let dataIsGiven = false;
+
+    if (typeof data === 'number') {
+      data = new ArrayBuffer(data);
+    } else {
+      dataIsGiven = true;
+      this.lastWrittenByte = data.byteLength;
+    }
+
+    const offset = options.offset ? options.offset >>> 0 : 0;
+    const byteLength = data.byteLength - offset;
+    let dvOffset = offset;
+
+    if (ArrayBuffer.isView(data) || data instanceof IOBuffer) {
+      if (data.byteLength !== data.buffer.byteLength) {
+        dvOffset = data.byteOffset + offset;
+      }
+
+      data = data.buffer;
+    }
+
+    if (dataIsGiven) {
+      this.lastWrittenByte = byteLength;
+    } else {
+      this.lastWrittenByte = 0;
+    }
+
+    this.buffer = data;
+    this.length = byteLength;
+    this.byteLength = byteLength;
+    this.byteOffset = dvOffset;
+    this.offset = 0;
+    this.littleEndian = true;
+    this._data = new DataView(this.buffer, dvOffset, byteLength);
+    this._mark = 0;
+    this._marks = [];
+  }
+  /**
+   * Checks if the memory allocated to the buffer is sufficient to store more
+   * bytes after the offset.
+   * @param byteLength - The needed memory in bytes.
+   * @returns `true` if there is sufficient space and `false` otherwise.
+   */
+
+
+  available() {
+    let byteLength = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
+    return this.offset + byteLength <= this.length;
+  }
+  /**
+   * Check if little-endian mode is used for reading and writing multi-byte
+   * values.
+   * @returns `true` if little-endian mode is used, `false` otherwise.
+   */
+
+
+  isLittleEndian() {
+    return this.littleEndian;
+  }
+  /**
+   * Set little-endian mode for reading and writing multi-byte values.
+   */
+
+
+  setLittleEndian() {
+    this.littleEndian = true;
+    return this;
+  }
+  /**
+   * Check if big-endian mode is used for reading and writing multi-byte values.
+   * @returns `true` if big-endian mode is used, `false` otherwise.
+   */
+
+
+  isBigEndian() {
+    return !this.littleEndian;
+  }
+  /**
+   * Switches to big-endian mode for reading and writing multi-byte values.
+   */
+
+
+  setBigEndian() {
+    this.littleEndian = false;
+    return this;
+  }
+  /**
+   * Move the pointer n bytes forward.
+   * @param n - Number of bytes to skip.
+   */
+
+
+  skip() {
+    let n = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
+    this.offset += n;
+    return this;
+  }
+  /**
+   * Move the pointer to the given offset.
+   * @param offset
+   */
+
+
+  seek(offset) {
+    this.offset = offset;
+    return this;
+  }
+  /**
+   * Store the current pointer offset.
+   * @see {@link IOBuffer#reset}
+   */
+
+
+  mark() {
+    this._mark = this.offset;
+    return this;
+  }
+  /**
+   * Move the pointer back to the last pointer offset set by mark.
+   * @see {@link IOBuffer#mark}
+   */
+
+
+  reset() {
+    this.offset = this._mark;
+    return this;
+  }
+  /**
+   * Push the current pointer offset to the mark stack.
+   * @see {@link IOBuffer#popMark}
+   */
+
+
+  pushMark() {
+    this._marks.push(this.offset);
+
+    return this;
+  }
+  /**
+   * Pop the last pointer offset from the mark stack, and set the current
+   * pointer offset to the popped value.
+   * @see {@link IOBuffer#pushMark}
+   */
+
+
+  popMark() {
+    const offset = this._marks.pop();
+
+    if (offset === undefined) {
+      throw new Error('Mark stack empty');
+    }
+
+    this.seek(offset);
+    return this;
+  }
+  /**
+   * Move the pointer offset back to 0.
+   */
+
+
+  rewind() {
+    this.offset = 0;
+    return this;
+  }
+  /**
+   * Make sure the buffer has sufficient memory to write a given byteLength at
+   * the current pointer offset.
+   * If the buffer's memory is insufficient, this method will create a new
+   * buffer (a copy) with a length that is twice (byteLength + current offset).
+   * @param byteLength
+   */
+
+
+  ensureAvailable() {
+    let byteLength = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
+
+    if (!this.available(byteLength)) {
+      const lengthNeeded = this.offset + byteLength;
+      const newLength = lengthNeeded * 2;
+      const newArray = new Uint8Array(newLength);
+      newArray.set(new Uint8Array(this.buffer));
+      this.buffer = newArray.buffer;
+      this.length = this.byteLength = newLength;
+      this._data = new DataView(this.buffer);
+    }
+
+    return this;
+  }
+  /**
+   * Read a byte and return false if the byte's value is 0, or true otherwise.
+   * Moves pointer forward by one byte.
+   */
+
+
+  readBoolean() {
+    return this.readUint8() !== 0;
+  }
+  /**
+   * Read a signed 8-bit integer and move pointer forward by 1 byte.
+   */
+
+
+  readInt8() {
+    return this._data.getInt8(this.offset++);
+  }
+  /**
+   * Read an unsigned 8-bit integer and move pointer forward by 1 byte.
+   */
+
+
+  readUint8() {
+    return this._data.getUint8(this.offset++);
+  }
+  /**
+   * Alias for {@link IOBuffer#readUint8}.
+   */
+
+
+  readByte() {
+    return this.readUint8();
+  }
+  /**
+   * Read `n` bytes and move pointer forward by `n` bytes.
+   */
+
+
+  readBytes() {
+    let n = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
+    const bytes = new Uint8Array(n);
+
+    for (let i = 0; i < n; i++) {
+      bytes[i] = this.readByte();
+    }
+
+    return bytes;
+  }
+  /**
+   * Read a 16-bit signed integer and move pointer forward by 2 bytes.
+   */
+
+
+  readInt16() {
+    const value = this._data.getInt16(this.offset, this.littleEndian);
+
+    this.offset += 2;
+    return value;
+  }
+  /**
+   * Read a 16-bit unsigned integer and move pointer forward by 2 bytes.
+   */
+
+
+  readUint16() {
+    const value = this._data.getUint16(this.offset, this.littleEndian);
+
+    this.offset += 2;
+    return value;
+  }
+  /**
+   * Read a 32-bit signed integer and move pointer forward by 4 bytes.
+   */
+
+
+  readInt32() {
+    const value = this._data.getInt32(this.offset, this.littleEndian);
+
+    this.offset += 4;
+    return value;
+  }
+  /**
+   * Read a 32-bit unsigned integer and move pointer forward by 4 bytes.
+   */
+
+
+  readUint32() {
+    const value = this._data.getUint32(this.offset, this.littleEndian);
+
+    this.offset += 4;
+    return value;
+  }
+  /**
+   * Read a 32-bit floating number and move pointer forward by 4 bytes.
+   */
+
+
+  readFloat32() {
+    const value = this._data.getFloat32(this.offset, this.littleEndian);
+
+    this.offset += 4;
+    return value;
+  }
+  /**
+   * Read a 64-bit floating number and move pointer forward by 8 bytes.
+   */
+
+
+  readFloat64() {
+    const value = this._data.getFloat64(this.offset, this.littleEndian);
+
+    this.offset += 8;
+    return value;
+  }
+  /**
+   * Read a 1-byte ASCII character and move pointer forward by 1 byte.
+   */
+
+
+  readChar() {
+    return String.fromCharCode(this.readInt8());
+  }
+  /**
+   * Read `n` 1-byte ASCII characters and move pointer forward by `n` bytes.
+   */
+
+
+  readChars() {
+    let n = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
+    let result = '';
+
+    for (let i = 0; i < n; i++) {
+      result += this.readChar();
+    }
+
+    return result;
+  }
+  /**
+   * Read the next `n` bytes, return a UTF-8 decoded string and move pointer
+   * forward by `n` bytes.
+   */
+
+
+  readUtf8() {
+    let n = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
+    const bString = this.readChars(n);
+    return Object(utf8__WEBPACK_IMPORTED_MODULE_0__["decode"])(bString);
+  }
+  /**
+   * Write 0xff if the passed value is truthy, 0x00 otherwise and move pointer
+   * forward by 1 byte.
+   */
+
+
+  writeBoolean(value) {
+    this.writeUint8(value ? 0xff : 0x00);
+    return this;
+  }
+  /**
+   * Write `value` as an 8-bit signed integer and move pointer forward by 1 byte.
+   */
+
+
+  writeInt8(value) {
+    this.ensureAvailable(1);
+
+    this._data.setInt8(this.offset++, value);
+
+    this._updateLastWrittenByte();
+
+    return this;
+  }
+  /**
+   * Write `value` as an 8-bit unsigned integer and move pointer forward by 1
+   * byte.
+   */
+
+
+  writeUint8(value) {
+    this.ensureAvailable(1);
+
+    this._data.setUint8(this.offset++, value);
+
+    this._updateLastWrittenByte();
+
+    return this;
+  }
+  /**
+   * An alias for {@link IOBuffer#writeUint8}.
+   */
+
+
+  writeByte(value) {
+    return this.writeUint8(value);
+  }
+  /**
+   * Write all elements of `bytes` as uint8 values and move pointer forward by
+   * `bytes.length` bytes.
+   */
+
+
+  writeBytes(bytes) {
+    this.ensureAvailable(bytes.length);
+
+    for (let i = 0; i < bytes.length; i++) {
+      this._data.setUint8(this.offset++, bytes[i]);
+    }
+
+    this._updateLastWrittenByte();
+
+    return this;
+  }
+  /**
+   * Write `value` as a 16-bit signed integer and move pointer forward by 2
+   * bytes.
+   */
+
+
+  writeInt16(value) {
+    this.ensureAvailable(2);
+
+    this._data.setInt16(this.offset, value, this.littleEndian);
+
+    this.offset += 2;
+
+    this._updateLastWrittenByte();
+
+    return this;
+  }
+  /**
+   * Write `value` as a 16-bit unsigned integer and move pointer forward by 2
+   * bytes.
+   */
+
+
+  writeUint16(value) {
+    this.ensureAvailable(2);
+
+    this._data.setUint16(this.offset, value, this.littleEndian);
+
+    this.offset += 2;
+
+    this._updateLastWrittenByte();
+
+    return this;
+  }
+  /**
+   * Write `value` as a 32-bit signed integer and move pointer forward by 4
+   * bytes.
+   */
+
+
+  writeInt32(value) {
+    this.ensureAvailable(4);
+
+    this._data.setInt32(this.offset, value, this.littleEndian);
+
+    this.offset += 4;
+
+    this._updateLastWrittenByte();
+
+    return this;
+  }
+  /**
+   * Write `value` as a 32-bit unsigned integer and move pointer forward by 4
+   * bytes.
+   */
+
+
+  writeUint32(value) {
+    this.ensureAvailable(4);
+
+    this._data.setUint32(this.offset, value, this.littleEndian);
+
+    this.offset += 4;
+
+    this._updateLastWrittenByte();
+
+    return this;
+  }
+  /**
+   * Write `value` as a 32-bit floating number and move pointer forward by 4
+   * bytes.
+   */
+
+
+  writeFloat32(value) {
+    this.ensureAvailable(4);
+
+    this._data.setFloat32(this.offset, value, this.littleEndian);
+
+    this.offset += 4;
+
+    this._updateLastWrittenByte();
+
+    return this;
+  }
+  /**
+   * Write `value` as a 64-bit floating number and move pointer forward by 8
+   * bytes.
+   */
+
+
+  writeFloat64(value) {
+    this.ensureAvailable(8);
+
+    this._data.setFloat64(this.offset, value, this.littleEndian);
+
+    this.offset += 8;
+
+    this._updateLastWrittenByte();
+
+    return this;
+  }
+  /**
+   * Write the charCode of `str`'s first character as an 8-bit unsigned integer
+   * and move pointer forward by 1 byte.
+   */
+
+
+  writeChar(str) {
+    return this.writeUint8(str.charCodeAt(0));
+  }
+  /**
+   * Write the charCodes of all `str`'s characters as 8-bit unsigned integers
+   * and move pointer forward by `str.length` bytes.
+   */
+
+
+  writeChars(str) {
+    for (let i = 0; i < str.length; i++) {
+      this.writeUint8(str.charCodeAt(i));
+    }
+
+    return this;
+  }
+  /**
+   * UTF-8 encode and write `str` to the current pointer offset and move pointer
+   * forward according to the encoded length.
+   */
+
+
+  writeUtf8(str) {
+    const bString = Object(utf8__WEBPACK_IMPORTED_MODULE_0__["encode"])(str);
+    return this.writeChars(bString);
+  }
+  /**
+   * Export a Uint8Array view of the internal buffer.
+   * The view starts at the byte offset and its length
+   * is calculated to stop at the last written byte or the original length.
+   */
+
+
+  toArray() {
+    return new Uint8Array(this.buffer, this.byteOffset, this.lastWrittenByte);
+  }
+  /**
+   * Update the last written byte offset
+   * @private
+   */
+
+
+  _updateLastWrittenByte() {
+    if (this.offset > this.lastWrittenByte) {
+      this.lastWrittenByte = this.offset;
+    }
+  }
+
+}
+
+/***/ }),
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6017,10 +6598,10 @@ function JSZip() {
   };
 }
 
-JSZip.prototype = __webpack_require__(63);
-JSZip.prototype.loadAsync = __webpack_require__(96);
+JSZip.prototype = __webpack_require__(65);
+JSZip.prototype.loadAsync = __webpack_require__(98);
 JSZip.support = __webpack_require__(3);
-JSZip.defaults = __webpack_require__(38); // TODO find a better way to handle this version,
+JSZip.defaults = __webpack_require__(39); // TODO find a better way to handle this version,
 // a require('package.json').version doesn't work with webpack, see #327
 
 JSZip.version = "3.2.0";
@@ -6033,7 +6614,7 @@ JSZip.external = __webpack_require__(14);
 module.exports = JSZip;
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports) {
 
 var toString = {}.toString;
@@ -6043,7 +6624,7 @@ module.exports = Array.isArray || function (arr) {
 };
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -6054,10 +6635,10 @@ module.exports = Array.isArray || function (arr) {
  * reduce the final size of the bundle (only one stream implementation, not
  * two).
  */
-module.exports = __webpack_require__(66);
+module.exports = __webpack_require__(68);
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6091,7 +6672,7 @@ var pna = __webpack_require__(15);
 module.exports = Readable;
 /*<replacement>*/
 
-var isArray = __webpack_require__(28);
+var isArray = __webpack_require__(29);
 /*</replacement>*/
 
 /*<replacement>*/
@@ -6113,7 +6694,7 @@ var EElistenerCount = function EElistenerCount(emitter, type) {
 /*<replacement>*/
 
 
-var Stream = __webpack_require__(31);
+var Stream = __webpack_require__(32);
 /*</replacement>*/
 
 /*<replacement>*/
@@ -6142,7 +6723,7 @@ util.inherits = __webpack_require__(10);
 
 /*<replacement>*/
 
-var debugUtil = __webpack_require__(67);
+var debugUtil = __webpack_require__(69);
 
 var debug = void 0;
 
@@ -6154,9 +6735,9 @@ if (debugUtil && debugUtil.debuglog) {
 /*</replacement>*/
 
 
-var BufferList = __webpack_require__(68);
+var BufferList = __webpack_require__(70);
 
-var destroyImpl = __webpack_require__(32);
+var destroyImpl = __webpack_require__(33);
 
 var StringDecoder;
 util.inherits(Readable, Stream);
@@ -6230,7 +6811,7 @@ function ReadableState(options, stream) {
   this.encoding = null;
 
   if (options.encoding) {
-    if (!StringDecoder) StringDecoder = __webpack_require__(34).StringDecoder;
+    if (!StringDecoder) StringDecoder = __webpack_require__(35).StringDecoder;
     this.decoder = new StringDecoder(options.encoding);
     this.encoding = options.encoding;
   }
@@ -6390,7 +6971,7 @@ Readable.prototype.isPaused = function () {
 
 
 Readable.prototype.setEncoding = function (enc) {
-  if (!StringDecoder) StringDecoder = __webpack_require__(34).StringDecoder;
+  if (!StringDecoder) StringDecoder = __webpack_require__(35).StringDecoder;
   this._readableState.decoder = new StringDecoder(enc);
   this._readableState.encoding = enc;
   return this;
@@ -7101,16 +7682,16 @@ function indexOf(xs, x) {
 
   return -1;
 }
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(4), __webpack_require__(12)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(4), __webpack_require__(11)))
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(19).EventEmitter;
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7191,7 +7772,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {var scope = typeof global !== "undefined" && global || typeof self !== "undefined" && self || window;
@@ -7245,7 +7826,7 @@ exports._unrefActive = exports.active = function (item) {
 }; // setimmediate attaches itself to the global object
 
 
-__webpack_require__(70); // On some exotic environments, it's not clear which object `setimmediate` was
+__webpack_require__(72); // On some exotic environments, it's not clear which object `setimmediate` was
 // able to install onto.  Search each possibility in the same order as the
 // `setimmediate` library.
 
@@ -7255,7 +7836,7 @@ exports.clearImmediate = typeof self !== "undefined" && self.clearImmediate || t
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(4)))
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7602,7 +8183,7 @@ function simpleEnd(buf) {
 }
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7813,7 +8394,7 @@ function done(stream, er, data) {
 }
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7927,7 +8508,7 @@ exports.decode = function (input) {
 };
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7935,11 +8516,11 @@ exports.decode = function (input) {
 
 var utils = __webpack_require__(0);
 
-var ConvertWorker = __webpack_require__(80);
+var ConvertWorker = __webpack_require__(82);
 
 var GenericWorker = __webpack_require__(1);
 
-var base64 = __webpack_require__(36);
+var base64 = __webpack_require__(37);
 
 var support = __webpack_require__(3);
 
@@ -7949,7 +8530,7 @@ var NodejsStreamOutputAdapter = null;
 
 if (support.nodestream) {
   try {
-    NodejsStreamOutputAdapter = __webpack_require__(81);
+    NodejsStreamOutputAdapter = __webpack_require__(83);
   } catch (e) {}
 }
 /**
@@ -8172,10 +8753,10 @@ StreamHelper.prototype = {
   }
 };
 module.exports = StreamHelper;
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(11).Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(12).Buffer))
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8193,7 +8774,7 @@ exports.unixPermissions = null;
 exports.dosPermissions = null;
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8326,7 +8907,7 @@ DataWorker.prototype._tick = function () {
 module.exports = DataWorker;
 
 /***/ }),
-/* 40 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8365,7 +8946,7 @@ DataLengthProbe.prototype.processChunk = function (chunk) {
 module.exports = DataLengthProbe;
 
 /***/ }),
-/* 41 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8400,7 +8981,7 @@ Crc32Probe.prototype.processChunk = function (chunk) {
 module.exports = Crc32Probe;
 
 /***/ }),
-/* 42 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8417,10 +8998,10 @@ exports.STORE = {
     return new GenericWorker("STORE decompression");
   }
 };
-exports.DEFLATE = __webpack_require__(84);
+exports.DEFLATE = __webpack_require__(86);
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8473,7 +9054,7 @@ function adler32(adler, buf, len, pos) {
 module.exports = adler32;
 
 /***/ }),
-/* 44 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8535,7 +9116,7 @@ function crc32(crc, buf, len, pos) {
 module.exports = crc32;
 
 /***/ }),
-/* 45 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8763,7 +9344,7 @@ exports.utf8border = function (buf, max) {
 };
 
 /***/ }),
-/* 46 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8829,7 +9410,7 @@ function ZStream() {
 module.exports = ZStream;
 
 /***/ }),
-/* 47 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8898,7 +9479,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 48 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8912,7 +9493,7 @@ exports.ZIP64_CENTRAL_DIRECTORY_END = "PK\x06\x06";
 exports.DATA_DESCRIPTOR = "PK\x07\x08";
 
 /***/ }),
-/* 49 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8922,13 +9503,13 @@ var utils = __webpack_require__(0);
 
 var support = __webpack_require__(3);
 
-var ArrayReader = __webpack_require__(50);
+var ArrayReader = __webpack_require__(51);
 
-var StringReader = __webpack_require__(98);
+var StringReader = __webpack_require__(100);
 
-var NodeBufferReader = __webpack_require__(99);
+var NodeBufferReader = __webpack_require__(101);
 
-var Uint8ArrayReader = __webpack_require__(52);
+var Uint8ArrayReader = __webpack_require__(53);
 /**
  * Create a reader adapted to the data.
  * @param {String|ArrayBuffer|Uint8Array|Buffer} data the data to read.
@@ -8956,13 +9537,13 @@ module.exports = function (data) {
 };
 
 /***/ }),
-/* 50 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var DataReader = __webpack_require__(51);
+var DataReader = __webpack_require__(52);
 
 var utils = __webpack_require__(0);
 
@@ -9034,7 +9615,7 @@ ArrayReader.prototype.readData = function (size) {
 module.exports = ArrayReader;
 
 /***/ }),
-/* 51 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9166,13 +9747,13 @@ DataReader.prototype = {
 module.exports = DataReader;
 
 /***/ }),
-/* 52 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var ArrayReader = __webpack_require__(50);
+var ArrayReader = __webpack_require__(51);
 
 var utils = __webpack_require__(0);
 
@@ -9201,587 +9782,6 @@ Uint8ArrayReader.prototype.readData = function (size) {
 module.exports = Uint8ArrayReader;
 
 /***/ }),
-/* 53 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "IOBuffer", function() { return IOBuffer; });
-/* harmony import */ var utf8__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(26);
-/* harmony import */ var utf8__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(utf8__WEBPACK_IMPORTED_MODULE_0__);
-
-const defaultByteLength = 1024 * 8;
-class IOBuffer {
-  /**
-   * @param data - The data to construct the IOBuffer with.
-   * If data is a number, it will be the new buffer's length<br>
-   * If data is `undefined`, the buffer will be initialized with a default length of 8Kb<br>
-   * If data is an ArrayBuffer, SharedArrayBuffer, an ArrayBufferView (Typed Array), an IOBuffer instance,
-   * or a Node.js Buffer, a view will be created over the underlying ArrayBuffer.
-   * @param options
-   */
-  constructor() {
-    let data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultByteLength;
-    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    let dataIsGiven = false;
-
-    if (typeof data === 'number') {
-      data = new ArrayBuffer(data);
-    } else {
-      dataIsGiven = true;
-      this.lastWrittenByte = data.byteLength;
-    }
-
-    const offset = options.offset ? options.offset >>> 0 : 0;
-    const byteLength = data.byteLength - offset;
-    let dvOffset = offset;
-
-    if (ArrayBuffer.isView(data) || data instanceof IOBuffer) {
-      if (data.byteLength !== data.buffer.byteLength) {
-        dvOffset = data.byteOffset + offset;
-      }
-
-      data = data.buffer;
-    }
-
-    if (dataIsGiven) {
-      this.lastWrittenByte = byteLength;
-    } else {
-      this.lastWrittenByte = 0;
-    }
-
-    this.buffer = data;
-    this.length = byteLength;
-    this.byteLength = byteLength;
-    this.byteOffset = dvOffset;
-    this.offset = 0;
-    this.littleEndian = true;
-    this._data = new DataView(this.buffer, dvOffset, byteLength);
-    this._mark = 0;
-    this._marks = [];
-  }
-  /**
-   * Checks if the memory allocated to the buffer is sufficient to store more
-   * bytes after the offset.
-   * @param byteLength - The needed memory in bytes.
-   * @returns `true` if there is sufficient space and `false` otherwise.
-   */
-
-
-  available() {
-    let byteLength = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
-    return this.offset + byteLength <= this.length;
-  }
-  /**
-   * Check if little-endian mode is used for reading and writing multi-byte
-   * values.
-   * @returns `true` if little-endian mode is used, `false` otherwise.
-   */
-
-
-  isLittleEndian() {
-    return this.littleEndian;
-  }
-  /**
-   * Set little-endian mode for reading and writing multi-byte values.
-   */
-
-
-  setLittleEndian() {
-    this.littleEndian = true;
-    return this;
-  }
-  /**
-   * Check if big-endian mode is used for reading and writing multi-byte values.
-   * @returns `true` if big-endian mode is used, `false` otherwise.
-   */
-
-
-  isBigEndian() {
-    return !this.littleEndian;
-  }
-  /**
-   * Switches to big-endian mode for reading and writing multi-byte values.
-   */
-
-
-  setBigEndian() {
-    this.littleEndian = false;
-    return this;
-  }
-  /**
-   * Move the pointer n bytes forward.
-   * @param n - Number of bytes to skip.
-   */
-
-
-  skip() {
-    let n = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
-    this.offset += n;
-    return this;
-  }
-  /**
-   * Move the pointer to the given offset.
-   * @param offset
-   */
-
-
-  seek(offset) {
-    this.offset = offset;
-    return this;
-  }
-  /**
-   * Store the current pointer offset.
-   * @see {@link IOBuffer#reset}
-   */
-
-
-  mark() {
-    this._mark = this.offset;
-    return this;
-  }
-  /**
-   * Move the pointer back to the last pointer offset set by mark.
-   * @see {@link IOBuffer#mark}
-   */
-
-
-  reset() {
-    this.offset = this._mark;
-    return this;
-  }
-  /**
-   * Push the current pointer offset to the mark stack.
-   * @see {@link IOBuffer#popMark}
-   */
-
-
-  pushMark() {
-    this._marks.push(this.offset);
-
-    return this;
-  }
-  /**
-   * Pop the last pointer offset from the mark stack, and set the current
-   * pointer offset to the popped value.
-   * @see {@link IOBuffer#pushMark}
-   */
-
-
-  popMark() {
-    const offset = this._marks.pop();
-
-    if (offset === undefined) {
-      throw new Error('Mark stack empty');
-    }
-
-    this.seek(offset);
-    return this;
-  }
-  /**
-   * Move the pointer offset back to 0.
-   */
-
-
-  rewind() {
-    this.offset = 0;
-    return this;
-  }
-  /**
-   * Make sure the buffer has sufficient memory to write a given byteLength at
-   * the current pointer offset.
-   * If the buffer's memory is insufficient, this method will create a new
-   * buffer (a copy) with a length that is twice (byteLength + current offset).
-   * @param byteLength
-   */
-
-
-  ensureAvailable() {
-    let byteLength = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
-
-    if (!this.available(byteLength)) {
-      const lengthNeeded = this.offset + byteLength;
-      const newLength = lengthNeeded * 2;
-      const newArray = new Uint8Array(newLength);
-      newArray.set(new Uint8Array(this.buffer));
-      this.buffer = newArray.buffer;
-      this.length = this.byteLength = newLength;
-      this._data = new DataView(this.buffer);
-    }
-
-    return this;
-  }
-  /**
-   * Read a byte and return false if the byte's value is 0, or true otherwise.
-   * Moves pointer forward by one byte.
-   */
-
-
-  readBoolean() {
-    return this.readUint8() !== 0;
-  }
-  /**
-   * Read a signed 8-bit integer and move pointer forward by 1 byte.
-   */
-
-
-  readInt8() {
-    return this._data.getInt8(this.offset++);
-  }
-  /**
-   * Read an unsigned 8-bit integer and move pointer forward by 1 byte.
-   */
-
-
-  readUint8() {
-    return this._data.getUint8(this.offset++);
-  }
-  /**
-   * Alias for {@link IOBuffer#readUint8}.
-   */
-
-
-  readByte() {
-    return this.readUint8();
-  }
-  /**
-   * Read `n` bytes and move pointer forward by `n` bytes.
-   */
-
-
-  readBytes() {
-    let n = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
-    const bytes = new Uint8Array(n);
-
-    for (let i = 0; i < n; i++) {
-      bytes[i] = this.readByte();
-    }
-
-    return bytes;
-  }
-  /**
-   * Read a 16-bit signed integer and move pointer forward by 2 bytes.
-   */
-
-
-  readInt16() {
-    const value = this._data.getInt16(this.offset, this.littleEndian);
-
-    this.offset += 2;
-    return value;
-  }
-  /**
-   * Read a 16-bit unsigned integer and move pointer forward by 2 bytes.
-   */
-
-
-  readUint16() {
-    const value = this._data.getUint16(this.offset, this.littleEndian);
-
-    this.offset += 2;
-    return value;
-  }
-  /**
-   * Read a 32-bit signed integer and move pointer forward by 4 bytes.
-   */
-
-
-  readInt32() {
-    const value = this._data.getInt32(this.offset, this.littleEndian);
-
-    this.offset += 4;
-    return value;
-  }
-  /**
-   * Read a 32-bit unsigned integer and move pointer forward by 4 bytes.
-   */
-
-
-  readUint32() {
-    const value = this._data.getUint32(this.offset, this.littleEndian);
-
-    this.offset += 4;
-    return value;
-  }
-  /**
-   * Read a 32-bit floating number and move pointer forward by 4 bytes.
-   */
-
-
-  readFloat32() {
-    const value = this._data.getFloat32(this.offset, this.littleEndian);
-
-    this.offset += 4;
-    return value;
-  }
-  /**
-   * Read a 64-bit floating number and move pointer forward by 8 bytes.
-   */
-
-
-  readFloat64() {
-    const value = this._data.getFloat64(this.offset, this.littleEndian);
-
-    this.offset += 8;
-    return value;
-  }
-  /**
-   * Read a 1-byte ASCII character and move pointer forward by 1 byte.
-   */
-
-
-  readChar() {
-    return String.fromCharCode(this.readInt8());
-  }
-  /**
-   * Read `n` 1-byte ASCII characters and move pointer forward by `n` bytes.
-   */
-
-
-  readChars() {
-    let n = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
-    let result = '';
-
-    for (let i = 0; i < n; i++) {
-      result += this.readChar();
-    }
-
-    return result;
-  }
-  /**
-   * Read the next `n` bytes, return a UTF-8 decoded string and move pointer
-   * forward by `n` bytes.
-   */
-
-
-  readUtf8() {
-    let n = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
-    const bString = this.readChars(n);
-    return Object(utf8__WEBPACK_IMPORTED_MODULE_0__["decode"])(bString);
-  }
-  /**
-   * Write 0xff if the passed value is truthy, 0x00 otherwise and move pointer
-   * forward by 1 byte.
-   */
-
-
-  writeBoolean(value) {
-    this.writeUint8(value ? 0xff : 0x00);
-    return this;
-  }
-  /**
-   * Write `value` as an 8-bit signed integer and move pointer forward by 1 byte.
-   */
-
-
-  writeInt8(value) {
-    this.ensureAvailable(1);
-
-    this._data.setInt8(this.offset++, value);
-
-    this._updateLastWrittenByte();
-
-    return this;
-  }
-  /**
-   * Write `value` as an 8-bit unsigned integer and move pointer forward by 1
-   * byte.
-   */
-
-
-  writeUint8(value) {
-    this.ensureAvailable(1);
-
-    this._data.setUint8(this.offset++, value);
-
-    this._updateLastWrittenByte();
-
-    return this;
-  }
-  /**
-   * An alias for {@link IOBuffer#writeUint8}.
-   */
-
-
-  writeByte(value) {
-    return this.writeUint8(value);
-  }
-  /**
-   * Write all elements of `bytes` as uint8 values and move pointer forward by
-   * `bytes.length` bytes.
-   */
-
-
-  writeBytes(bytes) {
-    this.ensureAvailable(bytes.length);
-
-    for (let i = 0; i < bytes.length; i++) {
-      this._data.setUint8(this.offset++, bytes[i]);
-    }
-
-    this._updateLastWrittenByte();
-
-    return this;
-  }
-  /**
-   * Write `value` as a 16-bit signed integer and move pointer forward by 2
-   * bytes.
-   */
-
-
-  writeInt16(value) {
-    this.ensureAvailable(2);
-
-    this._data.setInt16(this.offset, value, this.littleEndian);
-
-    this.offset += 2;
-
-    this._updateLastWrittenByte();
-
-    return this;
-  }
-  /**
-   * Write `value` as a 16-bit unsigned integer and move pointer forward by 2
-   * bytes.
-   */
-
-
-  writeUint16(value) {
-    this.ensureAvailable(2);
-
-    this._data.setUint16(this.offset, value, this.littleEndian);
-
-    this.offset += 2;
-
-    this._updateLastWrittenByte();
-
-    return this;
-  }
-  /**
-   * Write `value` as a 32-bit signed integer and move pointer forward by 4
-   * bytes.
-   */
-
-
-  writeInt32(value) {
-    this.ensureAvailable(4);
-
-    this._data.setInt32(this.offset, value, this.littleEndian);
-
-    this.offset += 4;
-
-    this._updateLastWrittenByte();
-
-    return this;
-  }
-  /**
-   * Write `value` as a 32-bit unsigned integer and move pointer forward by 4
-   * bytes.
-   */
-
-
-  writeUint32(value) {
-    this.ensureAvailable(4);
-
-    this._data.setUint32(this.offset, value, this.littleEndian);
-
-    this.offset += 4;
-
-    this._updateLastWrittenByte();
-
-    return this;
-  }
-  /**
-   * Write `value` as a 32-bit floating number and move pointer forward by 4
-   * bytes.
-   */
-
-
-  writeFloat32(value) {
-    this.ensureAvailable(4);
-
-    this._data.setFloat32(this.offset, value, this.littleEndian);
-
-    this.offset += 4;
-
-    this._updateLastWrittenByte();
-
-    return this;
-  }
-  /**
-   * Write `value` as a 64-bit floating number and move pointer forward by 8
-   * bytes.
-   */
-
-
-  writeFloat64(value) {
-    this.ensureAvailable(8);
-
-    this._data.setFloat64(this.offset, value, this.littleEndian);
-
-    this.offset += 8;
-
-    this._updateLastWrittenByte();
-
-    return this;
-  }
-  /**
-   * Write the charCode of `str`'s first character as an 8-bit unsigned integer
-   * and move pointer forward by 1 byte.
-   */
-
-
-  writeChar(str) {
-    return this.writeUint8(str.charCodeAt(0));
-  }
-  /**
-   * Write the charCodes of all `str`'s characters as 8-bit unsigned integers
-   * and move pointer forward by `str.length` bytes.
-   */
-
-
-  writeChars(str) {
-    for (let i = 0; i < str.length; i++) {
-      this.writeUint8(str.charCodeAt(i));
-    }
-
-    return this;
-  }
-  /**
-   * UTF-8 encode and write `str` to the current pointer offset and move pointer
-   * forward according to the encoded length.
-   */
-
-
-  writeUtf8(str) {
-    const bString = Object(utf8__WEBPACK_IMPORTED_MODULE_0__["encode"])(str);
-    return this.writeChars(bString);
-  }
-  /**
-   * Export a Uint8Array view of the internal buffer.
-   * The view starts at the byte offset and its length
-   * is calculated to stop at the last written byte or the original length.
-   */
-
-
-  toArray() {
-    return new Uint8Array(this.buffer, this.byteOffset, this.lastWrittenByte);
-  }
-  /**
-   * Update the last written byte offset
-   * @private
-   */
-
-
-  _updateLastWrittenByte() {
-    if (this.offset > this.lastWrittenByte) {
-      this.lastWrittenByte = this.offset;
-    }
-  }
-
-}
-
-/***/ }),
 /* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9804,7 +9804,7 @@ module.exports = function (Molecule) {
 "use strict";
 
 
-const Matrix = __webpack_require__(122);
+const Matrix = __webpack_require__(126);
 /**
  * Algorithm that finds the shortest distance from one node to the other
  * @param {Matrix} adjMatrix - A squared adjacency matrix
@@ -9853,23 +9853,23 @@ var LuDecomposition = __webpack_require__(57);
 
 var SvDecomposition = __webpack_require__(58);
 
-var arrayUtils = __webpack_require__(124);
+var arrayUtils = __webpack_require__(128);
 
 var util = __webpack_require__(18);
 
-var MatrixTransposeView = __webpack_require__(129);
+var MatrixTransposeView = __webpack_require__(133);
 
-var MatrixRowView = __webpack_require__(130);
+var MatrixRowView = __webpack_require__(134);
 
-var MatrixSubView = __webpack_require__(131);
+var MatrixSubView = __webpack_require__(135);
 
-var MatrixSelectionView = __webpack_require__(132);
+var MatrixSelectionView = __webpack_require__(136);
 
-var MatrixColumnView = __webpack_require__(133);
+var MatrixColumnView = __webpack_require__(137);
 
-var MatrixFlipRowView = __webpack_require__(134);
+var MatrixFlipRowView = __webpack_require__(138);
 
-var MatrixFlipColumnView = __webpack_require__(135);
+var MatrixFlipColumnView = __webpack_require__(139);
 
 function abstractMatrix(superCtor) {
   if (superCtor === undefined) superCtor = Object;
@@ -12614,7 +12614,7 @@ module.exports = SingularValueDecomposition;
 
 
 exports.array = __webpack_require__(60);
-exports.matrix = __webpack_require__(126);
+exports.matrix = __webpack_require__(130);
 
 /***/ }),
 /* 60 */
@@ -18185,247 +18185,107 @@ class cholesky_CholeskyDecomposition {
 "use strict";
 
 
-Object.defineProperty(exports, '__esModule', {
+module.exports = __webpack_require__(63);
+
+/***/ }),
+/* 63 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.readNMRR = readNMRR;
 
-function _interopDefault(ex) {
-  return ex && typeof ex === 'object' && 'default' in ex ? ex['default'] : ex;
-}
+var _path = __webpack_require__(64);
 
-var jszip = _interopDefault(__webpack_require__(27));
+var _iobuffer = __webpack_require__(27);
 
-var iobuffer = __webpack_require__(53);
+var _jszip = __webpack_require__(28);
 
-__webpack_require__(101);
+var _jszip2 = _interopRequireDefault(_jszip);
 
-var brukerconverter = __webpack_require__(102);
+var _brukerconverter = __webpack_require__(103);
 
-var OCLfull = __webpack_require__(104);
+var _jcampconverter = __webpack_require__(105);
 
-function parse(sdf) {
-  let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  const {
-    include,
-    exclude,
-    filter,
-    modifiers = {},
-    forEach = {},
-    dynamicTyping = true
-  } = options;
+var _parseSDF = __webpack_require__(106);
 
-  if (typeof sdf !== 'string') {
-    throw new TypeError('Parameter "sdf" must be a string');
-  }
+var _nmr_record = __webpack_require__(107);
 
-  var eol = '\n';
-
-  if (options.mixedEOL) {
-    sdf = sdf.replace(/\r\n/g, '\n');
-    sdf = sdf.replace(/\r/g, '\n');
-  } else {
-    // we will find the delimiter in order to be much faster and not use regular expression
-    var header = sdf.substr(0, 1000);
-
-    if (header.indexOf('\r\n') > -1) {
-      eol = '\r\n';
-    } else if (header.indexOf('\r') > -1) {
-      eol = '\r';
-    }
-  }
-
-  var sdfParts = sdf.split(new RegExp("".concat(eol, "\\$\\$\\$\\$.*").concat(eol)));
-  var molecules = [];
-  var labels = {};
-  var start = Date.now();
-
-  for (var i = 0; i < sdfParts.length; i++) {
-    var sdfPart = sdfParts[i];
-    var parts = sdfPart.split("".concat(eol, ">"));
-
-    if (parts.length > 0 && parts[0].length > 5) {
-      var molecule = {};
-      var currentLabels = [];
-      molecule.molfile = parts[0] + eol;
-
-      for (var j = 1; j < parts.length; j++) {
-        var lines = parts[j].split(eol);
-        var from = lines[0].indexOf('<');
-        var to = lines[0].indexOf('>');
-        var label = lines[0].substring(from + 1, to);
-        currentLabels.push(label);
-
-        if (!labels[label]) {
-          labels[label] = {
-            counter: 0,
-            nbLines: '',
-            isNumeric: dynamicTyping,
-            keep: false
-          };
-
-          if ((!exclude || exclude.indexOf(label) === -1) && (!include || include.indexOf(label) > -1)) {
-            labels[label].keep = true;
-            if (modifiers[label]) labels[label].modifier = modifiers[label];
-            if (forEach[label]) labels[label].forEach = forEach[label];
-          }
-        }
-
-        if (labels[label].keep) {
-          for (var k = 1; k < lines.length - 1; k++) {
-            if (molecule[label]) {
-              molecule[label] += eol + lines[k];
-            } else {
-              molecule[label] = lines[k];
-            }
-          }
-
-          if (labels[label].modifier) {
-            var modifiedValue = labels[label].modifier(molecule[label]);
-
-            if (modifiedValue === undefined || modifiedValue === null) {
-              delete molecule[label];
-            } else {
-              molecule[label] = modifiedValue;
-            }
-          }
-
-          if (labels[label].isNumeric) {
-            if (!isFinite(molecule[label]) || molecule[label].match(/^0[0-9]/)) {
-              labels[label].isNumeric = false;
-            }
-          }
-        }
-      }
-
-      if (!filter || filter(molecule)) {
-        molecules.push(molecule); // only now we can increase the counter
-
-        for (j = 0; j < currentLabels.length; j++) {
-          var currentLabel = currentLabels[j];
-          labels[currentLabel].counter++;
-        }
-      }
-    }
-  } // all numeric fields should be converted to numbers
-
-
-  for (label in labels) {
-    currentLabel = labels[label];
-
-    if (currentLabel.isNumeric) {
-      currentLabel.minValue = Infinity;
-      currentLabel.maxValue = -Infinity;
-
-      for (j = 0; j < molecules.length; j++) {
-        if (molecules[j][label]) {
-          var value = parseFloat(molecules[j][label]);
-          molecules[j][label] = value;
-          if (value > currentLabel.maxValue) currentLabel.maxValue = value;
-          if (value < currentLabel.minValue) currentLabel.minValue = value;
-        }
-      }
-    }
-  } // we check that a label is in all the records
-
-
-  for (var key in labels) {
-    if (labels[key].counter === molecules.length) {
-      labels[key].always = true;
-    } else {
-      labels[key].always = false;
-    }
-  }
-
-  var statistics = [];
-
-  for (key in labels) {
-    var statistic = labels[key];
-    statistic.label = key;
-    statistics.push(statistic);
-  }
-
-  return {
-    time: Date.now() - start,
-    molecules: molecules,
-    labels: Object.keys(labels),
-    statistics: statistics
-  };
-}
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const BINARY = 1;
 const TEXT = 2;
 const files = {
-  'ser': BINARY,
-  'fid': BINARY,
-  'acqus': TEXT,
-  'acqu2s': TEXT,
-  'procs': TEXT,
-  'proc2s': TEXT,
+  ser: BINARY,
+  fid: BINARY,
+  acqus: TEXT,
+  acqu2s: TEXT,
+  procs: TEXT,
+  proc2s: TEXT,
   '1r': BINARY,
   '1i': BINARY,
   '2rr': BINARY
-}; // export function readZipFileSync(path) {
-//     let zipData = zipper.sync.unzip(resolve(path)).memory();
-//     let zipFiles = zipData.unzipped_file;
-//     //obtain sdf files
-//     let sdfFiles = [];
-//     for (let file in zipFiles.files) {
-//         let pathFile = file.split('/');
-//         if (pathFile[pathFile.length - 1].match(/^[^\.].+sdf$/)) {
-//             var filename = pathFile[pathFile.length - 1].replace(/\.sdf/, '');
-//             let sdf = zipData.read(file, 'text');
-//             let parserResult = parse(sdf + '', {mixedEOL: true});
-//             parserResult.filename = filename;
-//             sdfFiles.push(parserResult);
-//         }
-//     }
-//     let folders = getSpectraFolders(zipFiles);
-//     let spectra = convertSpectraSync(folders, zipFiles);
-//     return {sdfFiles, spectra}
-// }
-
+};
 /**
  * Read nmr record file asynchronously
- * @param {*} zipData  data readed of zip file  
- * @param {*} options 
+ * @param {*} zipData  data readed of zip file
+ * @param {*} options
  * @return {} An Object with two properties folders and sdfFiles, folders has nmr spectra data, sdfFiles has all sdf files
  */
 
-async function readZipFile(zipData) {
+async function readNMRR(zipData) {
   let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  //@TODO: Be able to read from a path
-  var zip = new jszip();
+  // @TODO: Be able to read from a path
+  var zip = new _jszip2.default();
   return zip.loadAsync(zipData, {
     base64: true
   }).then(async zipFiles => {
     let sdfFiles = await getSDF(zipFiles, options);
     let folders = getSpectraFolders(zipFiles);
-    let spectra = await convertSpectra(folders, zipFiles, options);
-    return {
-      spectra,
-      sdfFiles
-    };
+    let spectra = await convertSpectra(folders.brukerFolders, zipFiles, options);
+    let jcamps = await processJcamp(folders.jcampFolders, zipFiles, options);
+    spectra = spectra.concat(jcamps);
+    return new _nmr_record.nmrRecord({
+      sdfFiles,
+      spectra
+    });
   });
 }
 
 function getSpectraFolders(zipFiles) {
-  // Folders should contain jcamp too
-  return zipFiles.filter(relativePath => {
+  let brukerFolders = zipFiles.filter(relativePath => {
     if (relativePath.match('__MACOSX')) return false;
 
-    if (relativePath.endsWith('ser') || relativePath.endsWith('fid') || relativePath.endsWith('1r') || relativePath.endsWith('2rr')) {
+    if (relativePath.endsWith('1r')) {
       return true;
     }
 
     return false;
   });
+  let jcampFolders = zipFiles.filter(relativePath => {
+    if (relativePath.match('__MACOSX')) return false;
+
+    if (relativePath.endsWith('dx') || relativePath.endsWith('jcamp')) {
+      return true;
+    }
+
+    return false;
+  });
+  return {
+    jcampFolders,
+    brukerFolders
+  };
 }
 /**
- * Extract sdf files from a class of jszip an parse it
- * @param {*} zipFiles 
- * @param {*} options 
- * @returns {Array} Array of sdf parsed files
- */
+   * Extract sdf files from a class of jszip an parse it
+   * @param {*} zipFiles
+   * @param {*} options
+   * @returns {Array} Array of sdf parsed files
+   */
 
 
 async function getSDF(zipFiles) {
@@ -18439,11 +18299,11 @@ async function getSDF(zipFiles) {
       var filename = pathFile[pathFile.length - 1].replace(/\.sdf/, '');
       var root = pathFile.slice(0, pathFile.length - 1).join('/');
       let sdf = await zipFiles.file(file).async('string');
-      let parserResult = parse(sdf + '', {
+      let parserResult = (0, _parseSDF.parse)("".concat(sdf), {
         mixedEOL: true
       });
       parserResult.filename = filename;
-      parserResult.root = root !== '' ? root + '/' : '';
+      parserResult.root = root !== '' ? "".concat(root, "/") : '';
       result.push(parserResult);
     }
   }
@@ -18475,7 +18335,7 @@ async function convertSpectra(folders, zipFiles, options) {
       promises.push(name);
 
       if (files[name] === BINARY) {
-        promises.push(currFiles[j].async('arraybuffer').then(r => new iobuffer.IOBuffer(r))); //@TODO: check the error - file.setLittleEndian is not a function -
+        promises.push(currFiles[j].async('arraybuffer').then(r => new _iobuffer.IOBuffer(r))); // @TODO: check the error - file.setLittleEndian is not a function -
       } else {
         promises.push(currFiles[j].async('string'));
       }
@@ -18491,7 +18351,7 @@ async function convertSpectra(folders, zipFiles, options) {
 
       return {
         filename: result[0],
-        value: brukerconverter.convertFolder(brukerFiles, options)
+        value: (0, _brukerconverter.convertFolder)(brukerFiles, options)
       };
     });
   }
@@ -18499,531 +18359,352 @@ async function convertSpectra(folders, zipFiles, options) {
   return Promise.all(spectra);
 }
 
-function parse1DSignal(content, labels) {
-  let signal = {};
-  content = content.replace(/ /g, '');
-  content = content.replace(/,([0-9])/g, ':$1');
-  let data = content.split(',');
-  data.forEach(d => {
-    d = d.toLowerCase();
-    let value = d.replace(/^.*=/, '');
-    let key = d.replace(/[=].*/, '');
+async function processJcamp(folders, zipFiles, options) {
+  var spectra = new Array(folders.length);
 
-    if (parseFloat(key)) {
-      signal.delta = value;
-    } else {
-      signal[choseKey(key)] = key === 'j' ? getCoupling(value) : value;
-    }
-  });
-  return signal;
-}
-
-function choseKey(entry) {
-  let key = '';
-
-  switch (entry) {
-    case 'j':
-      key = 'J';
-      break;
-
-    case 's':
-      key = 'multiplicity';
-      break;
-
-    case 'l':
-      key = 'pubAssignment';
-      break;
-
-    case 'n':
-      key = 'nbAtoms';
-      break;
-
-    case 'e':
-    case 'i':
-      key = 'pubIntegral';
-      break;
-  }
-
-  return key;
-}
-
-function getCoupling(d) {
-  let jCoupling = [];
-  d = d.split(':');
-  d.forEach(c => {
-    let value,
-        withIt = '';
-    let toValue = c.indexOf('(');
-
-    if (toValue === -1) {
-      value = Number(c);
-      jCoupling.push({
-        coupling: value
-      });
-    } else {
-      value = Number(c.substring(0, toValue));
-      withIt = c.substring(toValue + 1, c.length - 1);
-      jCoupling.push({
-        coupling: value,
-        label: withIt
-      });
-    }
-  });
-  return jCoupling;
-}
-
-function processContent(content, options) {
-  let {
-    tag
-  } = options;
-  let result;
-  let processor = resultType(tag);
-  let matchEqual = content.match(/=/g);
-
-  if (!matchEqual && !content.match(',')) {
-    result = content;
-  } else if (matchEqual && matchEqual.length === 1) {
-    result = propertyLinesProcessor(content);
-  } else {
-    result = processor(content, options);
-  }
-
-  return result;
-}
-
-function resultType(tag) {
-  let processor;
-  let ctag = tag.toLowerCase();
-  if (ctag.match(/1d/)) ctag = '1d';
-
-  switch (ctag.toLowerCase()) {
-    case 'id':
-      //it has property lines
-      processor = propertyLinesProcessor;
-      break;
-
-    case '1d':
-      //it has item list
-      processor = parse1DSignal;
-      break;
-
-    case 'assignment': //it has item list
-
-    case 'signals':
-      processor = processAssignment;
-      break;
-
-    case 'j':
-      processor = processAssignment; //@TODO change it
-
-      break;
-
-    case 'version':
-    case 'solvent':
-    case 'temperature':
-    case 'level':
-      break;
-  }
-
-  return processor;
-}
-
-function propertyLinesProcessor(content, options) {
-  let value = content.replace(/^.*=/, '');
-  let key = content.replace(/[=].*/, '');
-  return {
-    key,
-    value
-  };
-}
-
-function processAssignment(content) {
-  content = content.replace(/ /g, '');
-  content = content.split(',');
-  let label = content[0].toLowerCase();
-  let shift = content.slice(1, 2); //Be able to know when the shift published or not
-
-  let atoms = content.slice(2);
-  return {
-    label,
-    shift,
-    atoms
-  };
-}
-
-function nmredataToSampleEln(nmredata, options) {
-  var moleculeAndMap = options.molecule;
-  var data = {
-    molfile: moleculeAndMap.molecule.toMolfile(),
-    spectra: {
-      nmr: []
-    },
-    atoms: [],
-    highlight: []
-  };
-  var nmr = data.spectra.nmr;
-  let labels = getLabels(nmredata['ASSIGNMENT']);
-  labels = addDiaIDtoLabels(labels, moleculeAndMap);
-
-  for (let key in labels) {
-    let diaID = labels[key].diaID;
-    data.atoms[diaID] = labels[key].position;
-    data.highlight.push(diaID);
-  }
-
-  for (let tag in nmredata) {
-    if (!tag.toLowerCase().match(/1d/)) continue;
-    let frequencyLine = nmredata[tag].data.find(e => e.value.key === 'Larmor');
-    let nucleus = getNucleus(tag);
-    let jcamp = getJcamp(nmredata[tag], options);
-    let spectrum = {
-      jcamp,
-      range: [],
-      nucleus,
-      frequency: frequencyLine.value.value,
-      experiment: '1d',
-      headComment: nmredata[tag].headComment
+  for (let i = 0; i < folders.length; ++i) {
+    let name = folders[i].name;
+    let jcamp = await zipFiles.file(name).async('string');
+    let value = (0, _jcampconverter.convert)(jcamp, {
+      keepSpectra: true,
+      keepRecordsRegExp: /^.+$/,
+      xy: true
+    });
+    spectra[i] = {
+      filename: name,
+      value
     };
-    let ranges = spectrum.range;
-    let rangeData = nmredata[tag].data.filter(e => e.value.delta);
-    rangeData.forEach(rangeD => {
-      let {
-        value,
-        comment
-      } = rangeD;
-      let signalData = getSignalData(value, labels);
-      let label = labels[signalData.pubAssignment];
-      signalData.diaID = label ? label.diaID : [];
-      let range = getRangeData(value);
-      let from = Number(signalData.delta) - 0.01;
-      let to = Number(signalData.delta) + 0.01;
-      ranges.push({
-        from: from.toFixed(3),
-        to: to.toFixed(3),
-        signal: [signalData],
-        comment
-      });
-    });
-    nmr.push(spectrum);
   }
 
-  return data;
+  return spectra;
 }
-
-function getJcamp(tag, options) {
-  let {
-    spectra,
-    root
-  } = options;
-  let locationLine = tag.data.find(e => e.value.key === 'Spectrum_Location');
-  let path = root + locationLine.value.value.replace(/file:/, '');
-  let jcamp = spectra.find(e => e.filename === path);
-  if (!jcamp) throw new Error('There is not jcamp with path: ' + path);
-  return jcamp;
-}
-
-function getRangeData(rangeData) {
-  let integral;
-  let delta = Number(rangeData['delta']);
-
-  if (rangeData['nbAtoms']) {
-    integral = Number(rangeData['nbAtoms']);
-  } else if (rangeData['pubIntegral']) {
-    integral = Number(rangeData['pubIntegral']);
-  }
-}
-
-function getSignalData(rangeData, labels) {
-  let result = {};
-  let signalKeys = ['delta', 'nbAtoms', 'multiplicity', 'J', 'pubAssignment'];
-  signalKeys.forEach(key => {
-    let data = rangeData[key];
-    if (data) result[key] = data;
-  });
-  let needJdiaID = false;
-  if (result.J) needJdiaID = result.J.some(j => {
-    return Object.keys(j).some(e => e === 'label');
-  });
-
-  if (needJdiaID) {
-    result.J.forEach((j, i, arr) => {
-      if (j.label) {
-        let label = labels[j.label];
-        if (label) arr[i].diaID = label.diaID;
-      }
-    });
-  }
-
-  return result;
-}
-
-function getNucleus(label) {
-  let nucleus = [];
-  let dimensions = label.match(/([0-9])[0-9A-Z_a-z]_/)[1];
-
-  if (dimensions === '1') {
-    nucleus = label.substring(3, label.length);
-  } else if (dimensions === '2') {
-    let data = label.substring(12, label.length).split('_');
-
-    for (let i = 0; i < data.length; i += 2) nucleus.push(data[i]);
-  }
-
-  return nucleus;
-}
-
-function getLabels(content) {
-  let data = content.data;
-  let labels = {};
-  data.forEach(assignment => {
-    let value = assignment.value;
-    let atoms = value.atoms;
-    let shift = value.shift;
-
-    if (!labels[value.label]) {
-      labels[value.label] = [];
-    }
-
-    labels[value.label] = {
-      shift,
-      atoms
-    };
-  });
-  return labels;
-}
-
-function addDiaIDtoLabels(labels, moleculeWithMap) {
-  let {
-    molecule,
-    map
-  } = moleculeWithMap; //ADD HIDROGENS TO BE SURE, THE ORIGINAL POSITION IT IS MAP OBJECT
-
-  molecule.addImplicitHydrogens();
-  let connections = molecule.getAllPaths({
-    toLabel: 'H',
-    maxLength: 1
-  }); // parse each label to get the connectivity of Hidrogens
-
-  let minLabels = getMinLabel(labels);
-
-  for (let l in labels) {
-    let label = labels[l];
-    let atoms = label.atoms;
-    label.position = [];
-
-    if (atoms[0].toLowerCase().includes('h')) {
-      let connectedTo = Number(atoms[0].toLowerCase().replace('h', '')) - minLabels; //map object has the original atom's possition in molfile
-
-      connectedTo = map.indexOf(connectedTo);
-      let connection = connections.find((c, i) => {
-        if (c.fromAtoms.some(fa => fa === connectedTo)) {
-          connections.splice(i, 1);
-          return true;
-        }
-      });
-      label.position = connection.toAtoms;
-    } else if (atoms[0].toLowerCase().match(/[0-9A-Z_a-z]/)) {
-      atoms.forEach(a => {
-        let p = map.indexOf(Number(a) - minLabels);
-        label.position.push(p);
-      });
-    }
-  }
-
-  let diaIDs = molecule.getDiastereotopicAtomIDs();
-
-  for (let l in labels) {
-    let diaID = [];
-    labels[l].position.forEach(p => {
-      if (diaID.indexOf(diaIDs[p]) === -1) {
-        diaID.push(diaIDs[p]);
-      }
-    });
-    labels[l].diaID = diaID;
-  }
-
-  return labels;
-}
-
-function getMinLabel(labels) {
-  let min = Number.MAX_SAFE_INTEGER;
-
-  for (let l in labels) {
-    let label = labels[l];
-    label.atoms.forEach(p => {
-      let pt = Number(p.replace(/[a-z]/g, ''));
-      if (pt < min) min = pt;
-    });
-  }
-
-  return min;
-} // import {readZipFileSync, readZipFile} from './reader/readZip';
-
-
-class nmrRecord {
-  constructor(nmrRecord) {
-    if (!nmrRecord instanceof Object) {
-      throw new Error('Cannot be called directly');
-    }
-
-    let {
-      spectra,
-      sdfFiles
-    } = nmrRecord;
-    this.spectra = spectra;
-    this.sdfFiles = sdfFiles;
-    this.activeElement = 0;
-    this.nbSamples = sdfFiles.length;
-    return this;
-  }
-
-  static async read(nmrRecord) {
-    let data = await readZipFile(nmrRecord);
-    return new this(data);
-  } // static readSync(path) {
-  //   var data = readZipFileSync(path);
-  //   return new this(data);
-  // }
-
-
-  getMol() {
-    let i = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.activeElement;
-    i = this.checkIndex(i);
-    let parserResult = this.sdfFiles[i];
-    return parserResult.molecules[0].molfile;
-  }
-
-  getMoleculeAndMap() {
-    let i = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.activeElement;
-    i = this.checkIndex(i);
-    let molfile = this.getMol(i);
-    return OCLfull.Molecule.fromMolfileWithAtomMap(molfile);
-  }
-
-  getNMReDataTags() {
-    let i = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.activeElement;
-    i = this.checkIndex(i);
-    let nmredataTags = {};
-    let sdfFile = this.sdfFiles[i];
-    let version = parseFloat(sdfFile.molecules[0]['NMREDATA_VERSION']);
-    let toReplace = version > 1 ? [new RegExp(/\\\n*/g), '\n'] : [];
-    sdfFile.labels.forEach(tag => {
-      if (tag.toLowerCase().match('nmredata')) {
-        let key = tag.replace(/NMREDATA\_/, '');
-        let data = version > 1 ? sdfFile.molecules[0][tag].replace(/\n*/g, '') : sdfFile.molecules[0][tag];
-        data = data.replace(toReplace[0], toReplace[1]);
-        nmredataTags[key] = data;
-      }
-    });
-    return nmredataTags;
-  }
-
-  getNMReData() {
-    let i = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.activeElement;
-    i = this.checkIndex(i);
-    let result = {
-      name: this.sdfFiles[i].filename
-    };
-    let nmredataTags = this.getNMReDataTags(i);
-    Object.keys(nmredataTags).forEach((tag, index) => {
-      if (tag.match(/2D/)) return;
-      if (!result[tag]) result[tag] = {
-        data: []
-      };
-      let tagData = result[tag];
-      let dataSplited = nmredataTags[tag].split('\n');
-      dataSplited.forEach(e => {
-        let content = e.replace(/\;.*/g, '');
-        let comment = e.match('\;') ? e.replace(/.*\;+(.*)/g, '$1') : '';
-
-        if (content.length === 0) {
-          // may be a head comment. is it always true?
-          if (!tagData.headComment) tagData.headComment = []; // should this be array for several head comments?
-
-          tagData.headComment.push(comment);
-          return;
-        }
-
-        let value = processContent(content, {
-          tag: tag
-        });
-        tagData.data.push({
-          comment,
-          value
-        });
-      });
-    });
-    return result;
-  }
-
-  getSpectraList() {
-    let i = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.activeElement;
-  }
-
-  getFileName() {
-    let i = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.activeElement;
-    i = this.checkIndex(i);
-    let sdf = this.sdfFiles[i];
-    return sdf.filename;
-  }
-
-  getAllTags() {
-    let i = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.activeElement;
-    i = this.checkIndex(i);
-    let allTags = {};
-    let sdfFile = this.sdfFiles[i];
-    sdfFile.labels.forEach(tag => {
-      allTags[tag] = sdfFile.molecules[0][tag];
-    });
-    return allTags;
-  }
-
-  getSDFList() {
-    let sdfFiles = this.sdfFiles;
-    return sdfFiles.map(sdf => sdf.filename);
-  }
-
-  toJSON() {
-    let i = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.activeElement;
-    let index = this.checkIndex(i);
-    let nmredata = this.getNMReData(index);
-    return nmredataToSampleEln(nmredata, {
-      spectra: this.spectra,
-      molecule: this.getMoleculeAndMap(index),
-      root: this.sdfFiles[index].root
-    });
-  }
-
-  setActiveElement(nactiveSDF) {
-    nactiveSDF = this.checkIndex(nactiveSDF);
-    this.activeElement = nactiveSDF;
-  }
-
-  getSDFIndexOf(filename) {
-    let index = this.sdfFiles.findIndex(sdf => sdf.filename === filename);
-    if (index === -1) throw new Error('There is not sdf with this filename: ', filename);
-    return index;
-  }
-
-  checkIndex(index) {
-    let result;
-
-    if (Number.isInteger(index)) {
-      if (index >= this.sdfFiles.length) throw new Error('Index out of range');
-      result = index;
-    } else {
-      result = this.getSDFIndexOf(index);
-    }
-
-    return result;
-  }
-
-}
-
-exports.nmrRecord = nmrRecord;
 
 /***/ }),
-/* 63 */
+/* 64 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(process) {// .dirname, .basename, and .extname methods are extracted from Node.js v8.11.1,
+// backported and transplited with Babel, with backwards-compat fixes
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+// resolves . and .. elements in a path array with directory names there
+// must be no slashes, empty elements, or device names (c:\) in the array
+// (so also no leading and trailing slashes - it does not distinguish
+// relative and absolute paths)
+function normalizeArray(parts, allowAboveRoot) {
+  // if the path tries to go above the root, `up` ends up > 0
+  var up = 0;
+
+  for (var i = parts.length - 1; i >= 0; i--) {
+    var last = parts[i];
+
+    if (last === '.') {
+      parts.splice(i, 1);
+    } else if (last === '..') {
+      parts.splice(i, 1);
+      up++;
+    } else if (up) {
+      parts.splice(i, 1);
+      up--;
+    }
+  } // if the path is allowed to go above the root, restore leading ..s
+
+
+  if (allowAboveRoot) {
+    for (; up--; up) {
+      parts.unshift('..');
+    }
+  }
+
+  return parts;
+} // path.resolve([from ...], to)
+// posix version
+
+
+exports.resolve = function () {
+  var resolvedPath = '',
+      resolvedAbsolute = false;
+
+  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+    var path = i >= 0 ? arguments[i] : process.cwd(); // Skip empty and invalid entries
+
+    if (typeof path !== 'string') {
+      throw new TypeError('Arguments to path.resolve must be strings');
+    } else if (!path) {
+      continue;
+    }
+
+    resolvedPath = path + '/' + resolvedPath;
+    resolvedAbsolute = path.charAt(0) === '/';
+  } // At this point the path should be resolved to a full absolute path, but
+  // handle relative paths to be safe (might happen when process.cwd() fails)
+  // Normalize the path
+
+
+  resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function (p) {
+    return !!p;
+  }), !resolvedAbsolute).join('/');
+  return (resolvedAbsolute ? '/' : '') + resolvedPath || '.';
+}; // path.normalize(path)
+// posix version
+
+
+exports.normalize = function (path) {
+  var isAbsolute = exports.isAbsolute(path),
+      trailingSlash = substr(path, -1) === '/'; // Normalize the path
+
+  path = normalizeArray(filter(path.split('/'), function (p) {
+    return !!p;
+  }), !isAbsolute).join('/');
+
+  if (!path && !isAbsolute) {
+    path = '.';
+  }
+
+  if (path && trailingSlash) {
+    path += '/';
+  }
+
+  return (isAbsolute ? '/' : '') + path;
+}; // posix version
+
+
+exports.isAbsolute = function (path) {
+  return path.charAt(0) === '/';
+}; // posix version
+
+
+exports.join = function () {
+  var paths = Array.prototype.slice.call(arguments, 0);
+  return exports.normalize(filter(paths, function (p, index) {
+    if (typeof p !== 'string') {
+      throw new TypeError('Arguments to path.join must be strings');
+    }
+
+    return p;
+  }).join('/'));
+}; // path.relative(from, to)
+// posix version
+
+
+exports.relative = function (from, to) {
+  from = exports.resolve(from).substr(1);
+  to = exports.resolve(to).substr(1);
+
+  function trim(arr) {
+    var start = 0;
+
+    for (; start < arr.length; start++) {
+      if (arr[start] !== '') break;
+    }
+
+    var end = arr.length - 1;
+
+    for (; end >= 0; end--) {
+      if (arr[end] !== '') break;
+    }
+
+    if (start > end) return [];
+    return arr.slice(start, end - start + 1);
+  }
+
+  var fromParts = trim(from.split('/'));
+  var toParts = trim(to.split('/'));
+  var length = Math.min(fromParts.length, toParts.length);
+  var samePartsLength = length;
+
+  for (var i = 0; i < length; i++) {
+    if (fromParts[i] !== toParts[i]) {
+      samePartsLength = i;
+      break;
+    }
+  }
+
+  var outputParts = [];
+
+  for (var i = samePartsLength; i < fromParts.length; i++) {
+    outputParts.push('..');
+  }
+
+  outputParts = outputParts.concat(toParts.slice(samePartsLength));
+  return outputParts.join('/');
+};
+
+exports.sep = '/';
+exports.delimiter = ':';
+
+exports.dirname = function (path) {
+  if (typeof path !== 'string') path = path + '';
+  if (path.length === 0) return '.';
+  var code = path.charCodeAt(0);
+  var hasRoot = code === 47
+  /*/*/
+  ;
+  var end = -1;
+  var matchedSlash = true;
+
+  for (var i = path.length - 1; i >= 1; --i) {
+    code = path.charCodeAt(i);
+
+    if (code === 47
+    /*/*/
+    ) {
+        if (!matchedSlash) {
+          end = i;
+          break;
+        }
+      } else {
+      // We saw the first non-path separator
+      matchedSlash = false;
+    }
+  }
+
+  if (end === -1) return hasRoot ? '/' : '.';
+
+  if (hasRoot && end === 1) {
+    // return '//';
+    // Backwards-compat fix:
+    return '/';
+  }
+
+  return path.slice(0, end);
+};
+
+function basename(path) {
+  if (typeof path !== 'string') path = path + '';
+  var start = 0;
+  var end = -1;
+  var matchedSlash = true;
+  var i;
+
+  for (i = path.length - 1; i >= 0; --i) {
+    if (path.charCodeAt(i) === 47
+    /*/*/
+    ) {
+        // If we reached a path separator that was not part of a set of path
+        // separators at the end of the string, stop now
+        if (!matchedSlash) {
+          start = i + 1;
+          break;
+        }
+      } else if (end === -1) {
+      // We saw the first non-path separator, mark this as the end of our
+      // path component
+      matchedSlash = false;
+      end = i + 1;
+    }
+  }
+
+  if (end === -1) return '';
+  return path.slice(start, end);
+} // Uses a mixed approach for backwards-compatibility, as ext behavior changed
+// in new Node.js versions, so only basename() above is backported here
+
+
+exports.basename = function (path, ext) {
+  var f = basename(path);
+
+  if (ext && f.substr(-1 * ext.length) === ext) {
+    f = f.substr(0, f.length - ext.length);
+  }
+
+  return f;
+};
+
+exports.extname = function (path) {
+  if (typeof path !== 'string') path = path + '';
+  var startDot = -1;
+  var startPart = 0;
+  var end = -1;
+  var matchedSlash = true; // Track the state of characters (if any) we see before our first dot and
+  // after any path separator we find
+
+  var preDotState = 0;
+
+  for (var i = path.length - 1; i >= 0; --i) {
+    var code = path.charCodeAt(i);
+
+    if (code === 47
+    /*/*/
+    ) {
+        // If we reached a path separator that was not part of a set of path
+        // separators at the end of the string, stop now
+        if (!matchedSlash) {
+          startPart = i + 1;
+          break;
+        }
+
+        continue;
+      }
+
+    if (end === -1) {
+      // We saw the first non-path separator, mark this as the end of our
+      // extension
+      matchedSlash = false;
+      end = i + 1;
+    }
+
+    if (code === 46
+    /*.*/
+    ) {
+        // If this is our first dot, mark it as the start of our extension
+        if (startDot === -1) startDot = i;else if (preDotState !== 1) preDotState = 1;
+      } else if (startDot !== -1) {
+      // We saw a non-dot and non-path separator before our dot, so we should
+      // have a good chance at having a non-empty extension
+      preDotState = -1;
+    }
+  }
+
+  if (startDot === -1 || end === -1 || // We saw a non-dot character immediately before the dot
+  preDotState === 0 || // The (right-most) trimmed path component is exactly '..'
+  preDotState === 1 && startDot === end - 1 && startDot === startPart + 1) {
+    return '';
+  }
+
+  return path.slice(startDot, end);
+};
+
+function filter(xs, f) {
+  if (xs.filter) return xs.filter(f);
+  var res = [];
+
+  for (var i = 0; i < xs.length; i++) {
+    if (f(xs[i], i, xs)) res.push(xs[i]);
+  }
+
+  return res;
+} // String.prototype.substr - negative index don't work in IE8
+
+
+var substr = 'ab'.substr(-1) === 'b' ? function (str, start, len) {
+  return str.substr(start, len);
+} : function (str, start, len) {
+  if (start < 0) start = str.length + start;
+  return str.substr(start, len);
+};
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(11)))
+
+/***/ }),
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19035,19 +18716,19 @@ var utils = __webpack_require__(0);
 
 var GenericWorker = __webpack_require__(1);
 
-var StreamHelper = __webpack_require__(37);
+var StreamHelper = __webpack_require__(38);
 
-var defaults = __webpack_require__(38);
+var defaults = __webpack_require__(39);
 
 var CompressedObject = __webpack_require__(22);
 
-var ZipObject = __webpack_require__(82);
+var ZipObject = __webpack_require__(84);
 
-var generate = __webpack_require__(83);
+var generate = __webpack_require__(85);
 
 var nodejsUtils = __webpack_require__(17);
 
-var NodejsStreamInputAdapter = __webpack_require__(95);
+var NodejsStreamInputAdapter = __webpack_require__(97);
 /**
  * Add a file in the current folder.
  * @private
@@ -19441,7 +19122,7 @@ var out = {
 module.exports = out;
 
 /***/ }),
-/* 64 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19566,7 +19247,7 @@ function fromByteArray(uint8) {
 }
 
 /***/ }),
-/* 65 */
+/* 67 */
 /***/ (function(module, exports) {
 
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
@@ -19659,7 +19340,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 };
 
 /***/ }),
-/* 66 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Copyright Joyent, Inc. and other Node contributors.
@@ -19690,10 +19371,10 @@ var inherits = __webpack_require__(10);
 
 inherits(Stream, EE);
 Stream.Readable = __webpack_require__(20);
-Stream.Writable = __webpack_require__(73);
-Stream.Duplex = __webpack_require__(74);
-Stream.Transform = __webpack_require__(75);
-Stream.PassThrough = __webpack_require__(76); // Backwards-compat with node 0.4.x
+Stream.Writable = __webpack_require__(75);
+Stream.Duplex = __webpack_require__(76);
+Stream.Transform = __webpack_require__(77);
+Stream.PassThrough = __webpack_require__(78); // Backwards-compat with node 0.4.x
 
 Stream.Stream = Stream; // old-style streams.  Note that the pipe method (the only relevant
 // part of this class) is overridden in the Readable class.
@@ -19776,13 +19457,13 @@ Stream.prototype.pipe = function (dest, options) {
 };
 
 /***/ }),
-/* 67 */
+/* 69 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
 
 /***/ }),
-/* 68 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19796,7 +19477,7 @@ function _classCallCheck(instance, Constructor) {
 
 var Buffer = __webpack_require__(16).Buffer;
 
-var util = __webpack_require__(69);
+var util = __webpack_require__(71);
 
 function copyBuffer(src, target, offset) {
   src.copy(target, offset);
@@ -19885,13 +19566,13 @@ if (util && util.inspect && util.inspect.custom) {
 }
 
 /***/ }),
-/* 69 */
+/* 71 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
 
 /***/ }),
-/* 70 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -20095,10 +19776,10 @@ if (util && util.inspect && util.inspect.custom) {
   attachTo.setImmediate = setImmediate;
   attachTo.clearImmediate = clearImmediate;
 })(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self);
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(4), __webpack_require__(12)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(4), __webpack_require__(11)))
 
 /***/ }),
-/* 71 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/**
@@ -20172,7 +19853,7 @@ function config(name) {
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(4)))
 
 /***/ }),
-/* 72 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20203,7 +19884,7 @@ function config(name) {
 
 module.exports = PassThrough;
 
-var Transform = __webpack_require__(35);
+var Transform = __webpack_require__(36);
 /*<replacement>*/
 
 
@@ -20224,31 +19905,31 @@ PassThrough.prototype._transform = function (chunk, encoding, cb) {
 };
 
 /***/ }),
-/* 73 */
+/* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(21);
 
 /***/ }),
-/* 74 */
+/* 76 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(6);
 
 /***/ }),
-/* 75 */
+/* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(20).Transform;
 
 /***/ }),
-/* 76 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(20).PassThrough;
 
 /***/ }),
-/* 77 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20259,16 +19940,16 @@ module.exports = typeof setImmediate === 'function' ? setImmediate : function se
   args.splice(1, 0, 0);
   setTimeout.apply(null, args);
 };
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(33).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(34).setImmediate))
 
 /***/ }),
-/* 78 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var immediate = __webpack_require__(79);
+var immediate = __webpack_require__(81);
 /* istanbul ignore next */
 
 
@@ -20588,7 +20269,7 @@ function race(iterable) {
 }
 
 /***/ }),
-/* 79 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20669,7 +20350,7 @@ function immediate(task) {
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(4)))
 
 /***/ }),
-/* 80 */
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20705,13 +20386,13 @@ ConvertWorker.prototype.processChunk = function (chunk) {
 module.exports = ConvertWorker;
 
 /***/ }),
-/* 81 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var Readable = __webpack_require__(29).Readable;
+var Readable = __webpack_require__(30).Readable;
 
 var utils = __webpack_require__(0);
 
@@ -20751,15 +20432,15 @@ NodejsStreamOutputAdapter.prototype._read = function () {
 module.exports = NodejsStreamOutputAdapter;
 
 /***/ }),
-/* 82 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var StreamHelper = __webpack_require__(37);
+var StreamHelper = __webpack_require__(38);
 
-var DataWorker = __webpack_require__(39);
+var DataWorker = __webpack_require__(40);
 
 var utf8 = __webpack_require__(9);
 
@@ -20900,15 +20581,15 @@ for (var i = 0; i < removedMethods.length; i++) {
 module.exports = ZipObject;
 
 /***/ }),
-/* 83 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var compressions = __webpack_require__(42);
+var compressions = __webpack_require__(43);
 
-var ZipFileWorker = __webpack_require__(94);
+var ZipFileWorker = __webpack_require__(96);
 /**
  * Find the compression to use.
  * @param {String} fileCompression the compression defined at the file level, if any.
@@ -20965,7 +20646,7 @@ exports.generateWorker = function (zip, options, comment) {
 };
 
 /***/ }),
-/* 84 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20973,7 +20654,7 @@ exports.generateWorker = function (zip, options, comment) {
 
 var USE_TYPEDARRAY = typeof Uint8Array !== 'undefined' && typeof Uint16Array !== 'undefined' && typeof Uint32Array !== 'undefined';
 
-var pako = __webpack_require__(85);
+var pako = __webpack_require__(87);
 
 var utils = __webpack_require__(0);
 
@@ -21068,7 +20749,7 @@ exports.uncompressWorker = function () {
 };
 
 /***/ }),
-/* 85 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21077,32 +20758,32 @@ exports.uncompressWorker = function () {
 
 var assign = __webpack_require__(5).assign;
 
-var deflate = __webpack_require__(86);
+var deflate = __webpack_require__(88);
 
-var inflate = __webpack_require__(89);
+var inflate = __webpack_require__(91);
 
-var constants = __webpack_require__(47);
+var constants = __webpack_require__(48);
 
 var pako = {};
 assign(pako, deflate, inflate, constants);
 module.exports = pako;
 
 /***/ }),
-/* 86 */
+/* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var zlib_deflate = __webpack_require__(87);
+var zlib_deflate = __webpack_require__(89);
 
 var utils = __webpack_require__(5);
 
-var strings = __webpack_require__(45);
+var strings = __webpack_require__(46);
 
 var msg = __webpack_require__(24);
 
-var ZStream = __webpack_require__(46);
+var ZStream = __webpack_require__(47);
 
 var toString = Object.prototype.toString;
 /* Public constants ==========================================================*/
@@ -21488,7 +21169,7 @@ exports.deflateRaw = deflateRaw;
 exports.gzip = gzip;
 
 /***/ }),
-/* 87 */
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21513,11 +21194,11 @@ exports.gzip = gzip;
 
 var utils = __webpack_require__(5);
 
-var trees = __webpack_require__(88);
+var trees = __webpack_require__(90);
 
-var adler32 = __webpack_require__(43);
+var adler32 = __webpack_require__(44);
 
-var crc32 = __webpack_require__(44);
+var crc32 = __webpack_require__(45);
 
 var msg = __webpack_require__(24);
 /* Public constants ==========================================================*/
@@ -23640,7 +23321,7 @@ exports.deflateTune = deflateTune;
 */
 
 /***/ }),
-/* 88 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25156,25 +24837,25 @@ exports._tr_tally = _tr_tally;
 exports._tr_align = _tr_align;
 
 /***/ }),
-/* 89 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var zlib_inflate = __webpack_require__(90);
+var zlib_inflate = __webpack_require__(92);
 
 var utils = __webpack_require__(5);
 
-var strings = __webpack_require__(45);
+var strings = __webpack_require__(46);
 
-var c = __webpack_require__(47);
+var c = __webpack_require__(48);
 
 var msg = __webpack_require__(24);
 
-var ZStream = __webpack_require__(46);
+var ZStream = __webpack_require__(47);
 
-var GZheader = __webpack_require__(93);
+var GZheader = __webpack_require__(95);
 
 var toString = Object.prototype.toString;
 /**
@@ -25589,7 +25270,7 @@ exports.inflateRaw = inflateRaw;
 exports.ungzip = inflate;
 
 /***/ }),
-/* 90 */
+/* 92 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25614,13 +25295,13 @@ exports.ungzip = inflate;
 
 var utils = __webpack_require__(5);
 
-var adler32 = __webpack_require__(43);
+var adler32 = __webpack_require__(44);
 
-var crc32 = __webpack_require__(44);
+var crc32 = __webpack_require__(45);
 
-var inflate_fast = __webpack_require__(91);
+var inflate_fast = __webpack_require__(93);
 
-var inflate_table = __webpack_require__(92);
+var inflate_table = __webpack_require__(94);
 
 var CODES = 0;
 var LENS = 1;
@@ -27700,7 +27381,7 @@ exports.inflateUndermine = inflateUndermine;
 */
 
 /***/ }),
-/* 91 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -28162,7 +27843,7 @@ module.exports = function inflate_fast(strm, start) {
 };
 
 /***/ }),
-/* 92 */
+/* 94 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -28590,7 +28271,7 @@ module.exports = function inflate_table(type, lens, lens_index, codes, table, ta
 };
 
 /***/ }),
-/* 93 */
+/* 95 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -28663,7 +28344,7 @@ function GZheader() {
 module.exports = GZheader;
 
 /***/ }),
-/* 94 */
+/* 96 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -28677,7 +28358,7 @@ var utf8 = __webpack_require__(9);
 
 var crc32 = __webpack_require__(23);
 
-var signature = __webpack_require__(48);
+var signature = __webpack_require__(49);
 /**
  * Transform an integer into a string in hexadecimal.
  * @private
@@ -29198,7 +28879,7 @@ ZipFileWorker.prototype.lock = function () {
 module.exports = ZipFileWorker;
 
 /***/ }),
-/* 95 */
+/* 97 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29282,7 +28963,7 @@ NodejsStreamInputAdapter.prototype.resume = function () {
 module.exports = NodejsStreamInputAdapter;
 
 /***/ }),
-/* 96 */
+/* 98 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29296,9 +28977,9 @@ var utf8 = __webpack_require__(9);
 
 var utils = __webpack_require__(0);
 
-var ZipEntries = __webpack_require__(97);
+var ZipEntries = __webpack_require__(99);
 
-var Crc32Probe = __webpack_require__(41);
+var Crc32Probe = __webpack_require__(42);
 
 var nodejsUtils = __webpack_require__(17);
 /**
@@ -29379,19 +29060,19 @@ module.exports = function (data, options) {
 };
 
 /***/ }),
-/* 97 */
+/* 99 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var readerFor = __webpack_require__(49);
+var readerFor = __webpack_require__(50);
 
 var utils = __webpack_require__(0);
 
-var sig = __webpack_require__(48);
+var sig = __webpack_require__(49);
 
-var ZipEntry = __webpack_require__(100);
+var ZipEntry = __webpack_require__(102);
 
 var utf8 = __webpack_require__(9);
 
@@ -29668,13 +29349,13 @@ ZipEntries.prototype = {
 module.exports = ZipEntries;
 
 /***/ }),
-/* 98 */
+/* 100 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var DataReader = __webpack_require__(51);
+var DataReader = __webpack_require__(52);
 
 var utils = __webpack_require__(0);
 
@@ -29723,13 +29404,13 @@ StringReader.prototype.readData = function (size) {
 module.exports = StringReader;
 
 /***/ }),
-/* 99 */
+/* 101 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var Uint8ArrayReader = __webpack_require__(52);
+var Uint8ArrayReader = __webpack_require__(53);
 
 var utils = __webpack_require__(0);
 
@@ -29752,13 +29433,13 @@ NodeBufferReader.prototype.readData = function (size) {
 module.exports = NodeBufferReader;
 
 /***/ }),
-/* 100 */
+/* 102 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var readerFor = __webpack_require__(49);
+var readerFor = __webpack_require__(50);
 
 var utils = __webpack_require__(0);
 
@@ -29768,7 +29449,7 @@ var crc32fn = __webpack_require__(23);
 
 var utf8 = __webpack_require__(9);
 
-var compressions = __webpack_require__(42);
+var compressions = __webpack_require__(43);
 
 var support = __webpack_require__(3);
 
@@ -30071,340 +29752,16 @@ ZipEntry.prototype = {
 module.exports = ZipEntry;
 
 /***/ }),
-/* 101 */
+/* 103 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(process) {// .dirname, .basename, and .extname methods are extracted from Node.js v8.11.1,
-// backported and transplited with Babel, with backwards-compat fixes
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-// resolves . and .. elements in a path array with directory names there
-// must be no slashes, empty elements, or device names (c:\) in the array
-// (so also no leading and trailing slashes - it does not distinguish
-// relative and absolute paths)
-function normalizeArray(parts, allowAboveRoot) {
-  // if the path tries to go above the root, `up` ends up > 0
-  var up = 0;
-
-  for (var i = parts.length - 1; i >= 0; i--) {
-    var last = parts[i];
-
-    if (last === '.') {
-      parts.splice(i, 1);
-    } else if (last === '..') {
-      parts.splice(i, 1);
-      up++;
-    } else if (up) {
-      parts.splice(i, 1);
-      up--;
-    }
-  } // if the path is allowed to go above the root, restore leading ..s
-
-
-  if (allowAboveRoot) {
-    for (; up--; up) {
-      parts.unshift('..');
-    }
-  }
-
-  return parts;
-} // path.resolve([from ...], to)
-// posix version
-
-
-exports.resolve = function () {
-  var resolvedPath = '',
-      resolvedAbsolute = false;
-
-  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-    var path = i >= 0 ? arguments[i] : process.cwd(); // Skip empty and invalid entries
-
-    if (typeof path !== 'string') {
-      throw new TypeError('Arguments to path.resolve must be strings');
-    } else if (!path) {
-      continue;
-    }
-
-    resolvedPath = path + '/' + resolvedPath;
-    resolvedAbsolute = path.charAt(0) === '/';
-  } // At this point the path should be resolved to a full absolute path, but
-  // handle relative paths to be safe (might happen when process.cwd() fails)
-  // Normalize the path
-
-
-  resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function (p) {
-    return !!p;
-  }), !resolvedAbsolute).join('/');
-  return (resolvedAbsolute ? '/' : '') + resolvedPath || '.';
-}; // path.normalize(path)
-// posix version
-
-
-exports.normalize = function (path) {
-  var isAbsolute = exports.isAbsolute(path),
-      trailingSlash = substr(path, -1) === '/'; // Normalize the path
-
-  path = normalizeArray(filter(path.split('/'), function (p) {
-    return !!p;
-  }), !isAbsolute).join('/');
-
-  if (!path && !isAbsolute) {
-    path = '.';
-  }
-
-  if (path && trailingSlash) {
-    path += '/';
-  }
-
-  return (isAbsolute ? '/' : '') + path;
-}; // posix version
-
-
-exports.isAbsolute = function (path) {
-  return path.charAt(0) === '/';
-}; // posix version
-
-
-exports.join = function () {
-  var paths = Array.prototype.slice.call(arguments, 0);
-  return exports.normalize(filter(paths, function (p, index) {
-    if (typeof p !== 'string') {
-      throw new TypeError('Arguments to path.join must be strings');
-    }
-
-    return p;
-  }).join('/'));
-}; // path.relative(from, to)
-// posix version
-
-
-exports.relative = function (from, to) {
-  from = exports.resolve(from).substr(1);
-  to = exports.resolve(to).substr(1);
-
-  function trim(arr) {
-    var start = 0;
-
-    for (; start < arr.length; start++) {
-      if (arr[start] !== '') break;
-    }
-
-    var end = arr.length - 1;
-
-    for (; end >= 0; end--) {
-      if (arr[end] !== '') break;
-    }
-
-    if (start > end) return [];
-    return arr.slice(start, end - start + 1);
-  }
-
-  var fromParts = trim(from.split('/'));
-  var toParts = trim(to.split('/'));
-  var length = Math.min(fromParts.length, toParts.length);
-  var samePartsLength = length;
-
-  for (var i = 0; i < length; i++) {
-    if (fromParts[i] !== toParts[i]) {
-      samePartsLength = i;
-      break;
-    }
-  }
-
-  var outputParts = [];
-
-  for (var i = samePartsLength; i < fromParts.length; i++) {
-    outputParts.push('..');
-  }
-
-  outputParts = outputParts.concat(toParts.slice(samePartsLength));
-  return outputParts.join('/');
-};
-
-exports.sep = '/';
-exports.delimiter = ':';
-
-exports.dirname = function (path) {
-  if (typeof path !== 'string') path = path + '';
-  if (path.length === 0) return '.';
-  var code = path.charCodeAt(0);
-  var hasRoot = code === 47
-  /*/*/
-  ;
-  var end = -1;
-  var matchedSlash = true;
-
-  for (var i = path.length - 1; i >= 1; --i) {
-    code = path.charCodeAt(i);
-
-    if (code === 47
-    /*/*/
-    ) {
-        if (!matchedSlash) {
-          end = i;
-          break;
-        }
-      } else {
-      // We saw the first non-path separator
-      matchedSlash = false;
-    }
-  }
-
-  if (end === -1) return hasRoot ? '/' : '.';
-
-  if (hasRoot && end === 1) {
-    // return '//';
-    // Backwards-compat fix:
-    return '/';
-  }
-
-  return path.slice(0, end);
-};
-
-function basename(path) {
-  if (typeof path !== 'string') path = path + '';
-  var start = 0;
-  var end = -1;
-  var matchedSlash = true;
-  var i;
-
-  for (i = path.length - 1; i >= 0; --i) {
-    if (path.charCodeAt(i) === 47
-    /*/*/
-    ) {
-        // If we reached a path separator that was not part of a set of path
-        // separators at the end of the string, stop now
-        if (!matchedSlash) {
-          start = i + 1;
-          break;
-        }
-      } else if (end === -1) {
-      // We saw the first non-path separator, mark this as the end of our
-      // path component
-      matchedSlash = false;
-      end = i + 1;
-    }
-  }
-
-  if (end === -1) return '';
-  return path.slice(start, end);
-} // Uses a mixed approach for backwards-compatibility, as ext behavior changed
-// in new Node.js versions, so only basename() above is backported here
-
-
-exports.basename = function (path, ext) {
-  var f = basename(path);
-
-  if (ext && f.substr(-1 * ext.length) === ext) {
-    f = f.substr(0, f.length - ext.length);
-  }
-
-  return f;
-};
-
-exports.extname = function (path) {
-  if (typeof path !== 'string') path = path + '';
-  var startDot = -1;
-  var startPart = 0;
-  var end = -1;
-  var matchedSlash = true; // Track the state of characters (if any) we see before our first dot and
-  // after any path separator we find
-
-  var preDotState = 0;
-
-  for (var i = path.length - 1; i >= 0; --i) {
-    var code = path.charCodeAt(i);
-
-    if (code === 47
-    /*/*/
-    ) {
-        // If we reached a path separator that was not part of a set of path
-        // separators at the end of the string, stop now
-        if (!matchedSlash) {
-          startPart = i + 1;
-          break;
-        }
-
-        continue;
-      }
-
-    if (end === -1) {
-      // We saw the first non-path separator, mark this as the end of our
-      // extension
-      matchedSlash = false;
-      end = i + 1;
-    }
-
-    if (code === 46
-    /*.*/
-    ) {
-        // If this is our first dot, mark it as the start of our extension
-        if (startDot === -1) startDot = i;else if (preDotState !== 1) preDotState = 1;
-      } else if (startDot !== -1) {
-      // We saw a non-dot and non-path separator before our dot, so we should
-      // have a good chance at having a non-empty extension
-      preDotState = -1;
-    }
-  }
-
-  if (startDot === -1 || end === -1 || // We saw a non-dot character immediately before the dot
-  preDotState === 0 || // The (right-most) trimmed path component is exactly '..'
-  preDotState === 1 && startDot === end - 1 && startDot === startPart + 1) {
-    return '';
-  }
-
-  return path.slice(startDot, end);
-};
-
-function filter(xs, f) {
-  if (xs.filter) return xs.filter(f);
-  var res = [];
-
-  for (var i = 0; i < xs.length; i++) {
-    if (f(xs[i], i, xs)) res.push(xs[i]);
-  }
-
-  return res;
-} // String.prototype.substr - negative index don't work in IE8
-
-
-var substr = 'ab'.substr(-1) === 'b' ? function (str, start, len) {
-  return str.substr(start, len);
-} : function (str, start, len) {
-  if (start < 0) start = str.length + start;
-  return str.substr(start, len);
-};
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(12)))
-
-/***/ }),
-/* 102 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const Converter = __webpack_require__(103);
+const Converter = __webpack_require__(104);
 
 const {
   IOBuffer
-} = __webpack_require__(53);
+} = __webpack_require__(27);
 
-const JSZip = __webpack_require__(27);
+const JSZip = __webpack_require__(28);
 
 const BINARY = 1;
 const TEXT = 2;
@@ -30985,7 +30342,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 103 */
+/* 104 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32069,26 +31426,1088 @@ module.exports = {
 };
 
 /***/ }),
-/* 104 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = __webpack_require__(105);
-
-/***/ }),
 /* 105 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var OCL = __webpack_require__(106);
+function getConverter() {
+  // the following RegExp can only be used for XYdata, some peakTables have values with a "E-5" ...
+  const ntuplesSeparator = /[, \t]+/;
+  const GC_MS_FIELDS = ['TIC', '.RIC', 'SCANNUMBER'];
 
-__webpack_require__(108)(OCL);
+  function convertToFloatArray(stringArray) {
+    var floatArray = [];
 
-module.exports = OCL;
+    for (let i = 0; i < stringArray.length; i++) {
+      floatArray.push(parseFloat(stringArray[i]));
+    }
+
+    return floatArray;
+  }
+
+  class Spectrum {}
+
+  const defaultOptions = {
+    keepRecordsRegExp: /^$/,
+    xy: false,
+    withoutXY: false,
+    chromatogram: false,
+    keepSpectra: false,
+    noContour: false,
+    nbContourLevels: 7,
+    noiseMultiplier: 5,
+    profiling: false
+  };
+
+  function convert(jcamp, options) {
+    options = Object.assign({}, defaultOptions, options);
+    var wantXY = !options.withoutXY;
+    var start = Date.now();
+    var ntuples = {};
+    var ldr, dataLabel, dataValue, ldrs;
+    var position, endLine, infos;
+    var result = {};
+    result.profiling = options.profiling ? [] : false;
+    result.logs = [];
+    var spectra = [];
+    result.spectra = spectra;
+    result.info = {};
+    var spectrum = new Spectrum();
+
+    if (!(typeof jcamp === 'string')) {
+      throw new TypeError('the JCAMP should be a string');
+    }
+
+    if (result.profiling) {
+      result.profiling.push({
+        action: 'Before split to LDRS',
+        time: Date.now() - start
+      });
+    }
+
+    ldrs = jcamp.split(/[\r\n]+##/);
+
+    if (result.profiling) {
+      result.profiling.push({
+        action: 'Split to LDRS',
+        time: Date.now() - start
+      });
+    }
+
+    if (ldrs[0]) ldrs[0] = ldrs[0].replace(/^[\r\n ]*##/, '');
+
+    for (let i = 0; i < ldrs.length; i++) {
+      ldr = ldrs[i]; // This is a new LDR
+
+      position = ldr.indexOf('=');
+
+      if (position > 0) {
+        dataLabel = ldr.substring(0, position);
+        dataValue = ldr.substring(position + 1).trim();
+      } else {
+        dataLabel = ldr;
+        dataValue = '';
+      }
+
+      dataLabel = dataLabel.replace(/[_ -]/g, '').toUpperCase();
+
+      if (dataLabel === 'DATATABLE') {
+        endLine = dataValue.indexOf('\n');
+        if (endLine === -1) endLine = dataValue.indexOf('\r');
+
+        if (endLine > 0) {
+          var xIndex = -1;
+          var yIndex = -1; // ##DATA TABLE= (X++(I..I)), XYDATA
+          // We need to find the variables
+
+          infos = dataValue.substring(0, endLine).split(/[ ,;\t]+/);
+
+          if (infos[0].indexOf('++') > 0) {
+            var firstVariable = infos[0].replace(/.*\(([a-zA-Z0-9]+)\+\+.*/, '$1');
+            var secondVariable = infos[0].replace(/.*\.\.([a-zA-Z0-9]+).*/, '$1');
+            xIndex = ntuples.symbol.indexOf(firstVariable);
+            yIndex = ntuples.symbol.indexOf(secondVariable);
+          }
+
+          if (xIndex === -1) xIndex = 0;
+          if (yIndex === -1) yIndex = 0;
+
+          if (ntuples.first) {
+            if (ntuples.first.length > xIndex) {
+              spectrum.firstX = ntuples.first[xIndex];
+            }
+
+            if (ntuples.first.length > yIndex) {
+              spectrum.firstY = ntuples.first[yIndex];
+            }
+          }
+
+          if (ntuples.last) {
+            if (ntuples.last.length > xIndex) {
+              spectrum.lastX = ntuples.last[xIndex];
+            }
+
+            if (ntuples.last.length > yIndex) {
+              spectrum.lastY = ntuples.last[yIndex];
+            }
+          }
+
+          if (ntuples.vardim && ntuples.vardim.length > xIndex) {
+            spectrum.nbPoints = ntuples.vardim[xIndex];
+          }
+
+          if (ntuples.factor) {
+            if (ntuples.factor.length > xIndex) {
+              spectrum.xFactor = ntuples.factor[xIndex];
+            }
+
+            if (ntuples.factor.length > yIndex) {
+              spectrum.yFactor = ntuples.factor[yIndex];
+            }
+          }
+
+          if (ntuples.units) {
+            if (ntuples.units.length > xIndex) {
+              spectrum.xUnit = ntuples.units[xIndex];
+            }
+
+            if (ntuples.units.length > yIndex) {
+              spectrum.yUnit = ntuples.units[yIndex];
+            }
+          }
+
+          spectrum.datatable = infos[0];
+
+          if (infos[1] && infos[1].indexOf('PEAKS') > -1) {
+            dataLabel = 'PEAKTABLE';
+          } else if (infos[1] && (infos[1].indexOf('XYDATA') || infos[0].indexOf('++') > 0)) {
+            dataLabel = 'XYDATA';
+            spectrum.deltaX = (spectrum.lastX - spectrum.firstX) / (spectrum.nbPoints - 1);
+          }
+        }
+      }
+
+      if (dataLabel === 'XYDATA') {
+        if (wantXY) {
+          prepareSpectrum(result, spectrum); // well apparently we should still consider it is a PEAK TABLE if there are no '++' after
+
+          if (dataValue.match(/.*\+\+.*/)) {
+            // ex: (X++(Y..Y))
+            if (!spectrum.deltaX) {
+              spectrum.deltaX = (spectrum.lastX - spectrum.firstX) / (spectrum.nbPoints - 1);
+            }
+
+            fastParseXYData(spectrum, dataValue, result);
+          } else {
+            parsePeakTable(spectrum, dataValue, result);
+          }
+
+          spectra.push(spectrum);
+          spectrum = new Spectrum();
+        }
+
+        continue;
+      } else if (dataLabel === 'PEAKTABLE') {
+        if (wantXY) {
+          prepareSpectrum(result, spectrum);
+          parsePeakTable(spectrum, dataValue, result);
+          spectra.push(spectrum);
+          spectrum = new Spectrum();
+        }
+
+        continue;
+      }
+
+      if (dataLabel === 'PEAKASSIGNMENTS') {
+        if (wantXY) {
+          if (dataValue.match(/.*(XYA).*/)) {
+            // ex: (XYA)
+            parseXYA(spectrum, dataValue);
+          }
+
+          spectra.push(spectrum);
+          spectrum = new Spectrum();
+        }
+
+        continue;
+      }
+
+      if (dataLabel === 'TITLE') {
+        spectrum.title = dataValue;
+      } else if (dataLabel === 'DATATYPE') {
+        spectrum.dataType = dataValue;
+
+        if (dataValue.indexOf('nD') > -1) {
+          result.twoD = true;
+        }
+      } else if (dataLabel === 'NTUPLES') {
+        if (dataValue.indexOf('nD') > -1) {
+          result.twoD = true;
+        }
+      } else if (dataLabel === 'XUNITS') {
+        spectrum.xUnit = dataValue;
+      } else if (dataLabel === 'YUNITS') {
+        spectrum.yUnit = dataValue;
+      } else if (dataLabel === 'FIRSTX') {
+        spectrum.firstX = parseFloat(dataValue);
+      } else if (dataLabel === 'LASTX') {
+        spectrum.lastX = parseFloat(dataValue);
+      } else if (dataLabel === 'FIRSTY') {
+        spectrum.firstY = parseFloat(dataValue);
+      } else if (dataLabel === 'LASTY') {
+        spectrum.lastY = parseFloat(dataValue);
+      } else if (dataLabel === 'NPOINTS') {
+        spectrum.nbPoints = parseFloat(dataValue);
+      } else if (dataLabel === 'XFACTOR') {
+        spectrum.xFactor = parseFloat(dataValue);
+      } else if (dataLabel === 'YFACTOR') {
+        spectrum.yFactor = parseFloat(dataValue);
+      } else if (dataLabel === 'MAXX') {
+        spectrum.maxX = parseFloat(dataValue);
+      } else if (dataLabel === 'MINX') {
+        spectrum.minX = parseFloat(dataValue);
+      } else if (dataLabel === 'MAXY') {
+        spectrum.maxY = parseFloat(dataValue);
+      } else if (dataLabel === 'MINY') {
+        spectrum.minY = parseFloat(dataValue);
+      } else if (dataLabel === 'DELTAX') {
+        spectrum.deltaX = parseFloat(dataValue);
+      } else if (dataLabel === '.OBSERVEFREQUENCY' || dataLabel === '$SFO1') {
+        if (!spectrum.observeFrequency) {
+          spectrum.observeFrequency = parseFloat(dataValue);
+        }
+      } else if (dataLabel === '.OBSERVENUCLEUS') {
+        if (!spectrum.xType) {
+          result.xType = dataValue.replace(/[^a-zA-Z0-9]/g, '');
+        }
+      } else if (dataLabel === '$SFO2') {
+        if (!result.indirectFrequency) {
+          result.indirectFrequency = parseFloat(dataValue);
+        }
+      } else if (dataLabel === '$OFFSET') {
+        // OFFSET for Bruker spectra
+        result.shiftOffsetNum = 0;
+
+        if (!spectrum.shiftOffsetVal) {
+          spectrum.shiftOffsetVal = parseFloat(dataValue);
+        }
+      } else if (dataLabel === '$REFERENCEPOINT') {// OFFSET for Varian spectra
+        // if we activate this part it does not work for ACD specmanager
+        //         } else if (dataLabel=='.SHIFTREFERENCE') {   // OFFSET FOR Bruker Spectra
+        //                 var parts = dataValue.split(/ *, */);
+        //                 result.shiftOffsetNum = parseInt(parts[2].trim());
+        //                 spectrum.shiftOffsetVal = parseFloat(parts[3].trim());
+      } else if (dataLabel === 'VARNAME') {
+        ntuples.varname = dataValue.split(ntuplesSeparator);
+      } else if (dataLabel === 'SYMBOL') {
+        ntuples.symbol = dataValue.split(ntuplesSeparator);
+      } else if (dataLabel === 'VARTYPE') {
+        ntuples.vartype = dataValue.split(ntuplesSeparator);
+      } else if (dataLabel === 'VARFORM') {
+        ntuples.varform = dataValue.split(ntuplesSeparator);
+      } else if (dataLabel === 'VARDIM') {
+        ntuples.vardim = convertToFloatArray(dataValue.split(ntuplesSeparator));
+      } else if (dataLabel === 'UNITS') {
+        ntuples.units = dataValue.split(ntuplesSeparator);
+      } else if (dataLabel === 'FACTOR') {
+        ntuples.factor = convertToFloatArray(dataValue.split(ntuplesSeparator));
+      } else if (dataLabel === 'FIRST') {
+        ntuples.first = convertToFloatArray(dataValue.split(ntuplesSeparator));
+      } else if (dataLabel === 'LAST') {
+        ntuples.last = convertToFloatArray(dataValue.split(ntuplesSeparator));
+      } else if (dataLabel === 'MIN') {
+        ntuples.min = convertToFloatArray(dataValue.split(ntuplesSeparator));
+      } else if (dataLabel === 'MAX') {
+        ntuples.max = convertToFloatArray(dataValue.split(ntuplesSeparator));
+      } else if (dataLabel === '.NUCLEUS') {
+        if (result.twoD) {
+          result.yType = dataValue.split(ntuplesSeparator)[0];
+        }
+      } else if (dataLabel === 'PAGE') {
+        spectrum.page = dataValue.trim();
+        spectrum.pageValue = parseFloat(dataValue.replace(/^.*=/, ''));
+        spectrum.pageSymbol = spectrum.page.replace(/[=].*/, '');
+        var pageSymbolIndex = ntuples.symbol.indexOf(spectrum.pageSymbol);
+        var unit = '';
+
+        if (ntuples.units && ntuples.units[pageSymbolIndex]) {
+          unit = ntuples.units[pageSymbolIndex];
+        }
+
+        if (result.indirectFrequency && unit !== 'PPM') {
+          spectrum.pageValue /= result.indirectFrequency;
+        }
+      } else if (dataLabel === 'RETENTIONTIME') {
+        spectrum.pageValue = parseFloat(dataValue);
+      } else if (isMSField(dataLabel)) {
+        spectrum[convertMSFieldToLabel(dataLabel)] = dataValue;
+      } else if (dataLabel === 'SAMPLEDESCRIPTION') {
+        spectrum.sampleDescription = dataValue;
+      }
+
+      if (dataLabel.match(options.keepRecordsRegExp)) {
+        if (result.info[dataLabel]) {
+          if (!Array.isArray(result.info[dataLabel])) {
+            result.info[dataLabel] = [result.info[dataLabel]];
+          }
+
+          result.info[dataLabel].push(dataValue.trim());
+        } else {
+          result.info[dataLabel] = dataValue.trim();
+        }
+      }
+    }
+
+    if (result.profiling) {
+      result.profiling.push({
+        action: 'Finished parsing',
+        time: Date.now() - start
+      });
+    }
+
+    if (Object.keys(ntuples).length > 0) {
+      var newNtuples = [];
+      var keys = Object.keys(ntuples);
+
+      for (let i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        var values = ntuples[key];
+
+        for (let j = 0; j < values.length; j++) {
+          if (!newNtuples[j]) newNtuples[j] = {};
+          newNtuples[j][key] = values[j];
+        }
+      }
+
+      result.ntuples = newNtuples;
+    }
+
+    if (result.twoD && wantXY) {
+      add2D(result, options);
+
+      if (result.profiling) {
+        result.profiling.push({
+          action: 'Finished countour plot calculation',
+          time: Date.now() - start
+        });
+      }
+
+      if (!options.keepSpectra) {
+        delete result.spectra;
+      }
+    }
+
+    if (options.chromatogram) {
+      options.xy = true;
+    }
+
+    if (options.xy && wantXY) {
+      // the spectraData should not be a oneD array but an object with x and y
+      if (spectra.length > 0) {
+        for (let i = 0; i < spectra.length; i++) {
+          spectrum = spectra[i];
+
+          if (spectrum.data.length > 0) {
+            for (let j = 0; j < spectrum.data.length; j++) {
+              var data = spectrum.data[j];
+              var newData = {
+                x: new Array(data.length / 2),
+                y: new Array(data.length / 2)
+              };
+
+              for (var k = 0; k < data.length; k = k + 2) {
+                newData.x[k / 2] = data[k];
+                newData.y[k / 2] = data[k + 1];
+              }
+
+              spectrum.data[j] = newData;
+            }
+          }
+        }
+      }
+    } // maybe it is a GC (HPLC) / MS. In this case we add a new format
+
+
+    if (options.chromatogram) {
+      if (result.spectra.length > 1) {
+        complexChromatogram(result);
+      } else {
+        simpleChromatogram(result);
+      }
+
+      if (result.profiling) {
+        result.profiling.push({
+          action: 'Finished chromatogram calculation',
+          time: Date.now() - start
+        });
+      }
+    }
+
+    if (result.profiling) {
+      result.profiling.push({
+        action: 'Total time',
+        time: Date.now() - start
+      });
+    }
+
+    return result;
+  }
+
+  function convertMSFieldToLabel(value) {
+    return value.toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
+  function isMSField(dataLabel) {
+    return GC_MS_FIELDS.indexOf(dataLabel) !== -1;
+  }
+
+  function complexChromatogram(result) {
+    var spectra = result.spectra;
+    var length = spectra.length;
+    var chromatogram = {
+      times: new Array(length),
+      series: {
+        ms: {
+          dimension: 2,
+          data: new Array(length)
+        }
+      }
+    };
+    var existingGCMSFields = [];
+
+    for (let i = 0; i < GC_MS_FIELDS.length; i++) {
+      var label = convertMSFieldToLabel(GC_MS_FIELDS[i]);
+
+      if (spectra[0][label]) {
+        existingGCMSFields.push(label);
+        chromatogram.series[label] = {
+          dimension: 1,
+          data: new Array(length)
+        };
+      }
+    }
+
+    for (let i = 0; i < length; i++) {
+      var spectrum = spectra[i];
+      chromatogram.times[i] = spectrum.pageValue;
+
+      for (let j = 0; j < existingGCMSFields.length; j++) {
+        chromatogram.series[existingGCMSFields[j]].data[i] = parseFloat(spectrum[existingGCMSFields[j]]);
+      }
+
+      if (spectrum.data) {
+        chromatogram.series.ms.data[i] = [spectrum.data[0].x, spectrum.data[0].y];
+      }
+    }
+
+    result.chromatogram = chromatogram;
+  }
+
+  function simpleChromatogram(result) {
+    var data = result.spectra[0].data[0];
+    result.chromatogram = {
+      times: data.x.slice(),
+      series: {
+        intensity: {
+          dimension: 1,
+          data: data.y.slice()
+        }
+      }
+    };
+  }
+
+  function prepareSpectrum(result, spectrum) {
+    if (!spectrum.xFactor) spectrum.xFactor = 1;
+    if (!spectrum.yFactor) spectrum.yFactor = 1;
+
+    if (spectrum.observeFrequency) {
+      if (spectrum.xUnit && spectrum.xUnit.toUpperCase() === 'HZ') {
+        spectrum.xUnit = 'PPM';
+        spectrum.xFactor = spectrum.xFactor / spectrum.observeFrequency;
+        spectrum.firstX = spectrum.firstX / spectrum.observeFrequency;
+        spectrum.lastX = spectrum.lastX / spectrum.observeFrequency;
+        spectrum.deltaX = spectrum.deltaX / spectrum.observeFrequency;
+      }
+    }
+
+    if (spectrum.shiftOffsetVal) {
+      var shift = spectrum.firstX - spectrum.shiftOffsetVal;
+      spectrum.firstX = spectrum.firstX - shift;
+      spectrum.lastX = spectrum.lastX - shift;
+    }
+  }
+
+  function getMedian(data) {
+    data = data.sort(compareNumbers);
+    var l = data.length;
+    return data[Math.floor(l / 2)];
+  }
+
+  function compareNumbers(a, b) {
+    return a - b;
+  }
+
+  function convertTo3DZ(spectra) {
+    var minZ = spectra[0].data[0][0];
+    var maxZ = minZ;
+    var ySize = spectra.length;
+    var xSize = spectra[0].data[0].length / 2;
+    var z = new Array(ySize);
+
+    for (let i = 0; i < ySize; i++) {
+      z[i] = new Array(xSize);
+      var xVector = spectra[i].data[0];
+
+      for (let j = 0; j < xSize; j++) {
+        var value = xVector[j * 2 + 1];
+        z[i][j] = value;
+        if (value < minZ) minZ = value;
+        if (value > maxZ) maxZ = value;
+      }
+    }
+
+    const firstX = spectra[0].data[0][0];
+    const lastX = spectra[0].data[0][spectra[0].data[0].length - 2]; // has to be -2 because it is a 1D array [x,y,x,y,...]
+
+    const firstY = spectra[0].pageValue;
+    const lastY = spectra[ySize - 1].pageValue; // Because the min / max value are the only information about the matrix if we invert
+    // min and max we need to invert the array
+
+    if (firstX > lastX) {
+      for (let spectrum of z) {
+        spectrum.reverse();
+      }
+    }
+
+    if (firstY > lastY) {
+      z.reverse();
+    }
+
+    return {
+      z: z,
+      minX: Math.min(firstX, lastX),
+      maxX: Math.max(firstX, lastX),
+      minY: Math.min(firstY, lastY),
+      maxY: Math.max(firstY, lastY),
+      minZ: minZ,
+      maxZ: maxZ,
+      noise: getMedian(z[0].map(Math.abs))
+    };
+  }
+
+  function add2D(result, options) {
+    var zData = convertTo3DZ(result.spectra);
+
+    if (!options.noContour) {
+      result.contourLines = generateContourLines(zData, options);
+      delete zData.z;
+    }
+
+    result.minMax = zData;
+  }
+
+  function generateContourLines(zData, options) {
+    var noise = zData.noise;
+    var z = zData.z;
+    var povarHeight0, povarHeight1, povarHeight2, povarHeight3;
+    var isOver0, isOver1, isOver2, isOver3;
+    var nbSubSpectra = z.length;
+    var nbPovars = z[0].length;
+    var pAx, pAy, pBx, pBy;
+    var x0 = zData.minX;
+    var xN = zData.maxX;
+    var dx = (xN - x0) / (nbPovars - 1);
+    var y0 = zData.minY;
+    var yN = zData.maxY;
+    var dy = (yN - y0) / (nbSubSpectra - 1);
+    var minZ = zData.minZ;
+    var maxZ = zData.maxZ; // System.out.prvarln('y0 '+y0+' yN '+yN);
+    // -------------------------
+    // Povars attribution
+    //
+    // 0----1
+    // |  / |
+    // | /  |
+    // 2----3
+    //
+    // ---------------------d------
+
+    var iter = options.nbContourLevels * 2;
+    var contourLevels = new Array(iter);
+    var lineZValue;
+
+    for (var level = 0; level < iter; level++) {
+      // multiply by 2 for positif and negatif
+      var contourLevel = {};
+      contourLevels[level] = contourLevel;
+      var side = level % 2;
+      var factor = (maxZ - options.noiseMultiplier * noise) * Math.exp((level >> 1) - options.nbContourLevels);
+
+      if (side === 0) {
+        lineZValue = factor + options.noiseMultiplier * noise;
+      } else {
+        lineZValue = 0 - factor - options.noiseMultiplier * noise;
+      }
+
+      var lines = [];
+      contourLevel.zValue = lineZValue;
+      contourLevel.lines = lines;
+      if (lineZValue <= minZ || lineZValue >= maxZ) continue;
+
+      for (var iSubSpectra = 0; iSubSpectra < nbSubSpectra - 1; iSubSpectra++) {
+        var subSpectra = z[iSubSpectra];
+        var subSpectraAfter = z[iSubSpectra + 1];
+
+        for (var povar = 0; povar < nbPovars - 1; povar++) {
+          povarHeight0 = subSpectra[povar];
+          povarHeight1 = subSpectra[povar + 1];
+          povarHeight2 = subSpectraAfter[povar];
+          povarHeight3 = subSpectraAfter[povar + 1];
+          isOver0 = povarHeight0 > lineZValue;
+          isOver1 = povarHeight1 > lineZValue;
+          isOver2 = povarHeight2 > lineZValue;
+          isOver3 = povarHeight3 > lineZValue; // Example povar0 is over the plane and povar1 and
+          // povar2 are below, we find the varersections and add
+          // the segment
+
+          if (isOver0 !== isOver1 && isOver0 !== isOver2) {
+            pAx = povar + (lineZValue - povarHeight0) / (povarHeight1 - povarHeight0);
+            pAy = iSubSpectra;
+            pBx = povar;
+            pBy = iSubSpectra + (lineZValue - povarHeight0) / (povarHeight2 - povarHeight0);
+            lines.push(pAx * dx + x0);
+            lines.push(pAy * dy + y0);
+            lines.push(pBx * dx + x0);
+            lines.push(pBy * dy + y0);
+          } // remove push does not help !!!!
+
+
+          if (isOver3 !== isOver1 && isOver3 !== isOver2) {
+            pAx = povar + 1;
+            pAy = iSubSpectra + 1 - (lineZValue - povarHeight3) / (povarHeight1 - povarHeight3);
+            pBx = povar + 1 - (lineZValue - povarHeight3) / (povarHeight2 - povarHeight3);
+            pBy = iSubSpectra + 1;
+            lines.push(pAx * dx + x0);
+            lines.push(pAy * dy + y0);
+            lines.push(pBx * dx + x0);
+            lines.push(pBy * dy + y0);
+          } // test around the diagonal
+
+
+          if (isOver1 !== isOver2) {
+            pAx = (povar + 1 - (lineZValue - povarHeight1) / (povarHeight2 - povarHeight1)) * dx + x0;
+            pAy = (iSubSpectra + (lineZValue - povarHeight1) / (povarHeight2 - povarHeight1)) * dy + y0;
+
+            if (isOver1 !== isOver0) {
+              pBx = povar + 1 - (lineZValue - povarHeight1) / (povarHeight0 - povarHeight1);
+              pBy = iSubSpectra;
+              lines.push(pAx);
+              lines.push(pAy);
+              lines.push(pBx * dx + x0);
+              lines.push(pBy * dy + y0);
+            }
+
+            if (isOver2 !== isOver0) {
+              pBx = povar;
+              pBy = iSubSpectra + 1 - (lineZValue - povarHeight2) / (povarHeight0 - povarHeight2);
+              lines.push(pAx);
+              lines.push(pAy);
+              lines.push(pBx * dx + x0);
+              lines.push(pBy * dy + y0);
+            }
+
+            if (isOver1 !== isOver3) {
+              pBx = povar + 1;
+              pBy = iSubSpectra + (lineZValue - povarHeight1) / (povarHeight3 - povarHeight1);
+              lines.push(pAx);
+              lines.push(pAy);
+              lines.push(pBx * dx + x0);
+              lines.push(pBy * dy + y0);
+            }
+
+            if (isOver2 !== isOver3) {
+              pBx = povar + (lineZValue - povarHeight2) / (povarHeight3 - povarHeight2);
+              pBy = iSubSpectra + 1;
+              lines.push(pAx);
+              lines.push(pAy);
+              lines.push(pBx * dx + x0);
+              lines.push(pBy * dy + y0);
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      minX: zData.minX,
+      maxX: zData.maxX,
+      minY: zData.minY,
+      maxY: zData.maxY,
+      segments: contourLevels
+    };
+  }
+
+  function fastParseXYData(spectrum, value) {
+    // TODO need to deal with result
+    //  console.log(value);
+    // we check if deltaX is defined otherwise we calculate it
+    var yFactor = spectrum.yFactor;
+    var deltaX = spectrum.deltaX;
+    spectrum.isXYdata = true; // TODO to be improved using 2 array {x:[], y:[]}
+
+    var currentData = [];
+    spectrum.data = [currentData];
+    var currentX = spectrum.firstX;
+    var currentY = spectrum.firstY; // we skip the first line
+    //
+
+    var endLine = false;
+    var ascii;
+    let i = 0;
+
+    for (; i < value.length; i++) {
+      ascii = value.charCodeAt(i);
+
+      if (ascii === 13 || ascii === 10) {
+        endLine = true;
+      } else {
+        if (endLine) break;
+      }
+    } // we proceed taking the i after the first line
+
+
+    var newLine = true;
+    var isDifference = false;
+    var isLastDifference = false;
+    var lastDifference = 0;
+    var isDuplicate = false;
+    var inComment = false;
+    var currentValue = 0; // can be a difference or a duplicate
+
+    var lastValue = 0; // must be the real last value
+
+    var isNegative = false;
+    var inValue = false;
+    var skipFirstValue = false;
+    var decimalPosition = 0;
+
+    for (; i <= value.length; i++) {
+      if (i === value.length) ascii = 13;else ascii = value.charCodeAt(i);
+
+      if (inComment) {
+        // we should ignore the text if we are after $$
+        if (ascii === 13 || ascii === 10) {
+          newLine = true;
+          inComment = false;
+        }
+      } else {
+        // when is it a new value ?
+        // when it is not a digit, . or comma
+        // it is a number that is either new or we continue
+        if (ascii <= 57 && ascii >= 48) {
+          // a number
+          inValue = true;
+
+          if (decimalPosition > 0) {
+            currentValue += (ascii - 48) / Math.pow(10, decimalPosition++);
+          } else {
+            currentValue *= 10;
+            currentValue += ascii - 48;
+          }
+        } else if (ascii === 44 || ascii === 46) {
+          // a "," or "."
+          inValue = true;
+          decimalPosition++;
+        } else {
+          if (inValue) {
+            // need to process the previous value
+            if (newLine) {
+              newLine = false; // we don't check the X value
+              // console.log("NEW LINE",isDifference, lastDifference);
+              // if new line and lastDifference, the first value is just a check !
+              // that we don't check ...
+
+              if (isLastDifference) skipFirstValue = true;
+            } else {
+              // need to deal with duplicate and differences
+              if (skipFirstValue) {
+                skipFirstValue = false;
+              } else {
+                if (isDifference) {
+                  lastDifference = isNegative ? 0 - currentValue : currentValue;
+                  isLastDifference = true;
+                  isDifference = false;
+                } else if (!isDuplicate) {
+                  lastValue = isNegative ? 0 - currentValue : currentValue;
+                }
+
+                var duplicate = isDuplicate ? currentValue - 1 : 1;
+
+                for (var j = 0; j < duplicate; j++) {
+                  if (isLastDifference) {
+                    currentY += lastDifference;
+                  } else {
+                    currentY = lastValue;
+                  }
+
+                  currentData.push(currentX);
+                  currentData.push(currentY * yFactor);
+                  currentX += deltaX;
+                }
+              }
+            }
+
+            isNegative = false;
+            currentValue = 0;
+            decimalPosition = 0;
+            inValue = false;
+            isDuplicate = false;
+          } // positive SQZ digits @ A B C D E F G H I (ascii 64-73)
+
+
+          if (ascii < 74 && ascii > 63) {
+            inValue = true;
+            isLastDifference = false;
+            currentValue = ascii - 64;
+          } else if (ascii > 96 && ascii < 106) {
+            // negative SQZ digits a b c d e f g h i (ascii 97-105)
+            inValue = true;
+            isLastDifference = false;
+            currentValue = ascii - 96;
+            isNegative = true;
+          } else if (ascii === 115) {
+            // DUP digits S T U V W X Y Z s (ascii 83-90, 115)
+            inValue = true;
+            isDuplicate = true;
+            currentValue = 9;
+          } else if (ascii > 82 && ascii < 91) {
+            inValue = true;
+            isDuplicate = true;
+            currentValue = ascii - 82;
+          } else if (ascii > 73 && ascii < 83) {
+            // positive DIF digits % J K L M N O P Q R (ascii 37, 74-82)
+            inValue = true;
+            isDifference = true;
+            currentValue = ascii - 73;
+          } else if (ascii > 105 && ascii < 115) {
+            // negative DIF digits j k l m n o p q r (ascii 106-114)
+            inValue = true;
+            isDifference = true;
+            currentValue = ascii - 105;
+            isNegative = true;
+          } else if (ascii === 36 && value.charCodeAt(i + 1) === 36) {
+            // $ sign, we need to check the next one
+            inValue = true;
+            inComment = true;
+          } else if (ascii === 37) {
+            // positive DIF digits % J K L M N O P Q R (ascii 37, 74-82)
+            inValue = true;
+            isDifference = true;
+            currentValue = 0;
+            isNegative = false;
+          } else if (ascii === 45) {
+            // a "-"
+            // check if after there is a number, decimal or comma
+            var ascii2 = value.charCodeAt(i + 1);
+
+            if (ascii2 >= 48 && ascii2 <= 57 || ascii2 === 44 || ascii2 === 46) {
+              inValue = true;
+              if (!newLine) isLastDifference = false;
+              isNegative = true;
+            }
+          } else if (ascii === 13 || ascii === 10) {
+            newLine = true;
+            inComment = false;
+          } // and now analyse the details ... space or tabulation
+          // if "+" we just don't care
+
+        }
+      }
+    }
+  }
+
+  function parseXYA(spectrum, value) {
+    var removeSymbolRegExp = /(\(+|\)+|<+|>+|\s+)/g;
+    spectrum.isXYAdata = true;
+    var values;
+    var currentData = [];
+    spectrum.data = [currentData];
+    var lines = value.split(/,? *,?[;\r\n]+ */);
+
+    for (let i = 1; i < lines.length; i++) {
+      values = lines[i].trim().replace(removeSymbolRegExp, '').split(',');
+      currentData.push(parseFloat(values[0]));
+      currentData.push(parseFloat(values[1]));
+    }
+  }
+
+  function parsePeakTable(spectrum, value, result) {
+    var removeCommentRegExp = /\$\$.*/;
+    var peakTableSplitRegExp = /[,\t ]+/;
+    spectrum.isPeaktable = true;
+    var values;
+    var currentData = [];
+    spectrum.data = [currentData]; // counts for around 20% of the time
+
+    var lines = value.split(/,? *,?[;\r\n]+ */);
+
+    for (let i = 1; i < lines.length; i++) {
+      values = lines[i].trim().replace(removeCommentRegExp, '').split(peakTableSplitRegExp);
+
+      if (values.length % 2 === 0) {
+        for (let j = 0; j < values.length; j = j + 2) {
+          // takes around 40% of the time to add and parse the 2 values nearly exclusively because of parseFloat
+          currentData.push(parseFloat(values[j]) * spectrum.xFactor);
+          currentData.push(parseFloat(values[j + 1]) * spectrum.yFactor);
+        }
+      } else {
+        result.logs.push("Format error: ".concat(values));
+      }
+    }
+  }
+
+  return convert;
+}
+
+var convert = getConverter();
+
+function JcampConverter(input, options, useWorker) {
+  if (typeof options === 'boolean') {
+    useWorker = options;
+    options = {};
+  }
+
+  if (useWorker) {
+    return postToWorker(input, options);
+  } else {
+    return convert(input, options);
+  }
+}
+
+var stamps = {};
+var worker;
+
+function postToWorker(input, options) {
+  if (!worker) {
+    createWorker();
+  }
+
+  return new Promise(function (resolve) {
+    var stamp = "".concat(Date.now()).concat(Math.random());
+    stamps[stamp] = resolve;
+    worker.postMessage(JSON.stringify({
+      stamp: stamp,
+      input: input,
+      options: options
+    }));
+  });
+}
+
+function createWorker() {
+  var workerURL = URL.createObjectURL(new Blob(["var getConverter =".concat(getConverter.toString(), ";var convert = getConverter(); onmessage = function (event) { var data = JSON.parse(event.data); postMessage(JSON.stringify({stamp: data.stamp, output: convert(data.input, data.options)})); };")], {
+    type: 'application/javascript'
+  }));
+  worker = new Worker(workerURL);
+  URL.revokeObjectURL(workerURL);
+  worker.addEventListener('message', function (event) {
+    var data = JSON.parse(event.data);
+    var stamp = data.stamp;
+
+    if (stamps[stamp]) {
+      stamps[stamp](data.output);
+    }
+  });
+}
+
+function createTree(jcamp) {
+  let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  const {
+    flatten = false
+  } = options;
+
+  if (typeof jcamp !== 'string') {
+    throw new TypeError('the JCAMP should be a string');
+  }
+
+  let lines = jcamp.split(/[\r\n]+/);
+  let flat = [];
+  let stack = [];
+  let result = [];
+  let current;
+  let ntupleLevel = 0;
+  let spaces = jcamp.includes('## ');
+
+  for (var i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    let labelLine = spaces ? line.replace(/ /g, '') : line;
+
+    if (labelLine.substring(0, 9) === '##NTUPLES') {
+      ntupleLevel++;
+    }
+
+    if (labelLine.substring(0, 7) === '##TITLE') {
+      let title = [labelLine.substring(8).trim()];
+
+      for (let j = i + 1; j < lines.length; j++) {
+        if (lines[j].startsWith('##')) {
+          break;
+        } else {
+          title.push(lines[j].trim());
+        }
+      }
+
+      stack.push({
+        title: title.join('\n'),
+        jcamp: "".concat(line, "\n"),
+        children: []
+      });
+      current = stack[stack.length - 1];
+      flat.push(current);
+    } else if (labelLine.substring(0, 5) === '##END' && ntupleLevel === 0) {
+      current.jcamp += "".concat(line, "\n");
+      var finished = stack.pop();
+
+      if (stack.length !== 0) {
+        current = stack[stack.length - 1];
+        current.children.push(finished);
+      } else {
+        current = undefined;
+        result.push(finished);
+      }
+    } else if (current && current.jcamp) {
+      current.jcamp += "".concat(line, "\n");
+      var match = labelLine.match(/^##(.*?)=(.+)/);
+
+      if (match) {
+        var dataLabel = match[1].replace(/[ _-]/g, '').toUpperCase();
+
+        if (dataLabel === 'DATATYPE') {
+          current.dataType = match[2].trim();
+        }
+      }
+    }
+
+    if (labelLine.substring(0, 5) === '##END' && ntupleLevel > 0) {
+      ntupleLevel--;
+    }
+  }
+
+  if (flatten) {
+    flat.forEach(entry => {
+      entry.children = undefined;
+    });
+    return flat;
+  } else {
+    return result;
+  }
+}
+
+module.exports = {
+  convert: JcampConverter,
+  createTree: createTree
+};
 
 /***/ }),
 /* 106 */
@@ -32097,10 +32516,373 @@ module.exports = OCL;
 "use strict";
 
 
-module.exports = __webpack_require__(107);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.parse = parse;
+
+function parse(sdf) {
+  let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  const {
+    include,
+    exclude,
+    filter,
+    modifiers = {},
+    forEach = {},
+    dynamicTyping = true
+  } = options;
+
+  if (typeof sdf !== 'string') {
+    throw new TypeError('Parameter "sdf" must be a string');
+  }
+
+  var eol = '\n';
+
+  if (options.mixedEOL) {
+    sdf = sdf.replace(/\r\n/g, '\n');
+    sdf = sdf.replace(/\r/g, '\n');
+  } else {
+    // we will find the delimiter in order to be much faster and not use regular expression
+    var header = sdf.substr(0, 1000);
+
+    if (header.indexOf('\r\n') > -1) {
+      eol = '\r\n';
+    } else if (header.indexOf('\r') > -1) {
+      eol = '\r';
+    }
+  }
+
+  var sdfParts = sdf.split(new RegExp("".concat(eol, "\\$\\$\\$\\$.*").concat(eol)));
+  var molecules = [];
+  var labels = {};
+  var start = Date.now();
+
+  for (var i = 0; i < sdfParts.length; i++) {
+    var sdfPart = sdfParts[i];
+    var parts = sdfPart.split("".concat(eol, ">"));
+
+    if (parts.length > 0 && parts[0].length > 5) {
+      var molecule = {};
+      var currentLabels = [];
+      molecule.molfile = parts[0] + eol;
+
+      for (var j = 1; j < parts.length; j++) {
+        var lines = parts[j].split(eol);
+        var from = lines[0].indexOf('<');
+        var to = lines[0].indexOf('>');
+        var label = lines[0].substring(from + 1, to);
+        currentLabels.push(label);
+
+        if (!labels[label]) {
+          labels[label] = {
+            counter: 0,
+            nbLines: '',
+            isNumeric: dynamicTyping,
+            keep: false
+          };
+
+          if ((!exclude || exclude.indexOf(label) === -1) && (!include || include.indexOf(label) > -1)) {
+            labels[label].keep = true;
+            if (modifiers[label]) labels[label].modifier = modifiers[label];
+            if (forEach[label]) labels[label].forEach = forEach[label];
+          }
+        }
+
+        if (labels[label].keep) {
+          for (var k = 1; k < lines.length - 1; k++) {
+            if (molecule[label]) {
+              molecule[label] += eol + lines[k];
+            } else {
+              molecule[label] = lines[k];
+            }
+          }
+
+          if (labels[label].modifier) {
+            var modifiedValue = labels[label].modifier(molecule[label]);
+
+            if (modifiedValue === undefined || modifiedValue === null) {
+              delete molecule[label];
+            } else {
+              molecule[label] = modifiedValue;
+            }
+          }
+
+          if (labels[label].isNumeric) {
+            if (!isFinite(molecule[label]) || molecule[label].match(/^0[0-9]/)) {
+              labels[label].isNumeric = false;
+            }
+          }
+        }
+      }
+
+      if (!filter || filter(molecule)) {
+        molecules.push(molecule); // only now we can increase the counter
+
+        for (j = 0; j < currentLabels.length; j++) {
+          var currentLabel = currentLabels[j];
+          labels[currentLabel].counter++;
+        }
+      }
+    }
+  }
+
+  ''; // all numeric fields should be converted to numbers
+
+  for (label in labels) {
+    currentLabel = labels[label];
+
+    if (currentLabel.isNumeric) {
+      currentLabel.minValue = Infinity;
+      currentLabel.maxValue = -Infinity;
+
+      for (j = 0; j < molecules.length; j++) {
+        if (molecules[j][label]) {
+          var value = parseFloat(molecules[j][label]);
+          molecules[j][label] = value;
+          if (value > currentLabel.maxValue) currentLabel.maxValue = value;
+          if (value < currentLabel.minValue) currentLabel.minValue = value;
+        }
+      }
+    }
+  } // we check that a label is in all the records
+
+
+  for (var key in labels) {
+    if (labels[key].counter === molecules.length) {
+      labels[key].always = true;
+    } else {
+      labels[key].always = false;
+    }
+  }
+
+  var statistics = [];
+
+  for (key in labels) {
+    var statistic = labels[key];
+    statistic.label = key;
+    statistics.push(statistic);
+  }
+
+  return {
+    time: Date.now() - start,
+    molecules: molecules,
+    labels: Object.keys(labels),
+    statistics: statistics
+  };
+}
 
 /***/ }),
 /* 107 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.nmrRecord = undefined;
+
+var _openchemlibExtended = __webpack_require__(108);
+
+var OCLfull = _interopRequireWildcard(_openchemlibExtended);
+
+var _processor = __webpack_require__(164);
+
+var _toJSON = __webpack_require__(166);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+class nmrRecord {
+  constructor(nmrRecord) {
+    if (!(nmrRecord instanceof Object)) {
+      throw new Error('Cannot be called directly');
+    }
+
+    let {
+      spectra,
+      sdfFiles
+    } = nmrRecord;
+    this.spectra = spectra;
+    this.sdfFiles = sdfFiles;
+    this.activeElement = 0;
+    this.nbSamples = sdfFiles.length;
+    return this;
+  }
+
+  getMol() {
+    let i = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.activeElement;
+    i = this.checkIndex(i);
+    let parserResult = this.sdfFiles[i];
+    return parserResult.molecules[0].molfile;
+  }
+
+  getMoleculeAndMap() {
+    let i = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.activeElement;
+    i = this.checkIndex(i);
+    let molfile = this.getMol(i);
+    return OCLfull.Molecule.fromMolfileWithAtomMap(molfile);
+  }
+
+  getNMReDataTags() {
+    let i = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.activeElement;
+    i = this.checkIndex(i);
+    let nmredataTags = {};
+    let sdfFile = this.sdfFiles[i];
+    let version = parseFloat(sdfFile.molecules[0].NMREDATA_VERSION);
+    let toReplace = version > 1 ? [new RegExp(/\\\n*/g), '\n'] : [];
+    sdfFile.labels.forEach(tag => {
+      if (tag.toLowerCase().match('nmredata')) {
+        let key = tag.replace(/NMREDATA\_/, '');
+        let data = version > 1 ? sdfFile.molecules[0][tag].replace(/\n*/g, '') : sdfFile.molecules[0][tag];
+        data = data.replace(toReplace[0], toReplace[1]);
+        nmredataTags[key] = data;
+      }
+    });
+    return nmredataTags;
+  }
+
+  getNMReData() {
+    let i = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.activeElement;
+    i = this.checkIndex(i);
+    let result = {
+      name: this.sdfFiles[i].filename
+    };
+    let nmredataTags = this.getNMReDataTags(i);
+    Object.keys(nmredataTags).forEach((tag, index) => {
+      if (tag.match(/2D/)) return;
+      if (!result[tag]) result[tag] = {
+        data: []
+      };
+      let tagData = result[tag];
+      let dataSplited = nmredataTags[tag].split('\n');
+      dataSplited.forEach(e => {
+        let content = e.replace(/\;.*/g, '');
+        let comment = e.match('\;') ? e.replace(/.*\;+(.*)/g, '$1') : '';
+        console.log(tag);
+        console.log('comment: ', comment, 'content: ', content);
+
+        if (content.length === 0) {
+          // may be a head comment. is it always true?
+          if (!tagData.headComment) tagData.headComment = []; // should this be array for several head comments?
+
+          tagData.headComment.push(comment);
+          return;
+        }
+
+        let value = (0, _processor.processContent)(content, {
+          tag: tag
+        });
+        console.log('este es value', value);
+        tagData.data.push({
+          comment,
+          value
+        });
+      });
+    });
+    return result;
+  }
+
+  getSpectraList() {
+    let i = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.activeElement;
+    return this.spectra.map(e => e.filename);
+  }
+
+  getFileName() {
+    let i = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.activeElement;
+    i = this.checkIndex(i);
+    let sdf = this.sdfFiles[i];
+    return sdf.filename;
+  }
+
+  getAllTags() {
+    let i = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.activeElement;
+    i = this.checkIndex(i);
+    let allTags = {};
+    let sdfFile = this.sdfFiles[i];
+    sdfFile.labels.forEach(tag => {
+      allTags[tag] = sdfFile.molecules[0][tag];
+    });
+    return allTags;
+  }
+
+  getSDFList() {
+    let sdfFiles = this.sdfFiles;
+    return sdfFiles.map(sdf => sdf.filename);
+  }
+
+  toJSON() {
+    let i = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.activeElement;
+    let index = this.checkIndex(i);
+    let nmredata = this.getNMReData(index);
+    return (0, _toJSON.nmredataToSampleEln)(nmredata, {
+      spectra: this.spectra,
+      molecule: this.getMoleculeAndMap(index),
+      root: this.sdfFiles[index].root
+    });
+  }
+
+  setActiveElement(nactiveSDF) {
+    nactiveSDF = this.checkIndex(nactiveSDF);
+    this.activeElement = nactiveSDF;
+  }
+
+  getSDFIndexOf(filename) {
+    let index = this.sdfFiles.findIndex(sdf => sdf.filename === filename);
+    if (index === -1) throw new Error('There is not sdf with this filename: ', filename);
+    return index;
+  }
+
+  checkIndex(index) {
+    let result;
+
+    if (Number.isInteger(index)) {
+      if (index >= this.sdfFiles.length) throw new Error('Index out of range');
+      result = index;
+    } else {
+      result = this.getSDFIndexOf(index);
+    }
+
+    return result;
+  }
+
+}
+
+exports.nmrRecord = nmrRecord;
+
+/***/ }),
+/* 108 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = __webpack_require__(109);
+
+/***/ }),
+/* 109 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var OCL = __webpack_require__(110);
+
+__webpack_require__(112)(OCL);
+
+module.exports = OCL;
+
+/***/ }),
+/* 110 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = __webpack_require__(111);
+
+/***/ }),
+/* 111 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/**
@@ -32120,40 +32902,40 @@ fillExports(exportedApi,exports);}else { var i, obj, l, path; }function fillExpo
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(4)))
 
 /***/ }),
-/* 108 */
+/* 112 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 const staticMethods = {
-  DB: __webpack_require__(109),
-  RXN: __webpack_require__(119)
+  DB: __webpack_require__(113),
+  RXN: __webpack_require__(123)
 }; // These methods don't need to directly access OCL
 
 const moleculePrototypeMethods = {
-  getAllPaths: __webpack_require__(121),
-  getFunctions: __webpack_require__(140),
-  getGroupedDiastereotopicAtomIDs: __webpack_require__(142),
-  getMF: __webpack_require__(143),
-  getCouplings: __webpack_require__(144),
-  getNumberOfAtoms: __webpack_require__(147),
-  toDiastereotopicSVG: __webpack_require__(148),
-  toVisualizerMolfile: __webpack_require__(149)
+  getAllPaths: __webpack_require__(125),
+  getFunctions: __webpack_require__(144),
+  getGroupedDiastereotopicAtomIDs: __webpack_require__(146),
+  getMF: __webpack_require__(147),
+  getCouplings: __webpack_require__(148),
+  getNumberOfAtoms: __webpack_require__(151),
+  toDiastereotopicSVG: __webpack_require__(152),
+  toVisualizerMolfile: __webpack_require__(153)
 }; // These methods need a direct access to OCL. The must be exported as a function
 // that receives OCL and returns the method that will use it.
 
 const moleculePrototypeMethodsNeedOCL = {
-  getAtomsInfo: __webpack_require__(150),
-  getConnectivityMatrix: __webpack_require__(151),
-  getDiastereotopicHoseCodes: __webpack_require__(152),
-  getExtendedDiastereotopicAtomIDs: __webpack_require__(153),
-  getFunctionCodes: __webpack_require__(154),
-  getGroupedHOSECodes: __webpack_require__(155),
-  getHoseCodesForAtom: __webpack_require__(156),
-  cleaveBonds: __webpack_require__(157),
-  getBoundary: __webpack_require__(158),
-  addMoleculeAndAlign: __webpack_require__(159)
+  getAtomsInfo: __webpack_require__(154),
+  getConnectivityMatrix: __webpack_require__(155),
+  getDiastereotopicHoseCodes: __webpack_require__(156),
+  getExtendedDiastereotopicAtomIDs: __webpack_require__(157),
+  getFunctionCodes: __webpack_require__(158),
+  getGroupedHOSECodes: __webpack_require__(159),
+  getHoseCodesForAtom: __webpack_require__(160),
+  cleaveBonds: __webpack_require__(161),
+  getBoundary: __webpack_require__(162),
+  addMoleculeAndAlign: __webpack_require__(163)
 };
 
 module.exports = function extend(OCL) {
@@ -32177,7 +32959,7 @@ module.exports = function extend(OCL) {
 };
 
 /***/ }),
-/* 109 */
+/* 113 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32205,7 +32987,7 @@ module.exports = function (OCL) {
     }
 
     pushEntry(molecule, data, moleculeInfo) {
-      const pushEntry = __webpack_require__(110);
+      const pushEntry = __webpack_require__(114);
 
       return pushEntry.call({
         moleculeDB: this,
@@ -32214,7 +32996,7 @@ module.exports = function (OCL) {
     }
 
     pushMoleculeInfo(moleculeInfo, data) {
-      const pushMoleculeInfo = __webpack_require__(111);
+      const pushMoleculeInfo = __webpack_require__(115);
 
       return pushMoleculeInfo.call({
         moleculeDB: this,
@@ -32223,7 +33005,7 @@ module.exports = function (OCL) {
     }
 
     search(query, options) {
-      const search = __webpack_require__(112);
+      const search = __webpack_require__(116);
 
       return search.call({
         moleculeDB: this,
@@ -32239,7 +33021,7 @@ module.exports = function (OCL) {
   }
 
   MoleculeDB.parseCSV = function (csv, options) {
-    const parseCSV = __webpack_require__(113);
+    const parseCSV = __webpack_require__(117);
 
     return parseCSV.call({
       OCL,
@@ -32248,7 +33030,7 @@ module.exports = function (OCL) {
   };
 
   MoleculeDB.parseSDF = function (sdf, options) {
-    const parseSDF = __webpack_require__(115);
+    const parseSDF = __webpack_require__(119);
 
     return parseSDF.call({
       OCL,
@@ -32260,7 +33042,7 @@ module.exports = function (OCL) {
 };
 
 /***/ }),
-/* 110 */
+/* 114 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32331,7 +33113,7 @@ function pushEntry(molecule) {
 module.exports = pushEntry;
 
 /***/ }),
-/* 111 */
+/* 115 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32375,7 +33157,7 @@ function pushMoleculeInfo(moleculeInfo) {
 module.exports = pushMoleculeInfo;
 
 /***/ }),
-/* 112 */
+/* 116 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32559,13 +33341,13 @@ function processResult(entries) {
 module.exports = search;
 
 /***/ }),
-/* 113 */
+/* 117 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const Papa = __webpack_require__(114);
+const Papa = __webpack_require__(118);
 
 const defaultCSVOptions = {
   header: true,
@@ -32653,7 +33435,7 @@ function parseCSV(csv) {
 module.exports = parseCSV;
 
 /***/ }),
-/* 114 */
+/* 118 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* @license
@@ -33381,13 +34163,13 @@ Array.isArray || (Array.isArray = function (e) {
 });
 
 /***/ }),
-/* 115 */
+/* 119 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const sdfParser = __webpack_require__(116);
+const sdfParser = __webpack_require__(120);
 
 const defaultSDFOptions = {
   onStep: function onStep()
@@ -33445,21 +34227,21 @@ function parseSDF(sdf) {
 module.exports = parseSDF;
 
 /***/ }),
-/* 116 */
+/* 120 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const parse = __webpack_require__(117);
+const parse = __webpack_require__(121);
 
-const stream = __webpack_require__(118);
+const stream = __webpack_require__(122);
 
 module.exports = parse;
 parse.stream = stream;
 
 /***/ }),
-/* 117 */
+/* 121 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -33616,7 +34398,7 @@ function parse(sdf) {
 module.exports = parse;
 
 /***/ }),
-/* 118 */
+/* 122 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -33625,13 +34407,13 @@ module.exports = parse;
 module.exports = {};
 
 /***/ }),
-/* 119 */
+/* 123 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var parseRXN = __webpack_require__(120);
+var parseRXN = __webpack_require__(124);
 
 module.exports = function (OCL) {
   function RXN(rxn) {
@@ -33707,7 +34489,7 @@ module.exports = function (OCL) {
 };
 
 /***/ }),
-/* 120 */
+/* 124 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -33771,7 +34553,7 @@ function parse(rxn) {
 module.exports = parse;
 
 /***/ }),
-/* 121 */
+/* 125 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -33839,17 +34621,17 @@ module.exports = function getAllPaths() {
 };
 
 /***/ }),
-/* 122 */
+/* 126 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 module.exports = __webpack_require__(2).Matrix;
-module.exports.Decompositions = module.exports.DC = __webpack_require__(136);
+module.exports.Decompositions = module.exports.DC = __webpack_require__(140);
 
 /***/ }),
-/* 123 */
+/* 127 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -33860,15 +34642,15 @@ if (!Symbol.species) {
 }
 
 /***/ }),
-/* 124 */
+/* 128 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = exports = __webpack_require__(125);
-exports.getEquallySpacedData = __webpack_require__(127).getEquallySpacedData;
-exports.SNV = __webpack_require__(128).SNV;
+module.exports = exports = __webpack_require__(129);
+exports.getEquallySpacedData = __webpack_require__(131).getEquallySpacedData;
+exports.SNV = __webpack_require__(132).SNV;
 
 /***/ }),
-/* 125 */
+/* 129 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -34118,7 +34900,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 126 */
+/* 130 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -34871,7 +35653,7 @@ exports.weightedScatter = function weightedScatter(matrix, weights, means, facto
 };
 
 /***/ }),
-/* 127 */
+/* 131 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -35115,7 +35897,7 @@ exports.getEquallySpacedData = getEquallySpacedData;
 exports.integral = integral;
 
 /***/ }),
-/* 128 */
+/* 132 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -35145,7 +35927,7 @@ function SNV(data) {
 }
 
 /***/ }),
-/* 129 */
+/* 133 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -35172,7 +35954,7 @@ class MatrixTransposeView extends BaseView {
 module.exports = MatrixTransposeView;
 
 /***/ }),
-/* 130 */
+/* 134 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -35200,7 +35982,7 @@ class MatrixRowView extends BaseView {
 module.exports = MatrixRowView;
 
 /***/ }),
-/* 131 */
+/* 135 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -35232,7 +36014,7 @@ class MatrixSubView extends BaseView {
 module.exports = MatrixSubView;
 
 /***/ }),
-/* 132 */
+/* 136 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -35264,7 +36046,7 @@ class MatrixSelectionView extends BaseView {
 module.exports = MatrixSelectionView;
 
 /***/ }),
-/* 133 */
+/* 137 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -35292,7 +36074,7 @@ class MatrixColumnView extends BaseView {
 module.exports = MatrixColumnView;
 
 /***/ }),
-/* 134 */
+/* 138 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -35319,7 +36101,7 @@ class MatrixFlipRowView extends BaseView {
 module.exports = MatrixFlipRowView;
 
 /***/ }),
-/* 135 */
+/* 139 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -35346,7 +36128,7 @@ class MatrixFlipColumnView extends BaseView {
 module.exports = MatrixFlipColumnView;
 
 /***/ }),
-/* 136 */
+/* 140 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -35356,13 +36138,13 @@ var Matrix = __webpack_require__(2).Matrix;
 
 var SingularValueDecomposition = __webpack_require__(58);
 
-var EigenvalueDecomposition = __webpack_require__(137);
+var EigenvalueDecomposition = __webpack_require__(141);
 
 var LuDecomposition = __webpack_require__(57);
 
-var QrDecomposition = __webpack_require__(138);
+var QrDecomposition = __webpack_require__(142);
 
-var CholeskyDecomposition = __webpack_require__(139);
+var CholeskyDecomposition = __webpack_require__(143);
 
 function inverse(matrix) {
   matrix = Matrix.checkMatrix(matrix);
@@ -35420,7 +36202,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 137 */
+/* 141 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -36299,7 +37081,7 @@ function cdiv(xr, xi, yr, yi) {
 module.exports = EigenvalueDecomposition;
 
 /***/ }),
-/* 138 */
+/* 142 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -36489,7 +37271,7 @@ QrDecomposition.prototype = {
 module.exports = QrDecomposition;
 
 /***/ }),
-/* 139 */
+/* 143 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -36595,13 +37377,13 @@ CholeskyDecomposition.prototype = {
 module.exports = CholeskyDecomposition;
 
 /***/ }),
-/* 140 */
+/* 144 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var functionIndex = __webpack_require__(141);
+var functionIndex = __webpack_require__(145);
 
 module.exports = function getFunctions() {
   var currentFunctionCodes = this.getFunctionCodes();
@@ -36619,7 +37401,7 @@ module.exports = function getFunctions() {
 };
 
 /***/ }),
-/* 141 */
+/* 145 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -36687,7 +37469,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 142 */
+/* 146 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -36728,7 +37510,7 @@ module.exports = function getGroupedDiastereotopicAtomIDs() {
 };
 
 /***/ }),
-/* 143 */
+/* 147 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -36836,15 +37618,15 @@ module.exports = function getMF() {
 };
 
 /***/ }),
-/* 144 */
+/* 148 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const electronegativities = __webpack_require__(145);
+const electronegativities = __webpack_require__(149);
 
-const fragments = __webpack_require__(146);
+const fragments = __webpack_require__(150);
 
 module.exports = function getAllCouplings() {
   var molecule = this.getCompactCopy();
@@ -37340,7 +38122,7 @@ function isOnlyAttachedToHC(molecule, atom) {
 }
 
 /***/ }),
-/* 145 */
+/* 149 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -37444,7 +38226,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 146 */
+/* 150 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -37563,7 +38345,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 147 */
+/* 151 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -37587,7 +38369,7 @@ module.exports = function getNumberOfAtoms() {
 };
 
 /***/ }),
-/* 148 */
+/* 152 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -37636,7 +38418,7 @@ module.exports = function toDiastereotopicSVG() {
 };
 
 /***/ }),
-/* 149 */
+/* 153 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -37684,7 +38466,7 @@ module.exports = function toVisualizerMolfile() {
 };
 
 /***/ }),
-/* 150 */
+/* 154 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -37787,7 +38569,7 @@ module.exports = function (OCL) {
 };
 
 /***/ }),
-/* 151 */
+/* 155 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -37849,7 +38631,7 @@ module.exports = function (OCL) {
 };
 
 /***/ }),
-/* 152 */
+/* 156 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -37879,7 +38661,7 @@ module.exports = function (OCL) {
 };
 
 /***/ }),
-/* 153 */
+/* 157 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -37922,7 +38704,7 @@ module.exports = function (OCL) {
 };
 
 /***/ }),
-/* 154 */
+/* 158 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -38064,7 +38846,7 @@ module.exports = function (OCL) {
 };
 
 /***/ }),
-/* 155 */
+/* 159 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -38092,7 +38874,7 @@ module.exports = function (OCL) {
 };
 
 /***/ }),
-/* 156 */
+/* 160 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -38178,7 +38960,7 @@ module.exports = function (OCL) {
 };
 
 /***/ }),
-/* 157 */
+/* 161 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -38279,7 +39061,7 @@ module.exports = function (OCL) {
 };
 
 /***/ }),
-/* 158 */
+/* 162 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -38324,7 +39106,7 @@ module.exports = function () {
 };
 
 /***/ }),
-/* 159 */
+/* 163 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -38348,6 +39130,452 @@ module.exports = function () {
     return this;
   };
 };
+
+/***/ }),
+/* 164 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.processContent = processContent;
+
+var _parse1DSignals = __webpack_require__(165);
+
+function processContent(content, options) {
+  let {
+    tag
+  } = options;
+  let result;
+  let processor = resultType(tag);
+  let matchEqual = content.match(/=/g);
+
+  if (!matchEqual && !content.match(',')) {
+    result = content;
+  } else if (matchEqual && matchEqual.length === 1) {
+    result = propertyLinesProcessor(content);
+  } else {
+    result = processor(content, options);
+  }
+
+  return result;
+}
+
+function resultType(tag) {
+  let processor;
+  let ctag = tag.toLowerCase();
+  if (ctag.match(/1d/)) ctag = '1d';
+
+  switch (ctag.toLowerCase()) {
+    case 'id':
+      // it has property lines
+      processor = propertyLinesProcessor;
+      break;
+
+    case '1d':
+      // it has item list
+      processor = _parse1DSignals.parse1DSignal;
+      break;
+
+    case 'assignment': // it has item list
+
+    case 'signals':
+      processor = processAssignment;
+      break;
+
+    case 'j':
+      processor = processAssignment; // @TODO change it
+
+      break;
+
+    case 'version':
+    case 'solvent':
+    case 'temperature':
+    case 'level':
+      break;
+  }
+
+  return processor;
+}
+
+function propertyLinesProcessor(content, options) {
+  let value = content.replace(/^.*=/, '');
+  let key = content.replace(/[=].*/, '');
+  return {
+    key,
+    value
+  };
+}
+
+function processAssignment(content) {
+  content = content.replace(/ /g, '');
+  content = content.split(',');
+  let label = content[0].toLowerCase();
+  let shift = content.slice(1, 2); // Be able to know when the shift published or not
+
+  let atoms = content.slice(2);
+  return {
+    label,
+    shift,
+    atoms
+  };
+}
+
+/***/ }),
+/* 165 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.parse1DSignal = parse1DSignal;
+
+function parse1DSignal(content, labels) {
+  let signal = {};
+  content = content.replace(/ /g, '');
+  content = content.replace(/[l=] /g, '');
+  content = content.replace(/,(\w=)/g, ':$1');
+  console.log('this is content', content);
+  let data = content.split(':');
+  data.forEach(d => {
+    d = d.toLowerCase();
+    let value = d.replace(/^.*=/, '');
+    let key = d.replace(/[=].*/, '');
+    console.log('value', value);
+
+    if (parseFloat(key)) {
+      signal.delta = value;
+    } else {
+      signal[choseKey(key)] = choseProcess(value, key);
+    }
+  });
+  return signal;
+}
+
+function choseKey(entry) {
+  let key = '';
+
+  switch (entry) {
+    case 'j':
+      key = 'J';
+      break;
+
+    case 's':
+      key = 'multiplicity';
+      break;
+
+    case 'l':
+      key = 'pubAssignment';
+      break;
+
+    case 'n':
+      key = 'nbAtoms';
+      break;
+
+    case 'e':
+    case 'i':
+      key = 'pubIntegral';
+      break;
+  }
+
+  return key;
+}
+
+function choseProcess(d, key) {
+  let result;
+
+  switch (key) {
+    case 'l':
+      result = getPubAssignment(d);
+      break;
+
+    case 'j':
+      result = getCoupling(d);
+      break;
+
+    default:
+      result = d;
+  }
+
+  return result;
+}
+
+function getPubAssignment(d) {
+  return d.replace(/\s*/g, '').split(',');
+}
+
+function getCoupling(d) {
+  let jCoupling = [];
+  d = d.replace(/,([0-9])/g, ':$1');
+  d = d.split(':');
+  d.forEach(c => {
+    let value;
+    let withIt = '';
+    let toValue = c.indexOf('(');
+
+    if (toValue === -1) {
+      value = Number(c);
+      jCoupling.push({
+        coupling: value
+      });
+    } else {
+      value = Number(c.substring(0, toValue));
+      withIt = c.substring(toValue + 1, c.length - 1);
+      jCoupling.push({
+        coupling: value,
+        label: withIt
+      });
+    }
+  });
+  return jCoupling;
+}
+
+/***/ }),
+/* 166 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.nmredataToSampleEln = nmredataToSampleEln;
+
+function nmredataToSampleEln(nmredata, options) {
+  var moleculeAndMap = options.molecule;
+  var data = {
+    molfile: moleculeAndMap.molecule.toMolfile(),
+    spectra: {
+      nmr: []
+    },
+    atoms: [],
+    highlight: []
+  };
+  var nmr = data.spectra.nmr;
+  let labels = getLabels(nmredata.ASSIGNMENT);
+  labels = addDiaIDtoLabels(labels, moleculeAndMap);
+
+  for (let key in labels) {
+    let diaID = labels[key].diaID;
+    data.atoms[diaID] = labels[key].position;
+    data.highlight.push(diaID);
+  }
+
+  for (let tag in nmredata) {
+    if (!tag.toLowerCase().match(/1d/)) continue;
+    let frequencyLine = nmredata[tag].data.find(e => e.value.key === 'Larmor');
+    let nucleus = getNucleus(tag);
+    let width = nucleus.match(/13C/) ? 0.1 : 0.02;
+    let jcamp = getJcamp(nmredata[tag], options);
+    let spectrum = {
+      jcamp,
+      range: [],
+      nucleus,
+      frequency: frequencyLine.value.value,
+      experiment: '1d',
+      headComment: nmredata[tag].headComment
+    };
+    let ranges = spectrum.range;
+    let rangeData = nmredata[tag].data.filter(e => e.value.delta);
+    console.log('rangeData', rangeData);
+    rangeData.forEach(rangeD => {
+      //@TODO change to support several labels
+      let {
+        value,
+        comment
+      } = rangeD;
+      let signalData = getSignalData(value, labels);
+      console.log('es signalData', signalData);
+      signalData.pubAssignment.forEach(assignment => {
+        let label = labels[assignment];
+        if (!signalData.diaID) signalData.diaID = [];
+        if (!label) return;
+        signalData.diaID = signalData.diaID.concat(label.diaID);
+      });
+      let range = getRangeData(value, signalData, comment, width);
+      ranges.push(range);
+    });
+    nmr.push(spectrum);
+  }
+
+  return data;
+}
+
+function getRangeData(rangeData, signal, comment, width) {
+  //@TODO change for support range from tags
+  let integral;
+  let delta = rangeData.delta;
+  let [from, to] = delta.match('-') ? delta.split('-') : [Number(delta) - width, Number(delta) + width];
+  [from, to] = [Number(from).toFixed(3), Number(to).toFixed(3)];
+
+  if (rangeData.nbAtoms) {
+    integral = Number(rangeData.nbAtoms);
+  } else if (rangeData.pubIntegral) {
+    integral = Number(rangeData.pubIntegral);
+  }
+
+  return {
+    from,
+    to,
+    signal: [signal],
+    comment
+  };
+}
+
+function getJcamp(tag, options) {
+  let {
+    spectra,
+    root
+  } = options;
+  let locationLine = tag.data.find(e => e.value.key === 'Spectrum_Location');
+  let path = root + locationLine.value.value.replace(/file:/, '');
+  let jcamp = spectra.find(e => e.filename === path);
+  if (!jcamp) throw new Error("There is not jcamp with path: ".concat(path));
+  return jcamp;
+}
+
+function getSignalData(rangeData, labels) {
+  let result = {};
+  let signalKeys = ['delta', 'nbAtoms', 'multiplicity', 'J', 'pubAssignment'];
+  signalKeys.forEach(key => {
+    let data = rangeData[key];
+    if (data) result[key] = data;
+  });
+  let needJdiaID = false;
+
+  if (result.J) {
+    needJdiaID = result.J.some(j => {
+      return Object.keys(j).some(e => e === 'label');
+    });
+  }
+
+  if (needJdiaID) {
+    result.J.forEach((j, i, arr) => {
+      if (j.label) {
+        let label = labels[j.label];
+        if (label) arr[i].diaID = label.diaID;
+      }
+    });
+  }
+
+  return result;
+}
+
+function getNucleus(label) {
+  let nucleus = [];
+  let dimensions = label.match(/([0-9])[0-9A-Z_a-z]_/)[1];
+
+  if (dimensions === '1') {
+    nucleus = label.substring(3, label.length);
+  } else if (dimensions === '2') {
+    let data = label.substring(12, label.length).split('_');
+
+    for (let i = 0; i < data.length; i += 2) nucleus.push(data[i]);
+  }
+
+  return nucleus;
+}
+
+function getLabels(content) {
+  let data = content.data;
+  let labels = {};
+  data.forEach(assignment => {
+    let value = assignment.value;
+    let atoms = value.atoms;
+    let shift = value.shift;
+
+    if (!labels[value.label]) {
+      labels[value.label] = [];
+    }
+
+    labels[value.label] = {
+      shift,
+      atoms
+    };
+  });
+  return labels;
+}
+
+function addDiaIDtoLabels(labels, moleculeWithMap) {
+  let {
+    molecule,
+    map
+  } = moleculeWithMap;
+  let debugg = false; // ADD HIDROGENS TO BE SURE, THE ORIGINAL POSITION IT IS MAP OBJECT
+
+  molecule.addImplicitHydrogens();
+  let connections = molecule.getAllPaths({
+    toLabel: 'H',
+    maxLength: 1
+  });
+  if (debugg) console.log('conections', connections); // parse each label to get the connectivity of Hidrogens
+
+  for (let l in labels) {
+    let label = labels[l];
+    let atoms = label.atoms;
+    label.position = [];
+    if (debugg) console.log('label', label);
+
+    if (atoms[0].toLowerCase().includes('h')) {
+      //this is for implicit hidrogens
+      let connectedTo = Number(atoms[0].toLowerCase().replace('h', '')) - 1; // map object has the original atom's possition in molfile
+
+      connectedTo = map.indexOf(connectedTo);
+      if (debugg) console.log('hidrogen connected to:', connectedTo);
+      let connection = connections.find((c, i) => {
+        if (c.fromAtoms.some(fa => fa === connectedTo)) {
+          connections.splice(i, 1);
+          return true;
+        }
+      });
+      if (debugg) console.log('connection', connection);
+      label.position = connection.toAtoms;
+    } else if (atoms[0].toLowerCase().match(/[0-9A-Z_a-z]/)) {
+      atoms.forEach(a => {
+        // let p = map.indexOf(Number(a) - minLabels);
+        let p = map.indexOf(Number(a) - 1);
+        if (debugg) console.log(p, a);
+        label.position.push(p);
+      });
+    }
+  }
+
+  let diaIDs = molecule.getDiastereotopicAtomIDs();
+
+  for (let l in labels) {
+    let diaID = [];
+    labels[l].position.forEach(p => {
+      if (diaID.indexOf(diaIDs[p]) === -1) {
+        diaID.push(diaIDs[p]);
+      }
+    });
+    if (debugg) console.log('diaID', diaID);
+    labels[l].diaID = diaID;
+  }
+
+  return labels;
+}
+
+function getMinLabel(labels) {
+  let min = Number.MAX_SAFE_INTEGER;
+
+  for (let l in labels) {
+    let label = labels[l];
+    label.atoms.forEach(p => {
+      let pt = Number(p.replace(/[a-z]/g, ''));
+      if (pt < min) min = pt;
+    });
+  }
+
+  return min;
+}
 
 /***/ })
 /******/ ]);

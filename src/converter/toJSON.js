@@ -26,21 +26,34 @@ export function nmredataToSampleEln(nmredata, options) {
     };
     let ranges = spectrum.range;
     let rangeData = nmredata[tag].data.filter((e) => e.value.delta);
-    console.log('rangeData', rangeData)
     rangeData.forEach((rangeD) => {//@TODO change to support several labels
       let { value, comment } = rangeD;
       let signalData = getSignalData(value, labels);
-      console.log('es signalData', signalData)
-      let label = labels[signalData.pubAssignment];
-      signalData.diaID = label ? label.diaID : [];
-      let range = getRangeData(value);
-      let from = Number(signalData.delta) - width;
-      let to = Number(signalData.delta) + width;
-      ranges.push({ from: from.toFixed(3), to: to.toFixed(3), signal: [signalData], comment });
+      signalData.pubAssignment.forEach(assignment => {
+        let label = labels[assignment];
+        if (!signalData.diaID) signalData.diaID = [];
+        if (!label) return;        
+        signalData.diaID = signalData.diaID.concat(label.diaID);
+      })      
+      let range = getRangeData(value, signalData, comment, width);
+      ranges.push(range);
     });
     nmr.push(spectrum);
   }
   return data;
+}
+
+function getRangeData(rangeData, signal, comment, width) {//@TODO change for support range from tags
+  let integral;
+  let delta = rangeData.delta;
+  let [from, to] = delta.match('-') ? delta.split('-') : [Number(delta) - width, Number(delta) + width];
+  [from, to] = [Number(from).toFixed(3), Number(to).toFixed(3)];
+  if (rangeData.nbAtoms) {
+    integral = Number(rangeData.nbAtoms);
+  } else if (rangeData.pubIntegral) {
+    integral = Number(rangeData.pubIntegral);
+  }
+  return { from, to, signal: [signal], comment }
 }
 
 function getJcamp(tag, options) {
@@ -50,17 +63,6 @@ function getJcamp(tag, options) {
   let jcamp = spectra.find((e) => e.filename === path);
   if (!jcamp) throw new Error(`There is not jcamp with path: ${path}`);
   return jcamp;
-}
-
-function getRangeData(rangeData) {//@TODO change for support range from tags
-  let integral;
-  let delta = Number(rangeData.delta);
-  let [from, to] = [delta - 0.01, delta + 0.01];
-  if (rangeData.nbAtoms) {
-    integral = Number(rangeData.nbAtoms);
-  } else if (rangeData.pubIntegral) {
-    integral = Number(rangeData.pubIntegral);
-  }
 }
 
 function getSignalData(rangeData, labels) {
@@ -111,7 +113,6 @@ function getLabels(content) {
     }
     labels[value.label] = { shift, atoms };
   });
-  console.log('esto es labels', labels)
   return labels;
 }
 
