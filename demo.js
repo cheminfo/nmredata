@@ -2,26 +2,30 @@ const { readFileSync, writeFileSync } = require('fs');
 const zipper = require('zip-local');
 const {IOBuffer} = require('iobuffer');
 const { resolve } = require('path');
-const { nmrRecord } = require('./lib/index');
+const nmrRecord  = require('./lib/index');
 const {convertFolder} = require('brukerconverter');
 
-// console.log(nmrRecord.readSync('C:/Users/JuanCBA/Documents/github/jobo322/nmredata/testFiles/menthol_1D_1H_assigned_J.zip'))
+// var zipData = readFileSync(resolve('testFiles/menthol_1D_1H_assigned_J.zip'), 'base64') // 
+var zipData = readFileSync(resolve('testFiles/generated.zip'), 'base64') // 
 
-var zipData = readFileSync(resolve('testFiles/menthol_1D_1H_assigned_J.zip'), 'base64')
-nmrRecord.read(zipData).then((record) => {
+//reading asynchronously, 
+nmrRecord.readNMRR(zipData).then((record) => {
+  record.spectra.forEach(s => {
+    console.log(s.filename)
+  })
+
   // record has all sdf files and spectra data inside of nmrRecord file
   // let nbSDFFiles = record.nbSamples;
-  let nmredata = record.getNMReData();
-  // let allTags = record.getAllTags();
-  // let stringOfNMReDATATags = record.getNMReDATAtags();
-  console.log(nmredata['1D_1H'].data[3].value)
+  let allTags = record.getAllTags();
+  console.log(allTags)
+  // let stringOfNMReDATATags = record.getNMReData();
   // nmredata['1D_1H'].data.forEach(e => {
   //   console.log(e.value)
   // })
   var json = record.toJSON();
-  console.log(json)
-  console.log(json.spectra.nmr[0].range[0].signal)
-  console.log(record.spectra[0].filename);
+  // console.log(json.spectra.nmr[2].range)
+  // console.log(json.spectra.nmr[0].range[0].signal)
+  // console.log(record.spectra[0].filename);
   //JSON.stringify()
   
   // console.log(record.getNMReData('compound1.nmredata'))
@@ -31,7 +35,6 @@ nmrRecord.read(zipData).then((record) => {
   //   let molfile = record.getNMReData(i);
   // }
 });
-
 
 function readSync(path) {
   let zipData = zipper.sync.unzip(resolve(path)).memory();

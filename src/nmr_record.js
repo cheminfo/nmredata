@@ -57,6 +57,8 @@ export class nmrRecord {
       dataSplited.forEach((e) => {
         let content = e.replace(/\;.*/g, '');
         let comment = e.match('\;') ? e.replace(/.*\;+(.*)/g, '$1') : '';
+        console.log(tag)
+        console.log('comment: ', comment, 'content: ', content)
         if (content.length === 0) { // may be a head comment. is it always true?
           if (!tagData.headComment) tagData.headComment = []; // should this be array for several head comments?
           tagData.headComment.push(comment);

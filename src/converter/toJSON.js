@@ -22,12 +22,15 @@ export function nmredataToSampleEln(nmredata, options) {
       nucleus,
       frequency: frequencyLine.value.value,
       experiment: '1d',
-      headComment: nmredata[tag].headComment };
+      headComment: nmredata[tag].headComment 
+    };
     let ranges = spectrum.range;
     let rangeData = nmredata[tag].data.filter((e) => e.value.delta);
-    rangeData.forEach((rangeD) => {
+    console.log('rangeData', rangeData)
+    rangeData.forEach((rangeD) => {//@TODO change to support several labels
       let { value, comment } = rangeD;
       let signalData = getSignalData(value, labels);
+      console.log('es signalData', signalData)
       let label = labels[signalData.pubAssignment];
       signalData.diaID = label ? label.diaID : [];
       let range = getRangeData(value);
@@ -49,7 +52,7 @@ function getJcamp(tag, options) {
   return jcamp;
 }
 
-function getRangeData(rangeData) {
+function getRangeData(rangeData) {//@TODO change for support range from tags
   let integral;
   let delta = Number(rangeData.delta);
   let [from, to] = [delta - 0.01, delta + 0.01];
@@ -108,6 +111,7 @@ function getLabels(content) {
     }
     labels[value.label] = { shift, atoms };
   });
+  console.log('esto es labels', labels)
   return labels;
 }
 
@@ -121,15 +125,13 @@ function addDiaIDtoLabels(labels, moleculeWithMap) {
   if (debugg) console.log('conections', connections);
   // parse each label to get the connectivity of Hidrogens
 
-  let minLabels = getMinLabel(labels);
-  if (debugg) console.log('min of labels', minLabels);
   for (let l in labels) {
     let label = labels[l];
     let atoms = label.atoms;
     label.position = [];
     if (debugg) console.log('label', label);
-    if (atoms[0].toLowerCase().includes('h')) {
-      let connectedTo = Number(atoms[0].toLowerCase().replace('h', '')) - minLabels;
+    if (atoms[0].toLowerCase().includes('h')) { //this is for implicit hidrogens
+      let connectedTo = Number(atoms[0].toLowerCase().replace('h', '')) - 1;
 
       // map object has the original atom's possition in molfile
       connectedTo = map.indexOf(connectedTo);
@@ -144,7 +146,8 @@ function addDiaIDtoLabels(labels, moleculeWithMap) {
       label.position = connection.toAtoms;
     } else if (atoms[0].toLowerCase().match(/\w/s)) {
       atoms.forEach((a) => {
-        let p = map.indexOf(Number(a) - minLabels);
+        // let p = map.indexOf(Number(a) - minLabels);
+        let p = map.indexOf(Number(a) - 1);
         if (debugg) console.log(p, a);
         label.position.push(p);
       });
