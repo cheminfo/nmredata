@@ -36,6 +36,7 @@ export class nmrRecord {
     let toReplace = version > 1 ? [new RegExp(/\\\n*/g), '\n'] : [];
     sdfFile.labels.forEach((tag) => {
       if (tag.toLowerCase().match('nmredata')) {
+        if (!sdfFile.molecules[0][tag]) return;
         let key = tag.replace(/NMREDATA\_/, '');
         let data = version > 1 ? sdfFile.molecules[0][tag].replace(/\n*/g, '') : sdfFile.molecules[0][tag];
         data = data.replace(toReplace[0], toReplace[1]);
