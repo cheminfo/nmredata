@@ -57,15 +57,12 @@ export class nmrRecord {
       dataSplited.forEach((e) => {
         let content = e.replace(/\;.*/g, '');
         let comment = e.match('\;') ? e.replace(/.*\;+(.*)/g, '$1') : '';
-        console.log(tag)
-        console.log('comment: ', comment, 'content: ', content)
         if (content.length === 0) { // may be a head comment. is it always true?
           if (!tagData.headComment) tagData.headComment = []; // should this be array for several head comments?
           tagData.headComment.push(comment);
           return;
         }
         let value = processContent(content, { tag: tag });
-        console.log('este es value', value)
         tagData.data.push({ comment, value });
       });
     });
@@ -109,6 +106,11 @@ export class nmrRecord {
   setActiveElement(nactiveSDF) {
     nactiveSDF = this.checkIndex(nactiveSDF);
     this.activeElement = nactiveSDF;
+  }
+
+  getActiveElement() {
+    let sdfList = this.getSDFList();
+    return sdfList[this.activeElement];
   }
 
   getSDFIndexOf(filename) {

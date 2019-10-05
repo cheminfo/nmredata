@@ -32759,8 +32759,6 @@ class nmrRecord {
       dataSplited.forEach(e => {
         let content = e.replace(/\;.*/g, '');
         let comment = e.match('\;') ? e.replace(/.*\;+(.*)/g, '$1') : '';
-        console.log(tag);
-        console.log('comment: ', comment, 'content: ', content);
 
         if (content.length === 0) {
           // may be a head comment. is it always true?
@@ -32773,7 +32771,6 @@ class nmrRecord {
         let value = (0, _processor.processContent)(content, {
           tag: tag
         });
-        console.log('este es value', value);
         tagData.data.push({
           comment,
           value
@@ -32825,6 +32822,11 @@ class nmrRecord {
   setActiveElement(nactiveSDF) {
     nactiveSDF = this.checkIndex(nactiveSDF);
     this.activeElement = nactiveSDF;
+  }
+
+  getActiveElement() {
+    let sdfList = this.getSDFList();
+    return sdfList[this.activeElement];
   }
 
   getSDFIndexOf(filename) {
@@ -39241,13 +39243,11 @@ function parse1DSignal(content, labels) {
   content = content.replace(/ /g, '');
   content = content.replace(/[l=] /g, '');
   content = content.replace(/,(\w=)/g, ':$1');
-  console.log('this is content', content);
   let data = content.split(':');
   data.forEach(d => {
     d = d.toLowerCase();
     let value = d.replace(/^.*=/, '');
     let key = d.replace(/[=].*/, '');
-    console.log('value', value);
 
     if (parseFloat(key)) {
       signal.delta = value;
@@ -39384,7 +39384,6 @@ function nmredataToSampleEln(nmredata, options) {
     };
     let ranges = spectrum.range;
     let rangeData = nmredata[tag].data.filter(e => e.value.delta);
-    console.log('rangeData', rangeData);
     rangeData.forEach(rangeD => {
       //@TODO change to support several labels
       let {
@@ -39392,7 +39391,6 @@ function nmredataToSampleEln(nmredata, options) {
         comment
       } = rangeD;
       let signalData = getSignalData(value, labels);
-      console.log('es signalData', signalData);
       signalData.pubAssignment.forEach(assignment => {
         let label = labels[assignment];
         if (!signalData.diaID) signalData.diaID = [];

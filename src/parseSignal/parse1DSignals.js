@@ -3,13 +3,11 @@ export function parse1DSignal(content, labels) {
   content = content.replace(/ /g, '');
   content = content.replace(/[l=] /g, '')
   content = content.replace(/,(\w=)/g,':$1')
-  console.log('this is content', content)
   let data = content.split(':');
   data.forEach((d) => {
     d = d.toLowerCase();
     let value = d.replace(/^.*=/, '');
     let key = d.replace(/[=].*/, '');
-    console.log('value', value)
     if (parseFloat(key)) {
       signal.delta = value;
     } else {
