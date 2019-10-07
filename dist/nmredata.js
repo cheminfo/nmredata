@@ -32733,6 +32733,7 @@ class nmrRecord {
     let toReplace = version > 1 ? [new RegExp(/\\\n*/g), '\n'] : [];
     sdfFile.labels.forEach(tag => {
       if (tag.toLowerCase().match('nmredata')) {
+        if (!sdfFile.molecules[0][tag]) return;
         let key = tag.replace(/NMREDATA\_/, '');
         let data = version > 1 ? sdfFile.molecules[0][tag].replace(/\n*/g, '') : sdfFile.molecules[0][tag];
         data = data.replace(toReplace[0], toReplace[1]);
@@ -39360,7 +39361,10 @@ function nmredataToSampleEln(nmredata, options) {
   };
   var nmr = data.spectra.nmr;
   let labels = getLabels(nmredata.ASSIGNMENT);
-  labels = addDiaIDtoLabels(labels, moleculeAndMap);
+  labels = addDiaIDtoLabels(labels, moleculeAndMap); // if (nmredata['J'] && nmredata['J'].data) {
+  //   let jMatrix = getJMatrix(nmredata['J'].data);
+  //   console.log('entra', nmredata['J'])
+  // }
 
   for (let key in labels) {
     let diaID = labels[key].diaID;
@@ -39385,7 +39389,6 @@ function nmredataToSampleEln(nmredata, options) {
     let ranges = spectrum.range;
     let rangeData = nmredata[tag].data.filter(e => e.value.delta);
     rangeData.forEach(rangeD => {
-      //@TODO change to support several labels
       let {
         value,
         comment
@@ -39404,7 +39407,17 @@ function nmredataToSampleEln(nmredata, options) {
   }
 
   return data;
-}
+} // function getJMatrix(content) {
+//   let matrix = [];
+//   let labels = [];
+//   content.forEach(conection => {
+//     let {from, to, coupling} = conection.value;
+//     if (!labels.includes(from)) labels.push(from);
+//     if (!labels.includes(to)) labels.push(to);
+//   })
+//   console.log(labels)
+// }
+
 
 function getRangeData(rangeData, signal, comment, width) {
   //@TODO change for support range from tags
@@ -39523,21 +39536,18 @@ function addDiaIDtoLabels(labels, moleculeWithMap) {
 
     if (atoms[0].toLowerCase().includes('h')) {
       //this is for implicit hidrogens
+      if (debugg) console.log(atoms);
       let connectedTo = Number(atoms[0].toLowerCase().replace('h', '')) - 1; // map object has the original atom's possition in molfile
 
       connectedTo = map.indexOf(connectedTo);
       if (debugg) console.log('hidrogen connected to:', connectedTo);
       let connection = connections.find((c, i) => {
-        if (c.fromAtoms.some(fa => fa === connectedTo)) {
-          connections.splice(i, 1);
-          return true;
-        }
+        return c.fromAtoms.some(fa => fa === connectedTo);
       });
       if (debugg) console.log('connection', connection);
       label.position = connection.toAtoms;
     } else if (atoms[0].toLowerCase().match(/[0-9A-Z_a-z]/)) {
       atoms.forEach(a => {
-        // let p = map.indexOf(Number(a) - minLabels);
         let p = map.indexOf(Number(a) - 1);
         if (debugg) console.log(p, a);
         label.position.push(p);
