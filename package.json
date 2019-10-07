@@ -55,6 +55,7 @@
     "openchemlib": "^7.0.1",
     "openchemlib-extended": "^6.0.0",
     "path": "^0.12.7",
+    "yargs": "^14.2.0",
     "zip-local": "^0.3.4"
   }
 }

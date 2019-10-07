@@ -1,9 +1,14 @@
-const { readFileSync, writeFileSync } = require('fs');
+const { readFileSync, writeFileSync, existsSync } = require('fs');
 const { resolve } = require('path');
 const nmrRecord  = require('./lib/index');
+const argv = require('yargs').argv;
 
-var zipData = readFileSync(resolve('testFiles/menthol_1D_1H_assigned_J.zip'), 'base64') // 
-// var zipData = readFileSync(resolve('testFiles/generated.zip'), 'base64') // 
+var zipData;
+if (argv.optionalPath && existsSync(argv.optionalPath)) {
+  zipData = readFileSync(resolve(argv.optionalPath), 'base64');
+} else {
+  zipData = readFileSync(resolve('testFiles/menthol_1D_1H_assigned_J.zip'), 'base64');
+}
 
 //reading asynchronously, 
 nmrRecord.readNMRR(zipData).then((record) => {
@@ -19,7 +24,7 @@ nmrRecord.readNMRR(zipData).then((record) => {
    *  It's possible to get or set (filename or index) an activeElement.
    */
   let activeElement = record.getActiveElement(); //should return 'wild_JCH_coupling'
-  record.setActiveElement('only_one_HH_coupling_in_Jtag');
+  record.setActiveElement(sdfList[0]);
 
   /**
    * You can get the text of all tags of a specific sdf file (filename or index) with 
