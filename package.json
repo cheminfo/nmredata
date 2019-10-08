@@ -1,6 +1,6 @@
 {
   "name": "nmredata",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "NMReDATA parser",
   "main": "./lib/index.js",
   "module": "./src/index.js",
@@ -23,7 +23,7 @@
     "url": "git+https://github.com/cheminfo/nmredata.git"
   },
   "keywords": [],
-  "author": "Luc Patiny",
+  "author": "Jose Alejandro Bolaños Arroyave",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/cheminfo/nmredata/issues"
