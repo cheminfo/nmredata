@@ -8,11 +8,10 @@ export default function getPascal(n, spin) {
   for (var i = 0; i < (n - 1); i++) {
     var line = [];
     for (j = 0; j < mult; j++) {
-      if (j === 0) { 
-        for (var k = 0; k < previousLine.length; k++) line.push(previousLine[k]);
-      }// copy the line
-      else {
-        for ( k = 0; k < previousLine.length - 1; k++) line[k + j] += previousLine[k]; // add the previous line
+      if (j === 0) {
+        for (var k = 0; k < previousLine.length; k++) line.push(previousLine[k]);// copy the line
+      } else {
+        for (k = 0; k < previousLine.length - 1; k++) line[k + j] += previousLine[k]; // add the previous line
         line.push(1); // complete the line
       }
     }
