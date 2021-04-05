@@ -47,8 +47,7 @@ export function nmriumToNmredata(state, options = {}) {
 
   sdfResult += molfile;
   let labels = getLabels(data, groupedOptions);
-  console.log('labels', labels);
-  return;
+  // console.log('labels', labels);
   sdfResult += prefix + 'VERSION>\n1.1\\\n';
   sdfResult += putTag(data, 'temperature');
   sdfResult += putTag(data, 'solvent');
@@ -57,7 +56,7 @@ export function nmriumToNmredata(state, options = {}) {
     sdfResult += prefix + tags['id'] + '>\nid\\\n';
   }
 
-  sdfResult += formatAssignments(labels, groupedOptions);
+  sdfResult += formatAssignments(labels.byDiaID, groupedOptions);
 
   sdfResult += get1DSignals(data, labels, groupedOptions);
   console.log(sdfResult);
@@ -135,7 +134,6 @@ function get1DSignals(data, labels, options = {}) {
 
       for (let signal of signals) {
         let { multiplicity } = signal;
-        if (debugg) console.log('currentMultiplicity', multiplicity);
         if ((!multiplicity || multiplicity === 'm') && nucleus === '1H') {
           str +=
             '\n' +
@@ -148,11 +146,10 @@ function get1DSignals(data, labels, options = {}) {
 
         let signalLabel = '';
 
-        console.log('signalID', `delta: ${signal.delta}`, signal.diaID);
         signal.diaID.forEach((diaID, i, arr) => {
           let separator = ', ';
           if (i === arr.length - 1) separator = '';
-          let label = labels[diaID].label || diaID;
+          let label = labels.byDiaID[diaID].label || diaID;
           signalLabel += label + separator;
         });
         str += ', L=' + signalLabel;
@@ -160,61 +157,35 @@ function get1DSignals(data, labels, options = {}) {
           if (signal.multiplicity) str += ', S=' + signal.multiplicity;
 
           let jCoupling = signal.j;
-          console.log('jcoupling', jCoupling);
-          if (debugg) console.log('jcoupling', jCoupling);
           if (Array.isArray(jCoupling) && jCoupling.length) {
-            str += ', J=' + Number(jCoupling[0].coupling).toFixed(3);
-
-            if (jCoupling[0].assignment) {
-              let { assignment } = jCoupling[0];
-              if (!Array.isArray(assignment)) assignment = [assignment];
-              let jCouple =
-                labels[jCoupling[0].assignment[0]].label ||
-                String(jCoupling[0].diaID[0]);
-              str += '(' + jCouple + ')';
-            }
-
-            for (let i = 1; i < jCoupling.length; i++) {
-              str += ', ' + String(Number(jCoupling[i].coupling).toFixed(3));
-              if (jCoupling[i].assignment) {
-                let { assignment } = jCoupling[i];
-                if (!Array.isArray(assignment)) assignment = [assignment];
-                if (!assignment.length) continue;
+            let separator = ', J=';
+            for (let i = 0; i < jCoupling.length; i++) {
+              str += `${separator}${Number(jCoupling[i].coupling).toFixed(3)}`;
+              if (jCoupling[i].diaID) {
+                let { diaID } = jCoupling[i];
+                if (!Array.isArray(diaID)) diaID = [diaID];
+                if (!diaID.length) continue;
                 let jCouple =
-                  labels[assignment[0]].label || String(assignment[0]);
-                str += '(' + jCouple + ')';
+                  labels[diaID[0]].label || String(diaID[0]);
+                str += `(${jCouple})`;
               }
+              separator = ', ';
             }
-            // if (jCoupling[0].diaID && jCoupling[0].diaID.length) {
-            //   let jCouple =
-            //     labels[jCoupling[0].diaID[0]].label ||
-            //     String(jCoupling[0].diaID[0]);
-            //   str += '(' + jCouple + ')';
-            // }
-            // for (let i = 1; i < jCoupling.length; i++) {
-            //   str += ', ' + String(Number(jCoupling[i].coupling).toFixed(3));
-            //   if (jCoupling[i].diaID && jCoupling[i].diaID.length) {
-            //     let jCouple =
-            //       labels[jCoupling[i].diaID[0]].label ||
-            //       String(jCoupling[i].diaID[0]);
-            //     str += '(' + jCouple + ')';
-            //   }
-            // }
           }
           if (range.integral) {
-            str += ', E=' + String(Number(range.integral).toFixed(toFix));
+            str += `, E=${Number(range.integral).toFixed(toFix)}`;
           } else if (range.pubIntegral) {
-            str += ', E=' + String(range.putIntegral.toFixed(toFix));
+            str += `, E=${range.putIntegral.toFixed(toFix)}`;
           } else if (range.signal[0].nbAtoms !== undefined) {
-            str += ', E=' + String(range.signal[0].nbAtoms);
+            str += `, E=${range.signal[0].nbAtoms}`;
           }
         }
       }
-      str += signals.length ? '\\' : '';
+      if (signals.length) str += '\\';
     }
     str += '\n';
   }
-  if (debugg) console.log('current signals', str);
+
   return str;
 }
 
@@ -224,9 +195,10 @@ function getLabels(data, options = {}) {
   let toFix;
 
   let connections = getShortestPaths(molecule, { toLabel: 'H', maxLength: 1 });
-  // let connections = molecule.getAllPaths({toLabel: 'H', maxLength: 1});
+
   if (debugg) console.log(molfile._atoms);
-  let newLabels = {};
+  let byDiaID = {};
+  let byAssignNumber = {};
   for (let spectrum of data) {
     let nucleus = spectrum.info.nucleus[0];
     if (nucleus == '1H') {
@@ -248,7 +220,7 @@ function getLabels(data, options = {}) {
               if (dia.oclID === diaID) return true;
               return false;
             });
-            // the adition of one is due to atoms start from zero
+            // the addition of one in atom number it is because the atoms enumeration starts from zero
 
             let labelOptions = {
               atom: groupedOclID.atoms[0],
@@ -257,7 +229,7 @@ function getLabels(data, options = {}) {
               atomLabel: groupedOclID.atomLabel,
             };
 
-            newLabels[diaID] = {
+            byDiaID[diaID] = {
               atoms: groupedOclID.atoms.map((e) => e + 1),
               shift: delta,
               label: createLabel(labelOptions),
@@ -265,7 +237,7 @@ function getLabels(data, options = {}) {
 
             for (let atom of groupedOclID.atoms) {
               labelOptions.atom = atom;
-              newLabels[atom] = {
+              byAssignNumber[atom] = {
                 shift: delta,
                 diaID,
                 label: createLabel(labelOptions),
@@ -276,12 +248,12 @@ function getLabels(data, options = {}) {
       }
     }
   }
-  return newLabels;
+  return { byAssignNumber, byDiaID };
 }
 
 function createLabel(options) {
   const { atom, molecule, atomLabel, connections } = options;
-  console.log('atom', atom)
+  console.log('atom', atom);
   let label = '';
   if (atomLabel !== 'C') {
     let connectedTo = connections[atom];
