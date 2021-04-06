@@ -1,3 +1,7 @@
+import OCL from 'openchemlib';
+import { getAtomsInfo, getPathsInfo, initOCL } from 'openchemlib-utils';
+
+initOCL(OCL);
 
 export function nmredataToSampleEln(nmredata, options) {
   var moleculeAndMap = options.molecule;
@@ -26,17 +30,17 @@ export function nmredataToSampleEln(nmredata, options) {
       nucleus,
       frequency: frequencyLine.value.value,
       experiment: '1d',
-      headComment: nmredata[tag].headComment 
+      headComment: nmredata[tag].headComment
     };
     let ranges = spectrum.range;
     let rangeData = nmredata[tag].data.filter((e) => e.value.delta);
     rangeData.forEach((rangeD) => {
       let { value, comment } = rangeD;
       let signalData = getSignalData(value, labels);
-      signalData.pubAssignment.forEach(assignment => {
+      signalData.pubAssignment.forEach((assignment) => {
         let label = labels[assignment];
         if (!signalData.diaID) signalData.diaID = [];
-        if (!label) return;        
+        if (!label) return;
         signalData.diaID = signalData.diaID.concat(label.diaID);
       });
       let range = getRangeData(value, signalData, comment, width);
@@ -58,7 +62,7 @@ export function nmredataToSampleEln(nmredata, options) {
 //   console.log(labels)
 // }
 
-function getRangeData(rangeData, signal, comment, width) {//@TODO change for support range from tags
+function getRangeData(rangeData, signal, comment, width) { // @TODO change for support range from tags
   let integral;
   let delta = rangeData.delta;
   let [from, to] = delta.match('-') ? delta.split('-') : [Number(delta) - width, Number(delta) + width];
@@ -68,7 +72,7 @@ function getRangeData(rangeData, signal, comment, width) {//@TODO change for sup
   } else if (rangeData.pubIntegral) {
     integral = Number(rangeData.pubIntegral);
   }
-  return { from, to, signal: [signal], comment }
+  return { from, to, signal: [signal], comment };
 }
 
 function getJcamp(tag, options) {
@@ -137,6 +141,22 @@ function addDiaIDtoLabels(labels, moleculeWithMap) {
   // ADD HIDROGENS TO BE SURE, THE ORIGINAL POSITION IT IS MAP OBJECT
   molecule.addImplicitHydrogens();
 
+  let atomsInfo = getAtomsInfo(molecule);
+
+  let atomsWidthHidrogens = [];
+  for (let i = 0; i < atomsInfo.length; i++) {
+    if (atomsInfo[i].allHydrogens > 0) {
+      atomsWidthHidrogens.push(atomsInfo[i].label);
+    }
+  }
+  console.log(atomsWidthHidrogens);
+  let connections2 = [];
+  for (let i = 0; i < atomsWidthHidrogens.length; i++) {
+    let atomLabel = atomsWidthHidrogens[i];
+    let tempConnections = getPathsInfo(molecule, { fromLabel: 'H', toLabel: atomLabel, maxLength: 1 });
+    connections2 = connections2.concat(tempConnections.filter((e) => e.paths.length > 0));
+  }
+  // console.log(connections2);
   let connections = molecule.getAllPaths({ toLabel: 'H', maxLength: 1 });
   if (debugg) console.log('conections', connections);
   // parse each label to get the connectivity of Hidrogens
@@ -146,15 +166,67 @@ function addDiaIDtoLabels(labels, moleculeWithMap) {
     let atoms = label.atoms;
     label.position = [];
     if (debugg) console.log('label', label);
-    if (atoms[0].toLowerCase().includes('h')) { //this is for implicit hidrogens
-      if (debugg) console.log(atoms)
+    if (atoms[0].toLowerCase().includes('h')) { // this is for implicit hidrogens
+      if (debugg) console.log(atoms);
       let connectedTo = Number(atoms[0].toLowerCase().replace('h', '')) - 1;
 
       // map object has the original atom's possition in molfile
       connectedTo = map.indexOf(connectedTo);
       if (debugg) console.log('hidrogen connected to:', connectedTo);
       let connection = connections.find((c, i) => {
-        return c.fromAtoms.some((fa) => fa === connectedTo)
+        return c.fromAtoms.some((fa) => fa === connectedTo);
+      });
+      if (debugg) console.log('connection', connection);
+      label.position = connection.toAtoms;
+    } else if (atoms[0].toLowerCase().match(/\w/s)) {
+      atoms.forEach((a) => {
+        let p = map.indexOf(Number(a) - 1);
+        if (debugg) console.log(p, a);
+        label.position.push(p);
+      });
+    }
+  }
+
+  let diaIDs = molecule.getDiastereotopicAtomIDs();
+
+  for (let l in labels) {
+    let diaID = [];
+    labels[l].position.forEach((p) => {
+      if (diaID.indexOf(diaIDs[p]) === -1) {
+        diaID.push(diaIDs[p]);
+      }
+    });
+    if (debugg) console.log('diaID', diaID);
+    labels[l].diaID = diaID;
+  }
+  return labels;
+}
+
+function addDiaIDtoLabelsOld(labels, moleculeWithMap) {
+  let { molecule, map } = moleculeWithMap;
+  let debugg = false;
+  // ADD HIDROGENS TO BE SURE, THE ORIGINAL POSITION IT IS MAP OBJECT
+  molecule.addImplicitHydrogens();
+
+
+  let connections = molecule.getAllPaths({ toLabel: 'H', maxLength: 1 });
+  if (debugg) console.log('conections', connections);
+  // parse each label to get the connectivity of Hidrogens
+
+  for (let l in labels) {
+    let label = labels[l];
+    let atoms = label.atoms;
+    label.position = [];
+    if (debugg) console.log('label', label);
+    if (atoms[0].toLowerCase().includes('h')) { // this is for implicit hidrogens
+      if (debugg) console.log(atoms);
+      let connectedTo = Number(atoms[0].toLowerCase().replace('h', '')) - 1;
+
+      // map object has the original atom's possition in molfile
+      connectedTo = map.indexOf(connectedTo);
+      if (debugg) console.log('hidrogen connected to:', connectedTo);
+      let connection = connections.find((c, i) => {
+        return c.fromAtoms.some((fa) => fa === connectedTo);
       });
       if (debugg) console.log('connection', connection);
       label.position = connection.toAtoms;
