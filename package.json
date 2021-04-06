@@ -32,6 +32,13 @@
   "jest": {
     "testEnvironment": "node"
   },
+  "prettier": {
+    "arrowParens": "always",
+    "semi": true,
+    "singleQuote": true,
+    "tabWidth": 2,
+    "trailingComma": "all"
+  },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-jest": "^24.8.0",
@@ -50,11 +57,13 @@
   },
   "dependencies": {
     "brukerconverter": "^1.1.2",
+    "esm": "^3.2.25",
     "jcampconverter": "^3.0.4",
     "jszip": "^3.2.1",
-    "openchemlib": "^7.0.1",
+    "openchemlib": "^7.4.0",
     "openchemlib-extended": "^6.0.0",
-    "path": "^0.12.7",
+    "openchemlib-utils": "^1.0.0",
+    "prettier": "^2.2.1",
     "yargs": "^14.2.0",
     "zip-local": "^0.3.4"
   }
