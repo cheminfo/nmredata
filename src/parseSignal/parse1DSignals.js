@@ -1,8 +1,8 @@
 export function parse1DSignal(content, labels) {
   let signal = {};
   content = content.replace(/ /g, '');
-  content = content.replace(/[l=] /g, '')
-  content = content.replace(/,(\w=)/g,':$1')
+  content = content.replace(/[l=] /g, '');
+  content = content.replace(/,(\w=)/g, ':$1');
   let data = content.split(':');
   data.forEach((d) => {
     d = d.toLowerCase();
@@ -11,13 +11,13 @@ export function parse1DSignal(content, labels) {
     if (parseFloat(key)) {
       signal.delta = value;
     } else {
-      signal[choseKey(key)] = choseProcess(value, key);
+      signal[chooseKey(key)] = choseProcess(value, key);
     }
   });
   return signal;
 }
 
-function choseKey(entry) {
+function chooseKey(entry) {
   let key = '';
   switch (entry) {
     case 'j':
@@ -64,8 +64,8 @@ function getCoupling(d) {
   d = d.replace(/,([0-9])/g, ':$1');
   d = d.split(':');
   d.forEach((c) => {
-    let value; let
-      withIt = '';
+    let value;
+    let withIt = '';
     let toValue = c.indexOf('(');
     if (toValue === -1) {
       value = Number(c);

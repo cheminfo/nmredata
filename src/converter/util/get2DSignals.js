@@ -4,7 +4,7 @@ import { getToFix } from './getToFix';
 const isArray = Array.isArray;
 
 export function get2DSignals(data, labels, options = {}) {
-  let { prefix } = options;
+  let { prefix, nmrRecord } = options;
   let { byDiaID } = labels;
   let str = '';
   let nucleusRecorded = [];
@@ -29,8 +29,17 @@ export function get2DSignals(data, labels, options = {}) {
     let toFix = getToFix(nucleus);
 
     nucleusRecorded.push(nucleus);
-    str +=
-      `\nLarmor=${Number(spectrum.info.baseFrequency[0]).toFixed(2)}\\`;
+    str += `\nLarmor=${Number(spectrum.info.baseFrequency[0]).toFixed(2)}\\`;
+
+    if (spectrum.source.jcamp) {
+      let pathPrefix = 'jcamp_folder/1d/';
+      nmrRecord.file(
+        `${pathPrefix}'${spectrum.display.name}`,
+        spectrum.source.jcamp,
+      );
+      str += `\nSpectrum_Jcamp=file:./${pathPrefix}${spectrum.display.name}\\`;
+    }
+
     if (experiment) str += `\nCorType=${experiment} \\`;
     if (pulseSequence) str += `\nPulseProgram=${pulseSequence} \\`;
 

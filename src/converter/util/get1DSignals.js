@@ -1,9 +1,10 @@
 export function get1DSignals(data, labels, options = {}) {
-  const { prefix } = options;
+  const { prefix, nmrRecord } = options;
   let str = '';
   let nucleusArray = [];
+  // let jcampFolder = nmrRecord.folder('jcamp_folder');
+  // let jcamp1DFolder = jcampFolder.folder('1d');
   for (let spectrum of data) {
-    console.log(spectrum.info);
     if (spectrum.info.dimension > 1) continue;
 
     let ranges = spectrum.ranges.values || [];
@@ -33,37 +34,27 @@ export function get1DSignals(data, labels, options = {}) {
       str += `\nLarmor=${Number(spectrum.info.frequency).toFixed(2)}\\`;
     }
     // improve it because we have every thing in the browser, check if there is the posibility to add flat data {x, y}.
-    // if (spectrum.isJcamp) {
-    //     nmrRecord.file('jcampData/'+spectrum.jcamp.filename, spectrum.jcamp.data);
-    //     str += '\nSpectrum_Location=file\:jcampData/' + spectrum.jcamp.filename + '\\';
-    // } else if (spectrum.path) {
-    //     console.log(spectrum)
-    //     let pdataIndex = spectrum.path.indexOf('pdata');
-    //     let path = spectrum.path.slice(0, pdataIndex).join('/');
-    //     let zipFolder = zip.filter(file => file.includes(path));
-    //     console.log(zipFolder)
-    //     for (let file of zipFolder) {
-    //         if (file.dir) continue;
-    //         let fileData = await zip.file(file.name).async('uint8array');
-    //         nmrRecord.file(file.name, fileData);
-    //     }
-    //     str += '\nSpectrum_Location=file\:' + spectrum.path.join('/') + '/\\' ;
-    // }
+    console.log('pasa hasta sourc', spectrum);
+    if (spectrum.source.jcamp) {
+      console.log('file', `jcamp_folder/1d/${spectrum.display.name}`);
+      nmrRecord.file(
+        `jcamp_folder/1d/${spectrum.display.name}`,
+        spectrum.source.jcamp,
+      );
+      str += `\nSpectrum_Jcamp=file:./jcamp_folder/1d/${spectrum.display.name}\\`;
+    }
 
     for (let range of ranges) {
       let signals = range.signal.filter(
         (s) => s.hasOwnProperty('diaID') && s.diaID.length,
       );
-      if (debugg) console.log('signals', signals);
 
       for (let signal of signals) {
         let { multiplicity } = signal;
         if ((!multiplicity || multiplicity === 'm') && nucleus === '1H') {
-          str +=
-            `\n${
-              Number(range.from).toFixed(toFix)
-            }-${
-              Number(range.to).toFixed(toFix)}`;
+          str += `\n${Number(range.from).toFixed(toFix)}-${Number(
+            range.to,
+          ).toFixed(toFix)}`;
         } else if (signal.hasOwnProperty('delta')) {
           str += `\n${Number(signal.delta).toFixed(toFix)}`;
         } else {

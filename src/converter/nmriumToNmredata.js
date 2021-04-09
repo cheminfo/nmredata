@@ -1,10 +1,10 @@
+import jszip from 'jszip';
+import { getGroupedDiastereotopicAtomIDs } from 'openchemlib-utils';
 import { Molecule as OCLMolecule } from 'openchemlib/full';
-import { get2DSignals } from './util/get2DSignals';
+
 import { get1DSignals } from './util/get1DSignals';
+import { get2DSignals } from './util/get2DSignals';
 import { getLabels } from './util/getLabels';
-import {
-  getGroupedDiastereotopicAtomIDs,
-} from 'openchemlib-utils';
 
 const tags = {
   solvent: 'SOLVENT',
@@ -17,16 +17,17 @@ const tags = {
 
 export function nmriumToNmredata(state, options = {}) {
   const {
-    spectra: data, // it would be changed depending of the final location
+    data, // it would be changed depending of the final location
     molecules,
   } = state || {
-    spectra: [], // it would be changed depending of the final location
+    data: [], // it would be changed depending of the final location
     molecules: [],
   };
 
-  const { id, prefix = '\n> <NMREDATA_' } = options;
+  const { id, prefix = '\n> <NMREDATA_', filename = 'nmredata' } = options;
 
   let sdfResult = '';
+  let nmrRecord = new jszip();
 
   let molecule = OCLMolecule.fromMolfile(molecules[0].molfile);
   molecule.addImplicitHydrogens();
@@ -36,6 +37,7 @@ export function nmriumToNmredata(state, options = {}) {
     prefix,
     molecule,
     groupedDiaIDs,
+    nmrRecord,
   };
 
   sdfResult += molecules[0].molfile;
@@ -51,8 +53,9 @@ export function nmriumToNmredata(state, options = {}) {
   sdfResult += formatAssignments(labels.byDiaID, groupedOptions);
   sdfResult += get1DSignals(data, labels, groupedOptions);
   sdfResult += get2DSignals(data, labels, groupedOptions);
-  console.log(sdfResult);
   sdfResult += '\n$$$$\n';
+  nmrRecord.file(`${filename}.sdf`, sdfResult);
+  return nmrRecord;
 }
 
 function formatAssignments(labels, options) {

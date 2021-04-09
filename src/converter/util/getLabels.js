@@ -1,4 +1,5 @@
 import { getShortestPaths } from 'openchemlib-utils';
+
 import { flat2DSignals } from './flat2DSignals';
 import { getToFix } from './getToFix';
 
@@ -21,7 +22,6 @@ export function getLabels(data, options = {}) {
     let rois = spectrum[roiKey].values || [];
     for (let roi of rois) {
       let signals = flatSignals(roi.signal);
-      console.log(signals);
       for (let i = 0; i < signals.length; i++) {
         let diaIDs = signals[i].diaID || [];
         for (let diaID of diaIDs) {

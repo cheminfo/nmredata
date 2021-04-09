@@ -4,7 +4,7 @@ export function processContent(content, options) {
   let { tag } = options;
   let result;
   let processor = resultType(tag);
-  let matchEqual = content.match(/=/g);
+  let matchEqual = content.match(/[=]/g);
   if (!matchEqual && !content.match(',')) {
     result = content;
   } else if (matchEqual && matchEqual.length === 1) {
@@ -52,7 +52,7 @@ function processAssignment(content) {
   content = content.replace(/ /g, '');
   content = content.split(',');
   let label = content[0].toLowerCase();
-  let shift = content.slice(1, 2);// Be able to know when the shift published or not
+  let shift = content.slice(1, 2); // Be able to know when the shift published or not
   let atoms = content.slice(2);
   return { label, shift, atoms };
 }
