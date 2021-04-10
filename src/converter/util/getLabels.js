@@ -5,11 +5,9 @@ import { getToFix } from './getToFix';
 
 export function getLabels(data, options = {}) {
   const { groupedDiaIDs, molecule } = options;
-  let debugg = false;
 
   let connections = getShortestPaths(molecule, { toLabel: 'H', maxLength: 1 });
 
-  if (debugg) console.log(molfile._atoms);
   let byDiaID = {};
   let byAssignNumber = {};
   for (let spectrum of data) {

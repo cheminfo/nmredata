@@ -8,36 +8,30 @@ export function get2DSignals(data, labels, options = {}) {
   let { byDiaID } = labels;
   let str = '';
   let nucleusRecorded = [];
+  let nbTwoD = 0;
   for (let spectrum of data) {
     if (spectrum.info.dimension < 2) continue;
 
     let { nucleus, experiment, pulseSequence } = spectrum.info;
 
-    let couplingObserved = getCouplingObserved(experiment);
     if (experiment) prefix = `\n> 2D ${experiment} <NMREDATA_2D_`;
-    let counter = 1;
-    let subfix = '';
-    nucleusRecorded.forEach((e) => {
-      if (e === nucleus) counter++;
-    });
 
-    if (counter > 1) subfix = `#${counter}`;
+    nucleusRecorded.push(nucleus);
 
+    let couplingObserved = getCouplingObserved(experiment);
     if (nucleus) {
       str += `${prefix}${nucleus[1]}_${couplingObserved}_${nucleus[0]}>`;
     }
     let toFix = getToFix(nucleus);
 
-    nucleusRecorded.push(nucleus);
     str += `\nLarmor=${Number(spectrum.info.baseFrequency[0]).toFixed(2)}\\`;
 
+    str += `\nSpectrum_Jcamp=file:./jcamp_folder/2d/${spectrum.display.name}\\`;
     if (spectrum.source.jcamp) {
-      let pathPrefix = 'jcamp_folder/1d/';
       nmrRecord.file(
-        `${pathPrefix}'${spectrum.display.name}`,
+        `jcamp_folder/2d/${spectrum.display.name}`,
         spectrum.source.jcamp,
       );
-      str += `\nSpectrum_Jcamp=file:./${pathPrefix}${spectrum.display.name}\\`;
     }
 
     if (experiment) str += `\nCorType=${experiment} \\`;
@@ -54,7 +48,9 @@ export function get2DSignals(data, labels, options = {}) {
         str += `\n${xLabel}/${yLabel}, I=${intensity.toFixed(2)}\\`;
       }
     }
+    nbTwoD++;
   }
+  if (nbTwoD > 0) nmrRecord.folder('jcamp_folder/2d');
   return str;
 }
 

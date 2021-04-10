@@ -1,9 +1,10 @@
+import { getToFix } from './getToFix';
+
 export function get1DSignals(data, labels, options = {}) {
   const { prefix, nmrRecord } = options;
   let str = '';
   let nucleusArray = [];
-  // let jcampFolder = nmrRecord.folder('jcamp_folder');
-  // let jcamp1DFolder = jcampFolder.folder('1d');
+  let nbOneD = 0;
   for (let spectrum of data) {
     if (spectrum.info.dimension > 1) continue;
 
@@ -15,39 +16,28 @@ export function get1DSignals(data, labels, options = {}) {
     nucleusArray.forEach((e) => {
       if (e === nucleus) counter++;
     });
+    nucleusArray.push(nucleus);
 
     if (counter > 1) subfix = `#${counter}`;
 
-    let toFix;
-    switch (nucleus) {
-      case '1H':
-        str += `${prefix}1D_1H${subfix}>`;
-        toFix = 2;
-        break;
-      case '13C':
-        str += `${prefix}1D_13C${subfix}>`;
-        toFix = 1;
-    }
-    nucleusArray.push(nucleus);
+    str += `${prefix}1D_${nucleus.toUpperCase()}${subfix}>`;
 
     if (spectrum.info.frequency) {
       str += `\nLarmor=${Number(spectrum.info.frequency).toFixed(2)}\\`;
     }
-    // improve it because we have every thing in the browser, check if there is the posibility to add flat data {x, y}.
-    console.log('pasa hasta sourc', spectrum);
+
+    str += `\nSpectrum_Jcamp=file:./jcamp_folder/1d/${spectrum.display.name}\\`;
     if (spectrum.source.jcamp) {
-      console.log('file', `jcamp_folder/1d/${spectrum.display.name}`);
       nmrRecord.file(
         `jcamp_folder/1d/${spectrum.display.name}`,
         spectrum.source.jcamp,
       );
-      str += `\nSpectrum_Jcamp=file:./jcamp_folder/1d/${spectrum.display.name}\\`;
     }
 
+    let toFix = getToFix(nucleus)[0];
+
     for (let range of ranges) {
-      let signals = range.signal.filter(
-        (s) => s.hasOwnProperty('diaID') && s.diaID.length,
-      );
+      let signals = range.signal; //.filter((s) => s.diaID && s.diaID.length);
 
       for (let signal of signals) {
         let { multiplicity } = signal;
@@ -55,7 +45,7 @@ export function get1DSignals(data, labels, options = {}) {
           str += `\n${Number(range.from).toFixed(toFix)}-${Number(
             range.to,
           ).toFixed(toFix)}`;
-        } else if (signal.hasOwnProperty('delta')) {
+        } else if (signal.delta) {
           str += `\n${Number(signal.delta).toFixed(toFix)}`;
         } else {
           continue;
@@ -63,13 +53,16 @@ export function get1DSignals(data, labels, options = {}) {
 
         let signalLabel = '';
 
-        signal.diaID.forEach((diaID, i, arr) => {
-          let separator = ', ';
-          if (i === arr.length - 1) separator = '';
-          let label = labels.byDiaID[diaID].label || diaID;
-          signalLabel += `(${label})${separator}`;
-        });
-        str += `, L=${signalLabel}`;
+        if (signal.diaID && signal.diaID.length > 0) {
+          signal.diaID.forEach((diaID, i, arr) => {
+            let separator = ', ';
+            if (i === arr.length - 1) separator = '';
+            let label = labels.byDiaID[diaID].label || diaID;
+            signalLabel += `(${label})${separator}`;
+          });
+          str += `, L=${signalLabel}`;
+        }
+
         if (nucleus === '1H') {
           if (signal.multiplicity) str += `, S=${signal.multiplicity}`;
 
@@ -100,7 +93,8 @@ export function get1DSignals(data, labels, options = {}) {
       if (signals.length) str += '\\';
     }
     str += '\n';
+    nbOneD++;
   }
-
+  if (nbOneD > 0) nmrRecord.folder('jcamp_folder/1d');
   return str;
 }

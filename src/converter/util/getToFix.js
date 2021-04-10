@@ -13,5 +13,7 @@ function chooseDecimal(nucleus) {
       return 2;
     case '13C':
       return 1;
+    default:
+      return 1;
   }
 }
