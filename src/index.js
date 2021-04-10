@@ -1,2 +1,3 @@
-export { readNMRR } from './reader/readZip';
-export { readNMRRSync } from './reader/readZipSync';
+export { readNmrRecord } from './reader/readNmrRecord';
+export { readNmrRecordSync } from './reader/readNmrRecordSync';
+export { nmriumToNmredata } from './converter/nmriumToNmredata';

@@ -1,8 +1,8 @@
 module.exports = function parse2DCor(content, labels) {
-  var eol = '\\\n';
+  let eol = '\\\n';
   let signals = content.split(eol);
-  var spectrum = { zone: { signal: [] } };
-  var zone = spectrum.zone;
+  let spectrum = { zone: { signal: [] } };
+  let zone = spectrum.zone;
   for (let i = 0; i < signals.length; i++) {
     if (signals[i].startsWith(';')) continue; // avoid the comments on the record
     var signal = {};
@@ -18,7 +18,9 @@ module.exports = function parse2DCor(content, labels) {
       } else if (d.toLowerCase().match('cortype')) {
         spectrum.experiment = d.toUpperCase().replace(/CORTYPE=/s, '');
       } else if (d.toLowerCase().match('spectrum_location')) {
-        spectrum.spectraLocation = d.toLowerCase().replace('spectrum_location=', '');
+        spectrum.spectraLocation = d
+          .toLowerCase()
+          .replace('spectrum_location=', '');
       } else {
         signal.pubAssignment = d;
       }
