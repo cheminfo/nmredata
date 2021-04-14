@@ -22,13 +22,13 @@ const files = {
   '2rr': BINARY,
 };
 
-export function readNMRRSync(path) {
+export function readNmrRecordSync(path) {
   let zipData = zipper.sync.unzip(resolve(path)).memory();
   let zipFiles = zipData.unzipped_file;
   let sdfFiles = [];
   for (let file in zipFiles.files) {
     let pathFile = file.split('/');
-    if (pathFile[pathFile.length - 1].match(/^[^\.].+sdf$/)) {
+    if (pathFile[pathFile.length - 1].match(/^[^.].+sdf$/)) {
       // @TODO change match to endWith string prototype
       let root = pathFile.slice(0, pathFile.length - 1).join('/');
       let filename = pathFile[pathFile.length - 1].replace(/\.sdf/, '');
@@ -50,11 +50,10 @@ function convertSpectraSync(folders, zip, options = {}) {
   let spectra = new Array(folders.length);
 
   for (let i = 0; i < folders.length; ++i) {
-    let len = folders[i].name.length;
     let folderName = folders[i].name;
     folderName = folderName.substr(0, folderName.lastIndexOf('/') + 1);
     let currFolder = zip.folder(folderName);
-    let currFiles = currFolder.filter(function (relativePath, file) {
+    let currFiles = currFolder.filter((relativePath) => {
       return files[relativePath] ? true : false;
     });
     let brukerFiles = {};
@@ -99,7 +98,7 @@ function getSpectraFolders(zipFiles) {
   return { jcampFolders, brukerFolders };
 }
 
-function processJcamp(folders, zipFiles, options) {
+function processJcamp(folders, zipFiles) {
   let spectra = new Array(folders.length);
   for (let i = 0; i < folders.length; ++i) {
     let name = folders[i].name;

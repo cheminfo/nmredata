@@ -15,7 +15,7 @@ const tags = {
   id: 'ID',
 };
 
-export function nmriumToNmredata(state, options = {}) {
+export function nmriumToNmrRecord(state, options = {}) {
   const {
     spectra: data, // it would be changed depending of the final location
     molecules,

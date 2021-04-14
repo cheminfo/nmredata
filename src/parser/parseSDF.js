@@ -39,11 +39,11 @@ export function parse(sdf, options = {}) {
       let molecule = {};
       let currentLabels = [];
       molecule.molfile = parts[0] + eol;
-      for (var j = 1; j < parts.length; j++) {
+      for (let j = 1; j < parts.length; j++) {
         let lines = parts[j].split(eol);
         let from = lines[0].indexOf('<');
         let to = lines[0].indexOf('>');
-        var label = lines[0].substring(from + 1, to);
+        let label = lines[0].substring(from + 1, to);
         currentLabels.push(label);
         if (!labels[label]) {
           labels[label] = {
@@ -90,21 +90,21 @@ export function parse(sdf, options = {}) {
       if (!filter || filter(molecule)) {
         molecules.push(molecule);
         // only now we can increase the counter
-        for (j = 0; j < currentLabels.length; j++) {
-          var currentLabel = currentLabels[j];
+        for (let j = 0; j < currentLabels.length; j++) {
+          let currentLabel = currentLabels[j];
           labels[currentLabel].counter++;
         }
       }
     }
   }
-  ('');
+
   // all numeric fields should be converted to numbers
-  for (label in labels) {
-    currentLabel = labels[label];
+  for (let label in labels) {
+    let currentLabel = labels[label];
     if (currentLabel.isNumeric) {
       currentLabel.minValue = Infinity;
       currentLabel.maxValue = -Infinity;
-      for (j = 0; j < molecules.length; j++) {
+      for (let j = 0; j < molecules.length; j++) {
         if (molecules[j][label]) {
           let value = parseFloat(molecules[j][label]);
           molecules[j][label] = value;
@@ -116,7 +116,7 @@ export function parse(sdf, options = {}) {
   }
 
   // we check that a label is in all the records
-  for (var key in labels) {
+  for (let key in labels) {
     if (labels[key].counter === molecules.length) {
       labels[key].always = true;
     } else {
@@ -125,7 +125,7 @@ export function parse(sdf, options = {}) {
   }
 
   let statistics = [];
-  for (key in labels) {
+  for (let key in labels) {
     let statistic = labels[key];
     statistic.label = key;
     statistics.push(statistic);

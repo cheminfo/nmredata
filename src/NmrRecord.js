@@ -1,6 +1,7 @@
 import { Molecule as OCLMolecule } from 'openchemlib/full';
 
 import { nmredataToJSON } from './converter/nmredataToJSON';
+import { nmredataToNmrium } from './converter/nmredataToNmrium';
 import { processContent } from './processor';
 
 export class NmrRecord {
@@ -13,7 +14,6 @@ export class NmrRecord {
     this.sdfFiles = sdfFiles;
     this.activeElement = 0;
     this.nbSamples = sdfFiles.length;
-    return this;
   }
 
   getMol(i = this.activeElement) {
@@ -60,7 +60,7 @@ export class NmrRecord {
       let dataSplited = nmredataTags[tag].split('\n');
       dataSplited.forEach((e) => {
         let content = e.replace(/;.*/g, '');
-        let comment = e.match(';') ? e.replace(/.*\;+(.*)/g, '$1') : '';
+        let comment = e.match(';') ? e.replace(/.*;+(.*)/g, '$1') : '';
         if (content.length === 0) {
           // may be a head comment. is it always true?
           if (!tagData.headComment) tagData.headComment = []; // should this be array for several head comments?
@@ -102,6 +102,16 @@ export class NmrRecord {
     let index = this.checkIndex(i);
     let nmredata = this.getNMReData(index);
     return nmredataToJSON(nmredata, {
+      spectra: this.spectra,
+      molecule: this.getMoleculeAndMap(index),
+      root: this.sdfFiles[index].root,
+    });
+  }
+
+  toNmrium(i = this.activeElement) {
+    let index = this.checkIndex(i);
+    let nmredata = this.getNMReData(index);
+    return nmredataToNmrium(nmredata, {
       spectra: this.spectra,
       molecule: this.getMoleculeAndMap(index),
       root: this.sdfFiles[index].root,

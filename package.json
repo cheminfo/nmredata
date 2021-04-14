@@ -47,10 +47,10 @@
     "babel-preset-babili": "^0.1.4",
     "cheminfo-tools": "^1.23.3",
     "codecov": "^3.3.0",
-    "eslint": "^7.23.0",
+    "eslint": "^7.24.0",
     "eslint-config-cheminfo": "^5.2.3",
     "eslint-plugin-import": "^2.17.1",
-    "eslint-plugin-jest": "^22.4.1",
+    "eslint-plugin-jest": "24.3.5",
     "jest": "^26.6.3",
     "npm-run-all": "^4.1.5",
     "rollup": "^2.44.0"

@@ -37,12 +37,12 @@ function resultType(tag) {
     case 'solvent':
     case 'temperature':
     case 'level':
-      break;
+    default:
   }
   return processor;
 }
 
-function propertyLinesProcessor(content, options) {
+function propertyLinesProcessor(content) {
   let value = content.replace(/^.*=/, '');
   let key = content.replace(/[=].*/, '');
   return { key, value };

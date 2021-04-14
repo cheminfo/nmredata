@@ -1,4 +1,5 @@
 # nmredata parser
+
 <p align="center">
   A tool for reading nmrRecords.
 </p>
@@ -17,7 +18,7 @@
 const nmredata = require('nmredata');
 
 const path = 'pathToNMRRecordFile';
-var record = nmredata.readNMRRSync(path);
+var record = nmredata.readNmrRecordSync(path);
 /**
    *  record has all sdf files and spectra data inside of nmrRecord file.
   */
@@ -25,7 +26,7 @@ var record = nmredata.readNMRRSync(path);
   let sdfList = record.getSDFList(); // it's return ["wild_JCH_coupling","only_one_HH_coupling_in_Jtag","compound1.nmredata","compound1_with_jcamp.nmredata","with_char_10","compound1_special_labels.nmredata copy"]
   /**
    * if several sdf file exists
-   *  the first readed is set as activeElement, it means that you don't need 
+   *  the first readed is set as activeElement, it means that you don't need
    *  to pass a filename for each operation on the same SDF file.
    *  It's possible to get or set (filename or index) an activeElement.
    */
@@ -33,12 +34,12 @@ var record = nmredata.readNMRRSync(path);
   record.setActiveElement('only_one_HH_coupling_in_Jtag');
 
   /**
-   * You can get the text of all tags of a specific sdf file (filename or index) with 
-   * getNMReDataTags, it returns an object where each tag is a property 
-   * with their value in text 
+   * You can get the text of all tags of a specific sdf file (filename or index) with
+   * getNMReDataTags, it returns an object where each tag is a property
+   * with their value in text
   **/
   let allTags = record.getNMReDataTags(); //return the tags of 'only_one_HH_coupling_in_Jtag'
-  // you can get a specific tag 
+  // you can get a specific tag
   let solvent = allTags['SOLVENT']
   // To get one list with the current's tags
   let tagsList = Object.keys(allTags);
@@ -59,10 +60,10 @@ var record = nmredata.readNMRRSync(path);
 
 // Asynchronously, to be used in the browser or another node packages
 const nmredata = require('nmredata');
-const FS = require('fs');
-const path = 'pathToNMRRecordFile'
-var zipData = FS.readFileSync(path);
-nmredata.readNMRR(zipData).then(currentNMRrecord => {
+const { readFileSync } = require('fs');
+const path = 'pathToNMRRecordFile';
+var zipData = readFileSync(path);
+nmredata.readNmrRecord(zipData).then(currentNMRrecord => {
   // you can do the same as above
 });
 
@@ -71,5 +72,5 @@ nmredata.readNMRR(zipData).then(currentNMRrecord => {
 ```
 
 ## License
-  [MIT](./LICENSE)
-  
+
+[MIT](./LICENSE)

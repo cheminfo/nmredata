@@ -1,5 +1,3 @@
-import { resolve } from 'path';
-
 import { convertFolder } from 'brukerconverter';
 import { IOBuffer } from 'iobuffer';
 import { convert } from 'jcampconverter';
@@ -69,11 +67,11 @@ function getSpectraFolders(zipFiles) {
  * @param {*} options
  * @returns {Array} Array of sdf parsed files
  */
-async function getSDF(zipFiles, options = {}) {
+async function getSDF(zipFiles) {
   let result = [];
   for (let file in zipFiles.files) {
     let pathFile = file.split('/');
-    if (pathFile[pathFile.length - 1].match(/^[^\.].+sdf$/)) {
+    if (pathFile[pathFile.length - 1].match(/^[^.].+sdf$/)) {
       let filename = pathFile[pathFile.length - 1].replace(/\.sdf/, '');
       let root = pathFile.slice(0, pathFile.length - 1).join('/');
       let sdf = await zipFiles.file(file).async('string');
@@ -130,7 +128,7 @@ async function convertSpectra(folders, zipFiles, options) {
   return Promise.all(spectra);
 }
 
-async function processJcamp(folders, zipFiles, options) {
+async function processJcamp(folders, zipFiles) {
   let spectra = new Array(folders.length);
   for (let i = 0; i < folders.length; ++i) {
     let name = folders[i].name;

@@ -1,11 +1,11 @@
-module.exports = function parse2DCor(content, labels) {
+module.exports = function parse2DCor(content) {
   let eol = '\\\n';
   let signals = content.split(eol);
   let spectrum = { zone: { signal: [] } };
   let zone = spectrum.zone;
   for (let i = 0; i < signals.length; i++) {
     if (signals[i].startsWith(';')) continue; // avoid the comments on the record
-    var signal = {};
+    let signal = {};
     let indexComment = signals[i].indexOf(';');
     if (indexComment > -1) signals[i] = signals[i].substring(0, indexComment);
     signals[i] = signals[i].replace(/ /g, '');
@@ -27,6 +27,6 @@ module.exports = function parse2DCor(content, labels) {
     });
     if (Object.keys(signal).length > 0) zone.signal.push(signal);
   }
-  console.log(spectrum);
+
   return spectrum;
 };

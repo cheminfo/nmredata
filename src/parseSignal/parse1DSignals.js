@@ -1,4 +1,4 @@
-export function parse1DSignal(content, labels) {
+export function parse1DSignal(content) {
   let signal = {};
   content = content.replace(/ /g, '');
   content = content.replace(/[l=] /g, '');
@@ -18,41 +18,32 @@ export function parse1DSignal(content, labels) {
 }
 
 function chooseKey(entry) {
-  let key = '';
   switch (entry) {
     case 'j':
-      key = 'J';
-      break;
+      return 'J';
     case 's':
-      key = 'multiplicity';
-      break;
+      return 'multiplicity';
     case 'l':
-      key = 'pubAssignment';
-      break;
+      return 'pubAssignment';
     case 'n':
-      key = 'nbAtoms';
-      break;
+      return 'nbAtoms';
     case 'e':
     case 'i':
-      key = 'pubIntegral';
-      break;
+      return 'pubIntegral';
+    default:
+      return '';
   }
-  return key;
 }
 
 function choseProcess(d, key) {
-  let result;
   switch (key) {
     case 'l':
-      result = getPubAssignment(d);
-      break;
+      return getPubAssignment(d);
     case 'j':
-      result = getCoupling(d);
-      break;
+      return getCoupling(d);
     default:
-      result = d;
+      return d;
   }
-  return result;
 }
 
 function getPubAssignment(d) {
