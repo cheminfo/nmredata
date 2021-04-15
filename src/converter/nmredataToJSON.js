@@ -1,6 +1,7 @@
+import JSZip from 'jszip';
 import { getShortestPaths } from 'openchemlib-utils';
 
-export function nmredataToJSON(nmredata, options) {
+export async function nmredataToJSON(nmredata, options) {
   let moleculeAndMap = options.molecule;
   let data = {
     molfile: moleculeAndMap.molecule.toMolfile(),
@@ -26,9 +27,13 @@ export function nmredataToJSON(nmredata, options) {
     );
     let nucleus = getNucleus(tag);
     let width = nucleus.match(/13C/) ? 0.1 : 0.02;
-    let jcamp = getJcamp(nmredata[tag], options);
+    let jcamp = await getJcamp(nmredata[tag], options);
+    let zipFolder = await extractZipFolder(nmredata[tag], options);
     let spectrum = {
-      jcamp,
+      source: {
+        zip: zipFolder,
+        jcamp,
+      },
       range: [],
       nucleus,
       frequency: frequencyLine.value.value,
@@ -80,13 +85,45 @@ function getRangeData(rangeData, signal, comment, width) {
   return { from, to, integral, signal: [signal], comment };
 }
 
-function getJcamp(tag, options) {
-  let { spectra, root } = options;
+async function getJcamp(tag, options) {
+  let { zip, root } = options;
   let locationLine = tag.data.find((e) => e.value.key === 'Spectrum_Location');
   let path = root + locationLine.value.value.replace(/file:/s, '');
-  let jcamp = spectra.find((e) => e.filename === path);
-  if (!jcamp) throw new Error(`There is not jcamp with path: ${path}`);
-  return jcamp;
+  if (!zip.file(path)) {
+    new Error(`There is not jcamp with path: ${path}`);
+    return null;
+  }
+  return await zip.file(path).async('string');
+}
+
+async function extractZipFolder(tag, options) {
+  let { zip, root } = options;
+  let locationLine = tag.data.find((e) => e.value.key === 'Spectrum_Location');
+  
+  if (!locationLine) {
+    new Error(`There is not spectrum for ${tag}`);
+    return null;
+  }
+
+  let path = root + locationLine.value.value.replace(/file:/s, '');
+  let toCheck = path.replace(/(.*\w+\/[0-9]+\/)pdata\/.*/, '$1');
+  let toCheck2 = path.replace(/.*\/[0-9]+\/pdata\/([0-9]+)\/.*/, '$1');
+
+  let zipFolder = new JSZip();
+  for (let file in zip.files) {
+    if (toCheck !== file.replace(/(.*\w+\/[0-9]+\/)pdata\/.*/, '$1')) continue;
+    if (file.match('pdata')) {
+      if (toCheck2 !== file.replace(/.*\/[0-9]+\/pdata\/([0-9]+)\/.*/, '$1')) continue;
+    }
+    if (file.endsWith('/')) continue;
+    console.log(file)
+    zipFolder.file(file, await zip.file(file).async('arraybuffer'));
+  }
+  return await zipFolder.generateAsync({
+    type: 'base64',
+    compression: 'DEFLATE',
+    compressionOptions: { level: 9 },
+  });
 }
 
 function getSignalData(rangeData, labels) {

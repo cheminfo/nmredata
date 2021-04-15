@@ -22,14 +22,14 @@ const files = {
 
 /**
  * Read nmr record file asynchronously
- * @param {*} zipData  data readed of zip file
+ * @param {*} zipFile  data readed of zip file
  * @param {*} options
  * @return {} An Object with two properties folders and sdfFiles, folders has nmr spectra data, sdfFiles has all sdf files
  */
-export async function readNmrRecord(zipData, options = {}) {
+export async function readNmrRecord(zipFile, options = {}) {
   // @TODO: Be able to read from a path
   let zip = new jszip();
-  return zip.loadAsync(zipData, { base64: true }).then(async (zipFiles) => {
+  return zip.loadAsync(zipFile, { base64: true }).then(async (zipFiles) => {
     let sdfFiles = await getSDF(zipFiles, options);
     let folders = getSpectraFolders(zipFiles);
     let spectra = await convertSpectra(
@@ -38,8 +38,9 @@ export async function readNmrRecord(zipData, options = {}) {
       options,
     );
     let jcamps = await processJcamp(folders.jcampFolders, zipFiles, options);
+    console.log('folders', folders);
     spectra = spectra.concat(jcamps);
-    return new NmrRecord({ sdfFiles, spectra });
+    return new NmrRecord({ sdfFiles, spectra, zip: zipFiles });
   });
 }
 

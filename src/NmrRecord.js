@@ -9,7 +9,8 @@ export class NmrRecord {
     if (!(nmrRecord instanceof Object)) {
       throw new Error('Cannot be called directly');
     }
-    let { spectra, sdfFiles } = nmrRecord;
+    let { spectra, sdfFiles, zip } = nmrRecord;
+    this.zip = zip;
     this.spectra = spectra;
     this.sdfFiles = sdfFiles;
     this.activeElement = 0;
@@ -105,6 +106,7 @@ export class NmrRecord {
       spectra: this.spectra,
       molecule: this.getMoleculeAndMap(index),
       root: this.sdfFiles[index].root,
+      zip: this.zip,
     });
   }
 
@@ -115,6 +117,7 @@ export class NmrRecord {
       spectra: this.spectra,
       molecule: this.getMoleculeAndMap(index),
       root: this.sdfFiles[index].root,
+      zip: this.zip,
     });
   }
 

@@ -4,6 +4,7 @@ import { convertFolder } from 'brukerconverter';
 import { IOBuffer } from 'iobuffer';
 import { convert } from 'jcampconverter';
 import zipper from 'zip-local';
+import { readFileSync } from 'fs';
 
 import { NmrRecord } from '../NmrRecord';
 import { parse } from '../parser/parseSDF';
@@ -43,7 +44,8 @@ export function readNmrRecordSync(path) {
   let spectra = convertSpectraSync(folders.brukerFolders, zipFiles);
   let jcamps = processJcamp(folders.jcampFolders, zipFiles);
   spectra = spectra.concat(jcamps);
-  return new NmrRecord({ sdfFiles, spectra });
+  let zipFile = readFileSync(resolve(path), 'base64').toString();
+  return new NmrRecord({ sdfFiles, spectra, zipFile });
 }
 
 function convertSpectraSync(folders, zip, options = {}) {
