@@ -7,7 +7,6 @@ describe('parse2DSignal', () => {
     let { x, y, activeCoupling, f1Coupling, f2Coupling } = parse2DSignal(
       signalWithCoupling,
     );
-
     expect(x).toStrictEqual(['a']);
     expect(y).toStrictEqual(['x']);
     expect(activeCoupling).toStrictEqual([{ coupling: 5 }]);

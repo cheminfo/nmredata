@@ -1,25 +1,44 @@
+import { getCoupling } from './util/getCoupling';
+import { toObject } from '../converter/util/toObject';
+
+const axisInOrder = ['x', 'y'];
+
 export function parse2DSignal(content) {
   content = content.replace(/ /g, '');
   content = content.replace(/[l=] /g, '');
   content = content.replace(/,(\w+=)/g, ':$1');
   let data = content.split(':');
-  console.log(data.slice());
-  let signal = {};
-  let { value, key } = getKeyAndValue(data[0]);
-  let correlation = value.split('/');
-  let atomLabels = new Array(correlation.length);
-  for (let j = 0; j < correlation.length; j++) {
-    let label = correlation[j].replace(/[\(|\)]/g, '').split(',');
-    atomLabels[j] = Array.isArray(label) ? label : [label];
-  }
-  [signal.x, signal.y] = atomLabels;
+
+  let signal = getSignalWithDelta(data[0]);
 
   for (let i = 1; i < data.length; i++) {
     let { value, key } = getKeyAndValue(data[i]);
     signal[chooseKey(key)] = chooseProcess(value, key);
   }
-
   return signal;
+}
+
+function getSignalWithDelta(data) {
+  let { value } = getKeyAndValue(data);
+
+  let signal = [];
+  let correlation = value.split('/');
+  for (let j = 0; j < correlation.length; j++) {
+    let label = correlation[j].replace(/[\(|\)]/g, '').split(',');
+    signal.push({
+      key: axisInOrder[j],
+      value: Array.isArray(label) ? label : [label],
+    });
+  }
+  return toObject(signal);
+}
+
+function getKeyAndValue(data) {
+  let datum = data.toLowerCase();
+  return {
+    value: datum.replace(/^.*=/, ''),
+    key: datum.replace(/[=].*/, ''),
+  };
 }
 
 function chooseProcess(value, key) {
@@ -50,34 +69,6 @@ function chooseKey(key) {
     case 'w2':
       return 'f2Width';
   }
-}
-
-function getKeyAndValue(data) {
-  let datum = data.toLowerCase();
-  return {
-    value: datum.replace(/^.*=/, ''),
-    key: datum.replace(/[=].*/, ''),
-  };
-}
-
-function getCoupling(d) {
-  let jCoupling = [];
-  d = d.replace(/,([0-9])/g, ':$1');
-  d = d.split(':');
-  d.forEach((c) => {
-    let value;
-    let withIt = '';
-    let toValue = c.indexOf('(');
-    if (toValue === -1) {
-      value = Number(c);
-      jCoupling.push({ coupling: value });
-    } else {
-      value = Number(c.substring(0, toValue));
-      withIt = c.substring(toValue + 1, c.length - 1);
-      jCoupling.push({ coupling: value, label: withIt });
-    }
-  });
-  return jCoupling;
 }
 
 // for (let i = 0; i < signals.length; i++) {
