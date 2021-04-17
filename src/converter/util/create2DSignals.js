@@ -3,7 +3,7 @@ import { getToFix } from './getToFix';
 
 const isArray = Array.isArray;
 
-export function get2DSignals(data, labels, options = {}) {
+export function create2DSignals(data, labels, options = {}) {
   let { prefix, nmrRecord } = options;
   let { byDiaID } = labels;
   let str = '';

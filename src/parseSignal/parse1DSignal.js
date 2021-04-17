@@ -11,7 +11,7 @@ export function parse1DSignal(content) {
     let value = d.replace(/^.*=/, '');
     let key = d.replace(/[=].*/, '');
     if (parseFloat(key) && i === 0) {
-      signal.delta =value;
+      signal.delta = value;
     } else {
       signal[chooseKey(key)] = chosoeProcess(value, key);
     }

@@ -38,7 +38,6 @@ export async function readNmrRecord(zipFile, options = {}) {
       options,
     );
     let jcamps = await processJcamp(folders.jcampFolders, zipFiles, options);
-    console.log('folders', folders);
     spectra = spectra.concat(jcamps);
     return new NmrRecord({ sdfFiles, spectra, zip: zipFiles });
   });

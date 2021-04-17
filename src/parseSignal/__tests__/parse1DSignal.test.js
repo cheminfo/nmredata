@@ -7,7 +7,7 @@ describe('parse1DSignal', () => {
     expect(delta).toStrictEqual('7.200-7.600');
     expect(nbAtoms).toBe('5');
     expect(assignment).toStrictEqual(['h-c1', 'h-c2', 'c-c4']);
-    expect(integral).toBe(undefined);
+    expect(integral).toBeUndefined();
   });
 
   it('parse signal with J assignment', () => {

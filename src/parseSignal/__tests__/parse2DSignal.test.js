@@ -4,11 +4,15 @@ let signalWithCoupling = 'A/X, Ja=5, J1=4(M), 6.1(K), J2=2(M), 3.1(K)';
 
 describe('parse2DSignal', () => {
   it('2D signal with coupling', () => {
-    let { x, y, activeCoupling, f1Coupling, f2Coupling } = parse2DSignal(
-      signalWithCoupling,
-    );
-    expect(x).toStrictEqual(['a']);
-    expect(y).toStrictEqual(['x']);
+    let {
+      xLabel,
+      yLabel,
+      activeCoupling,
+      f1Coupling,
+      f2Coupling,
+    } = parse2DSignal(signalWithCoupling);
+    expect(xLabel).toStrictEqual(['a']);
+    expect(yLabel).toStrictEqual(['x']);
     expect(activeCoupling).toStrictEqual([{ coupling: 5 }]);
     expect(f1Coupling).toStrictEqual([
       { label: 'm', coupling: 4 },

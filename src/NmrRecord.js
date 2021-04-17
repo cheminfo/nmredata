@@ -1,8 +1,7 @@
 import { Molecule as OCLMolecule } from 'openchemlib/full';
 
 import { nmredataToJSON } from './converter/nmredataToJSON';
-import { nmredataToNmrium } from './converter/nmredataToNmrium';
-import { processContent } from './processor';
+import { processContent } from './processContent';
 
 export class NmrRecord {
   constructor(nmrRecord) {
@@ -55,7 +54,6 @@ export class NmrRecord {
     let result = { name: this.sdfFiles[i].filename };
     let nmredataTags = this.getNMReDataTags(i);
     Object.keys(nmredataTags).forEach((tag) => {
-      if (tag.match(/2D/)) return;
       if (!result[tag]) result[tag] = { data: [] };
       let tagData = result[tag];
       let dataSplited = nmredataTags[tag].split('\n');
@@ -84,6 +82,7 @@ export class NmrRecord {
     let sdf = this.sdfFiles[i];
     return sdf.filename;
   }
+
   getAllTags(i = this.activeElement) {
     i = this.checkIndex(i);
     let allTags = {};
@@ -103,17 +102,6 @@ export class NmrRecord {
     let index = this.checkIndex(i);
     let nmredata = this.getNMReData(index);
     return nmredataToJSON(nmredata, {
-      spectra: this.spectra,
-      molecule: this.getMoleculeAndMap(index),
-      root: this.sdfFiles[index].root,
-      zip: this.zip,
-    });
-  }
-
-  toNmrium(i = this.activeElement) {
-    let index = this.checkIndex(i);
-    let nmredata = this.getNMReData(index);
-    return nmredataToNmrium(nmredata, {
       spectra: this.spectra,
       molecule: this.getMoleculeAndMap(index),
       root: this.sdfFiles[index].root,

@@ -1,7 +1,8 @@
-import { getCoupling } from './util/getCoupling';
 import { toObject } from '../converter/util/toObject';
 
-const axisInOrder = ['x', 'y'];
+import { getCoupling } from './util/getCoupling';
+
+const axisInOrder = ['xLabel', 'yLabel'];
 
 export function parse2DSignal(content) {
   content = content.replace(/ /g, '');
@@ -24,7 +25,7 @@ function getSignalWithDelta(data) {
   let signal = [];
   let correlation = value.split('/');
   for (let j = 0; j < correlation.length; j++) {
-    let label = correlation[j].replace(/[\(|\)]/g, '').split(',');
+    let label = correlation[j].replace(/[(|)]/g, '').split(',');
     signal.push({
       key: axisInOrder[j],
       value: Array.isArray(label) ? label : [label],
@@ -68,6 +69,8 @@ function chooseKey(key) {
       return 'f1Width';
     case 'w2':
       return 'f2Width';
+    default:
+      return key;
   }
 }
 

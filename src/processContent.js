@@ -1,6 +1,6 @@
+import { toObject } from './converter/util/toObject';
 import { parse1DSignal } from './parseSignal/parse1DSignal';
 import { parse2DSignal } from './parseSignal/parse2DSignal';
-import { toObject } from './converter/util/toObject';
 
 export function processContent(content, options) {
   let { tag } = options;
@@ -54,4 +54,3 @@ function processAssignment(content) {
     { key: 'atoms', value: content.slice(2) },
   ]);
 }
-

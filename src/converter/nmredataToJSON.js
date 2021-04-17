@@ -1,9 +1,10 @@
+import { addDiaIDtoLabels } from './util/addDiaIDtoLabels';
+import { extractZipFolder } from './util/extractZipFolder';
 import { getJcamp } from './util/getJcamp';
 import { getLabels } from './util/getLabels';
-import { extractZipFolder } from './util/extractZipFolder';
-import { addDiaIDtoLabels } from './util/addDiaIDtoLabels';
+import { getNucleusFromTag } from './util/getNucleusFromTag';
 import { getSignalData1D } from './util/getSignalData1D';
-import { getNucleusFrom1DTag } from './util/getNucleusFrom1DTag';
+import { getSignalData2D } from './util/getSignalData2D';
 
 const getSpectra = async (tagData, options) => {
   return {
@@ -31,9 +32,14 @@ export async function nmredataToJSON(nmredata, options) {
   // }
 
   for (let tag in nmredata) {
-    if (!tag.toLowerCase().match(/1d/s)) continue;
+    let ctag = tag.toLowerCase();
+    if (!tag.toLowerCase().match(/[1|2]d/s)) continue;
+    let dimension = ctag.replace(/.*_(\w+d)_.*/, '$1');
+    let is2D = dimension === '2d';
     let frequencyLine = nmredata[tag].data.find((e) => e.value.larmor);
-    let nucleus = getNucleusFrom1DTag(tag);
+
+    let nucleus = getNucleusFromTag(tag);
+    let signalProcessor = is2D ? getSignalData2D : getSignalData1D;
 
     let zipAndJcamp = await getSpectra(nmredata[tag], options);
     let spectrum = {
@@ -44,14 +50,13 @@ export async function nmredataToJSON(nmredata, options) {
       },
       nucleus,
       frequency: frequencyLine.value.larmor,
-      experiment: '1d',
+      experiment: dimension,
       headComment: nmredata[tag].headComment,
     };
 
     let signalData = nmredata[tag].data.filter((e) => e.value.delta);
     spectrum.signals = signalData.map((sd) => {
-      let signalData = getSignalData1D(sd.value, labels);
-      console.log('signal', signalData);
+      let signalData = signalProcessor(sd.value, labels);
       signalData.assignment.forEach((assignment) => {
         let label = labels[assignment];
         if (!signalData.diaID) signalData.diaID = [];

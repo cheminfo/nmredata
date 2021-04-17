@@ -1,6 +1,6 @@
 import { getToFix } from './getToFix';
 
-export function get1DSignals(data, labels, options = {}) {
+export function create1DSignals(data, labels, options = {}) {
   const { prefix, nmrRecord } = options;
   let str = '';
   let nucleusArray = [];

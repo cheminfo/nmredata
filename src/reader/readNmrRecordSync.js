@@ -1,10 +1,10 @@
+import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
 import { convertFolder } from 'brukerconverter';
 import { IOBuffer } from 'iobuffer';
 import { convert } from 'jcampconverter';
 import zipper from 'zip-local';
-import { readFileSync } from 'fs';
 
 import { NmrRecord } from '../NmrRecord';
 import { parse } from '../parser/parseSDF';
