@@ -7,12 +7,13 @@ export function getSignalData2D(data, labels) {
     if (data[key]) result[key] = data[key];
   });
   //check if the xLabel and yLabel are labels
-  for (let axis of ['x', 'y']) {
-    let axisLabels = data[`${axis}Label`];
+  for (let axis in data.delta) {
+    if (!result[axis]) result[axis] = {};
+    let axisLabels = data.delta[axis];
     for (let label of axisLabels) {
       if (labels[label]) {
-        if (!result[axis].assignment) result[axis].assignment = [];
-        result[axis].assignment.push(labels[label]);
+        if (!result[axis].diaID) result[axis].diaID = [];
+        result[axis].diaID.push(...labels[label].diaID);
       } else {
         result[axis].delta = Number(label);
       }
