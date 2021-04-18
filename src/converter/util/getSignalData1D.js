@@ -1,10 +1,4 @@
-const signalKeys = [
-  'delta',
-  'nbAtoms',
-  'multiplicity',
-  'jCoupling',
-  'assignment',
-];
+const signalKeys = ['delta', 'nbAtoms', 'multiplicity', 'jCoupling'];
 
 export function getSignalData1D(data, labels) {
   let result = {};
@@ -19,6 +13,15 @@ export function getSignalData1D(data, labels) {
     : nbAtoms
     ? Number(nbAtoms)
     : null;
+
+  if (data.assignment) {
+    data.assignment.forEach((assignment) => {
+      let label = labels[assignment];
+      if (!result.diaID) result.diaID = [];
+      if (!label) return;
+      result.diaID.push(...label.diaID);
+    });
+  }
 
   let needJdiaID = false;
   if (result.jCoupling) {
