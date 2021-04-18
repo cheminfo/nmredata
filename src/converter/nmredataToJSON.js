@@ -22,7 +22,6 @@ export async function nmredataToJSON(nmredata, options) {
       },
     ],
     spectra: [],
-    correlations: [],
   };
   let spectra = data.spectra;
   let labels = getLabels(nmredata.ASSIGNMENT);
@@ -33,8 +32,8 @@ export async function nmredataToJSON(nmredata, options) {
 
   for (let tag in nmredata) {
     let ctag = tag.toLowerCase();
-    if (!tag.toLowerCase().match(/[1|2]d/s)) continue;
-    let dimension = ctag.replace(/.*_(\w+d)_.*/, '$1');
+    if (!tag.toLowerCase().match(/[1|2]d_/s)) continue;
+    let dimension = ctag.replace(/([1|2]d)_.*/, '$1');
     let is2D = dimension === '2d';
     let frequencyLine = nmredata[tag].data.find((e) => e.value.larmor);
 
@@ -57,12 +56,6 @@ export async function nmredataToJSON(nmredata, options) {
     let signalData = nmredata[tag].data.filter((e) => e.value.delta);
     spectrum.signals = signalData.map((sd) => {
       let signalData = signalProcessor(sd.value, labels);
-      signalData.assignment.forEach((assignment) => {
-        let label = labels[assignment];
-        if (!signalData.diaID) signalData.diaID = [];
-        if (!label) return;
-        signalData.diaID = signalData.diaID.concat(label.diaID);
-      });
       signalData.comment = sd.comment;
       return signalData;
     });
