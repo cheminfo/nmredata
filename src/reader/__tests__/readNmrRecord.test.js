@@ -1,9 +1,9 @@
+import { writeFileSync } from 'fs';
 import { resolve } from 'path';
 
-import { readNmrRecord, readNmrRecordSync } from '../index';
 import { nmredata } from 'nmredata-data-test';
-import Jszip from 'jszip';
-import { writeFileSync } from 'fs';
+
+import { readNmrRecord, readNmrRecordSync } from '../../index';
 
 describe('NMReDATA reading', () => {
   let nmrRecordWithJcampFromSync = readNmrRecordSync(
@@ -40,7 +40,9 @@ describe('NMReDATA reading', () => {
     }
   });
   it('nmrRecord to json from async, looking spectrum path', async () => {
-    let nmrRecordWithJcampFromASync = await readNmrRecord(nmredata['generated.zip']);
+    let nmrRecordWithJcampFromASync = await readNmrRecord(
+      nmredata['generated.zip'],
+    );
     let filenames = nmrRecordWithJcampFromASync.getSpectraList();
     let json = nmrRecordWithJcampFromASync.toJSON();
     for (let nmr of json.spectra.nmr) {
