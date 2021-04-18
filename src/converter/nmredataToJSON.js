@@ -1,10 +1,10 @@
-import { addDiaIDtoLabels } from './util/addDiaIDtoLabels';
-import { extractZipFolder } from './util/extractZipFolder';
-import { getJcamp } from './util/getJcamp';
-import { getLabels } from './util/getLabels';
-import { getNucleusFromTag } from './util/getNucleusFromTag';
-import { getSignalData1D } from './util/getSignalData1D';
-import { getSignalData2D } from './util/getSignalData2D';
+import { addDiaIDtoLabels } from './util/toJSON/addDiaIDtoLabels';
+import { extractZipFolder } from './util/toJSON/extractZipFolder';
+import { getJcamp } from './util/toJSON/getJcamp';
+import { getLabels } from './util/toJSON/getLabels';
+import { getNucleusFromTag } from './util/toJSON/getNucleusFromTag';
+import { getSignalData1D } from './util/toJSON/getSignalData1D';
+import { getSignalData2D } from './util/toJSON/getSignalData2D';
 
 const getSpectra = async (tagData, options) => {
   return {
@@ -36,6 +36,7 @@ export async function nmredataToJSON(nmredata, options) {
     let dimension = ctag.replace(/([1|2]d)_.*/, '$1');
     let is2D = dimension === '2d';
     let frequencyLine = nmredata[tag].data.find((e) => e.value.larmor);
+    let pulseProgramLine = nmredata[tag].data.find((e) => e.value.pulseprogram);
 
     let nucleus = getNucleusFromTag(tag);
     let signalProcessor = is2D ? getSignalData2D : getSignalData1D;
@@ -49,7 +50,7 @@ export async function nmredataToJSON(nmredata, options) {
       },
       nucleus,
       frequency: frequencyLine.value.larmor,
-      experiment: dimension,
+      experiment: pulseProgramLine ? pulseProgramLine.value.pulseprogram : dimension,
       headComment: nmredata[tag].headComment,
     };
 

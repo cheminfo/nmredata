@@ -4,7 +4,7 @@ import { Molecule as OCLMolecule } from 'openchemlib/full';
 
 import { create1DSignals } from './util/create1DSignals';
 import { create2DSignals } from './util/create2DSignals';
-import { createLabels } from './util/createLabels';
+import { createLabels } from './util/fromNmrium/createLabels';
 
 const tags = {
   solvent: 'SOLVENT',
