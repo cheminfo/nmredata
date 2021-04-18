@@ -2,17 +2,16 @@ import JSZip from 'jszip';
 
 export async function extractZipFolder(tag, options) {
   let { zip, root } = options;
-  let spectrumLocationLine = tag.data.find(
-    (e) => e.value.key === 'Spectrum_Location',
-  );
 
-  if (!spectrumLocationLine) {
+  let locationLine = tag.data.find((e) => e.value.spectrum_location);
+
+  if (!locationLine) {
     new Error(`There is not spectrum for ${tag}`);
     return;
   }
 
-  let pathSpectrum =
-    root + spectrumLocationLine.value.value.replace(/file:/s, '');
+  let relativePath = locationLine.value.spectrum_location;
+  let pathSpectrum = root + relativePath.replace(/file:/s, '');
   let toCheck = pathSpectrum.replace(/(.*\w+\/[0-9]+\/)pdata\/.*/, '$1');
   let toCheck2 = pathSpectrum.replace(/.*\/[0-9]+\/pdata\/([0-9]+)\/.*/, '$1');
 
