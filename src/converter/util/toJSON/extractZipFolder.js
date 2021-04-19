@@ -1,7 +1,7 @@
 import JSZip from 'jszip';
 
 export async function extractZipFolder(tag, options) {
-  let { zip, root } = options;
+  let { zipFiles, root } = options;
 
   let locationLine = tag.data.find((e) => e.value.spectrum_location);
 
@@ -16,18 +16,18 @@ export async function extractZipFolder(tag, options) {
   let toCheck2 = pathSpectrum.replace(/.*\/[0-9]+\/pdata\/([0-9]+)\/.*/, '$1');
 
   let zipFolder = new JSZip();
-  for (let file in zip.files) {
-    if (toCheck !== file.replace(/(.*\w+\/[0-9]+\/)pdata\/.*/, '$1')) continue;
+  for (let file in zipFiles) {
+    if (toCheck !== file.replace(/([.*\/]*\w+\/[0-9]+\/).*/, '$1')) continue;
     if (file.match('pdata')) {
       if (toCheck2 !== file.replace(/.*\/[0-9]+\/pdata\/([0-9]+)\/.*/, '$1')) {
         continue;
       }
     }
     if (file.endsWith('/')) continue;
-    zipFolder.file(file, await zip.file(file).async('arraybuffer'));
+    zipFolder.file(file, await zipFiles[file].async('arraybuffer'));
   }
   return zipFolder.generateAsync({
-    type: 'base64',
+    type: 'uint8array',
     compression: 'DEFLATE',
     compressionOptions: { level: 9 },
   });
