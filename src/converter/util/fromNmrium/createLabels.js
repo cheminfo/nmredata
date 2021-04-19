@@ -1,7 +1,7 @@
 import { getShortestPaths } from 'openchemlib-utils';
 
 import { flat2DSignals } from './flat2DSignals';
-import { getToFix } from '../getToFix';
+import { getToFix } from './getToFix';
 
 export function createLabels(data, options = {}) {
   const { groupedDiaIDs, molecule } = options;
