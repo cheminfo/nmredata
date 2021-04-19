@@ -37,5 +37,6 @@ export function getSignalData1D(data, labels) {
       }
     });
   }
+  if (result.delta) result.delta = parseFloat(result.delta);
   return result;
 }
