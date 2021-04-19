@@ -16,7 +16,7 @@ const getSpectra = async (tagData, options) => {
 export async function nmredataToJSON(nmredata, options) {
   let moleculeAndMap = options.molecule;
   let data = {
-    molecule: [
+    molecules: [
       {
         molfile: moleculeAndMap.molecule.toMolfile(),
       },
