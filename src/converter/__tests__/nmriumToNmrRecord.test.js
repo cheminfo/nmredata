@@ -1,5 +1,5 @@
-import { nmriumToNmrRecord } from '../nmriumToNmrRecord';
 import { readNmrRecordSync } from '../../reader/readNmrRecordSync';
+import { nmriumToNmrRecord } from '../nmriumToNmrRecord';
 
 import bidimensional from './bidimensionalAssignment.json';
 import data from './data.json';

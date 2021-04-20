@@ -1,6 +1,7 @@
 import { Molecule as OCLMolecule } from 'openchemlib/full';
-import { parseSDF } from './parser/parseSDF';
+
 import { nmredataToJSON } from './converter/nmredataToJSON';
+import { parseSDF } from './parser/parseSDF';
 import { processContent } from './processContent';
 
 export class NmrRecord {
@@ -61,7 +62,10 @@ export class NmrRecord {
 
   toJSON(i = this.activeElement) {
     let index = this.checkIndex(i);
-    return NmrRecord.toJSON({ zipFiles: this.zipFiles, sdf: this.sdfFiles[index] });
+    return NmrRecord.toJSON({
+      zipFiles: this.zipFiles,
+      sdf: this.sdfFiles[index],
+    });
   }
 
   setActiveElement(nactiveSDF) {
@@ -103,9 +107,7 @@ export class NmrRecord {
 
 NmrRecord.toJSON = (options = {}) => {
   let { sdf, molecule, zipFiles } = options;
-  console.log('sdf', sdf);
   let sdfFile = checkSdf(sdf);
-  console.log('sdfFile', sdfFile)
   molecule = !molecule
     ? OCLMolecule.fromMolfileWithAtomMap(sdfFile.molecules[0].molfile)
     : molecule;
