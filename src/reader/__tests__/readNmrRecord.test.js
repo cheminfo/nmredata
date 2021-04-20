@@ -10,7 +10,9 @@ describe('NMReDATA reading', () => {
     resolve('src/__tests__/generated.zip'),
   );
   it.only('Test nmredata read async', async () => {
-    let nr = await readNmrRecord(nmredata['menthol_1D_1H_assigned_J.zip']);
+    let nr = await readNmrRecord(nmredata['menthol_1D_1H_assigned_J.zip'], {
+      zipOptions: { base64: true },
+    });
     let json = await nr.toJSON();
     writeFileSync('json.json', JSON.stringify(json));
     // let sdfFileList = nr.getSDFList();
