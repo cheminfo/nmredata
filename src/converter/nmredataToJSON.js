@@ -50,7 +50,9 @@ export async function nmredataToJSON(nmredata, options) {
       },
       nucleus,
       frequency: frequencyLine.value.larmor,
-      experiment: pulseProgramLine ? pulseProgramLine.value.pulseprogram : dimension,
+      experiment: pulseProgramLine
+        ? pulseProgramLine.value.pulseprogram
+        : dimension,
       headComment: nmredata[tag].headComment,
     };
 
