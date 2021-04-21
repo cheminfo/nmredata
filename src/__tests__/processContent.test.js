@@ -8,37 +8,21 @@ describe('processContent testing', () => {
     'Spectrum_Location=file:dj_ca_2017_ernestin_EN4/15/pdata/1/',
     '3/H1',
   ];
+  /*eslint-disable camelcase*/
   let shouldBe = [
-    {
-      key: 'Larmor',
-      value: '500.13300078',
-    },
-    {
-      key: 'CorrType',
-      value: 'HMBC',
-    },
-    {
-      key: 'Pulseprogram',
-      value: 'hmbcetgpl3nd',
-    },
-    {
-      key: 'Spectrum_Location',
-      value: 'file:dj_ca_2017_ernestin_EN4/15/pdata/1/',
-    },
-    {
-      key: 'delta',
-      value: { x: ['3'], y: ['H1'] },
-    },
+    { larmor: '500.13300078' },
+    { corrtype: 'HMBC' },
+    { pulseprogram: 'hmbcetgpl3nd' },
+    { spectrum_location: 'file:dj_ca_2017_ernestin_EN4/15/pdata/1/' },
+    { delta: { y: ['3'], x: ['h1'] } },
   ];
+  /*eslint-enable camelcase*/
   it('process 2D data lines', () => {
     for (let i = 0; i < shouldBe.length; i++) {
-      let { key: shouldKey, value: shouldValue } = shouldBe[i];
-      let { key, value } = processContent(dataLines[i], {
+      let result = processContent(dataLines[i], {
         tag: '2D_13C_NJ_1H',
       });
-      // console.log(dataLines[i], key, value);
-      expect(key).toStrictEqual(shouldKey);
-      expect(value).toStrictEqual(shouldValue);
+      expect(result).toStrictEqual(shouldBe[i]);
     }
   });
 });

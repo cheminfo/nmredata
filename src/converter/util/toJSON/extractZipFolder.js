@@ -17,7 +17,7 @@ export async function extractZipFolder(tag, options) {
 
   let zipFolder = new JSZip();
   for (let file in zipFiles) {
-    if (toCheck !== file.replace(/([.*\/]*\w+\/[0-9]+\/).*/, '$1')) continue;
+    if (toCheck !== file.replace(/([.*/]*\w+\/[0-9]+\/).*/, '$1')) continue;
     if (file.match('pdata')) {
       if (toCheck2 !== file.replace(/.*\/[0-9]+\/pdata\/([0-9]+)\/.*/, '$1')) {
         continue;

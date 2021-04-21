@@ -1,16 +1,13 @@
-import { readNmrRecordSync } from '../../reader/readNmrRecordSync';
+import { readNmrRecord } from '../../reader/readNmrRecord';
 import { nmriumToNmrRecord } from '../nmriumToNmrRecord';
+import { NmrRecord } from '../../NmrRecord';
 
-import bidimensional from './bidimensionalAssignment.json';
 import data from './data.json';
 
-describe('nmrium to NMReData', () => {
-  it('1D assignment', () => {
+describe.skip('nmrium to NMReData', () => {
+  it('1D assignment', async () => {
     let nmrRecordZip = nmriumToNmrRecord(data);
-    let nmrRecord = readNmrRecordSync(nmrRecordZip);
-  });
-
-  it('2D assignment', () => {
-    let result = nmriumToNmrRecord(bidimensional);
+    let nmrRecord = await readNmrRecord(nmrRecordZip);
+    expect(nmrRecord instanceof NmrRecord).toBe(true);
   });
 });
