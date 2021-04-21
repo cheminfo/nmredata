@@ -1,10 +1,12 @@
 import { writeFileSync } from 'fs';
-import { resolve } from 'path';
 
-import { readNmrRecordSync } from '../index';
+import { nmredata } from 'nmredata-data-test';
 
-let nmrRecordWithJcampFromSync = readNmrRecordSync(
-  resolve('testFiles/generated.zip'),
-);
-let json = nmrRecordWithJcampFromSync.toJSON();
-writeFileSync('generated.json', JSON.stringify(json));
+import { readNmrRecord } from '../index';
+
+readNmrRecord(nmredata['arborinine_full_assignments.zip'], {
+  zipOptions: { base64: true },
+}).then(async (nmrRecord) => {
+  let json = await nmrRecord.toJSON();
+  writeFileSync('generated.json', JSON.stringify(json));
+});
