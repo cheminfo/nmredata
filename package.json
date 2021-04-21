@@ -62,8 +62,6 @@
   "dependencies": {
     "jszip": "^3.6.0",
     "openchemlib": "^7.4.0",
-    "openchemlib-utils": "^1.0.0",
-    "yargs": "^14.2.0",
-    "zip-local": "^0.3.4"
+    "openchemlib-utils": "^1.0.0"
   }
 }
