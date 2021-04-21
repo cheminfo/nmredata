@@ -42,22 +42,22 @@
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-jest": "^24.9.0",
+    "babel-jest": "^26.6.3",
     "babel-plugin-remove-comments": "^2.0.0",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
     "babel-preset-babili": "^0.1.4",
     "cheminfo-tools": "^1.23.3",
-    "codecov": "^3.3.0",
+    "codecov": "^3.8.1",
     "eslint": "^7.24.0",
     "eslint-config-cheminfo": "^5.2.3",
-    "eslint-plugin-import": "^2.17.1",
+    "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jest": "24.3.5",
     "esm": "^3.2.25",
     "jest": "^26.6.3",
     "nmredata-data-test": "^0.1.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.2.1",
-    "rollup": "^2.44.0"
+    "rollup": "^2.45.2"
   },
   "dependencies": {
     "jszip": "^3.6.0",
