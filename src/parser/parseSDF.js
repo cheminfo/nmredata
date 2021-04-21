@@ -1,4 +1,4 @@
-export function parse(sdf, options = {}) {
+export function parseSDF(sdf, options = {}) {
   const {
     include,
     exclude,

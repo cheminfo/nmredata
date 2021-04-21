@@ -2,9 +2,9 @@ import jszip from 'jszip';
 import { getGroupedDiastereotopicAtomIDs } from 'openchemlib-utils';
 import { Molecule as OCLMolecule } from 'openchemlib/full';
 
-import { get1DSignals } from './util/get1DSignals';
-import { get2DSignals } from './util/get2DSignals';
-import { getLabels } from './util/getLabels';
+import { create1DSignals } from './util/fromNmrium/create1DSignals';
+import { create2DSignals } from './util/fromNmrium/create2DSignals';
+import { createLabels } from './util/fromNmrium/createLabels';
 
 const tags = {
   solvent: 'SOLVENT',
@@ -41,7 +41,7 @@ export function nmriumToNmrRecord(state, options = {}) {
   };
 
   sdfResult += molecule.toMolfile();
-  let labels = getLabels(data, groupedOptions);
+  let labels = createLabels(data, groupedOptions);
   sdfResult += `${prefix}VERSION>\n1.1\\\n`;
   sdfResult += putTag(data, 'temperature', { prefix });
   sdfResult += putTag(data, 'solvent', { prefix });
@@ -51,8 +51,8 @@ export function nmriumToNmrRecord(state, options = {}) {
   }
 
   sdfResult += formatAssignments(labels.byDiaID, groupedOptions);
-  sdfResult += get1DSignals(data, labels, groupedOptions);
-  sdfResult += get2DSignals(data, labels, groupedOptions);
+  sdfResult += create1DSignals(data, labels, groupedOptions);
+  sdfResult += create2DSignals(data, labels, groupedOptions);
   sdfResult += '\n$$$$\n';
   nmrRecord.file(`${filename}.sdf`, sdfResult);
   return nmrRecord;

@@ -3,7 +3,7 @@ import { getShortestPaths } from 'openchemlib-utils';
 import { flat2DSignals } from './flat2DSignals';
 import { getToFix } from './getToFix';
 
-export function getLabels(data, options = {}) {
+export function createLabels(data, options = {}) {
   const { groupedDiaIDs, molecule } = options;
 
   let connections = getShortestPaths(molecule, { toLabel: 'H', maxLength: 1 });
@@ -41,7 +41,7 @@ export function getLabels(data, options = {}) {
           byDiaID[diaID] = {
             atoms: groupedOclID.atoms.map((e) => e + 1),
             shift: delta,
-            label: createLabel(labelOptions),
+            label: composeLabel(labelOptions),
           };
 
           for (let atom of groupedOclID.atoms) {
@@ -49,7 +49,7 @@ export function getLabels(data, options = {}) {
             byAssignNumber[atom] = {
               shift: delta,
               diaID,
-              label: createLabel(labelOptions),
+              label: composeLabel(labelOptions),
             };
           }
         }
@@ -59,7 +59,7 @@ export function getLabels(data, options = {}) {
   return { byAssignNumber, byDiaID };
 }
 
-function createLabel(options) {
+function composeLabel(options) {
   const { atom, molecule, atomLabel, connections } = options;
   let label = '';
   if (atomLabel !== 'C') {
