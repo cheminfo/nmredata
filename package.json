@@ -16,7 +16,8 @@
     "prepublishOnly": "rollup -c",
     "test": "run-s test-only eslint",
     "test-travis": "eslint src && jest --coverage && codecov",
-    "test-only": "jest"
+    "test-only": "jest",
+    "test-coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",
