@@ -57,7 +57,7 @@ readNmrRecord(nmredata['menthol_1D_1H_assigned_J.zip'], {
   //console.log(nmredata)
 
   /**
-   * you can format the content of a sdf file (nmredata) in a JSON.
+   * you can format the content of a sdf file (nmredata) and the source of spectra data (zip, jcamp) in a JSON.
    */
   var json = await nmrRecord.toJSON();
   /**
