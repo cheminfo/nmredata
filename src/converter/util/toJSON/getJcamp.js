@@ -1,4 +1,4 @@
-export function getJcamp(tag, options) {
+export async function getJcamp(tag, options) {
   let { zipFiles, root } = options;
   let locationLine = tag.data.find((e) => e.value.jcamp_location);
 
@@ -13,5 +13,9 @@ export function getJcamp(tag, options) {
     new Error(`There is not jcamp with path: ${pathJcamp}`);
     return;
   }
-  return zipFiles[pathJcamp].async('string');
+  return {
+    name: pathJcamp,
+    extension: 'jdx',
+    binary: await zipFiles[pathJcamp].async('arraybuffer'),
+  };
 }

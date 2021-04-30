@@ -26,9 +26,13 @@ export async function extractZipFolder(tag, options) {
     if (file.endsWith('/')) continue;
     zipFolder.file(file, await zipFiles[file].async('arraybuffer'));
   }
-  return zipFolder.generateAsync({
-    type: 'uint8array',
-    compression: 'DEFLATE',
-    compressionOptions: { level: 9 },
-  });
+  return {
+    name: `${pathSpectrum}`,
+    extension: 'zip',
+    binary: await zipFolder.generateAsync({
+      type: 'uint8array',
+      compression: 'DEFLATE',
+      compressionOptions: { level: 9 },
+    }),
+  };
 }

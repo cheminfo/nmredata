@@ -1,6 +1,6 @@
+import { NmrRecord } from '../../NmrRecord';
 import { readNmrRecord } from '../../reader/readNmrRecord';
 import { nmriumToNmrRecord } from '../nmriumToNmrRecord';
-import { NmrRecord } from '../../NmrRecord';
 
 import data from './data.json';
 

@@ -9,7 +9,7 @@ import { getSignalData2D } from './util/toJSON/getSignalData2D';
 const getSpectra = async (tagData, options) => {
   return {
     jcamp: await getJcamp(tagData, options),
-    zip: await extractZipFolder(tagData, options),
+    file: await extractZipFolder(tagData, options),
   };
 };
 
@@ -41,12 +41,9 @@ export async function nmredataToJSON(nmredata, options) {
     let nucleus = getNucleusFromTag(tag);
     let signalProcessor = is2D ? getSignalData2D : getSignalData1D;
 
-    let zipAndJcamp = await getSpectra(nmredata[tag], options);
     let spectrum = {
       source: {
-        ...zipAndJcamp,
         jcampURL: null,
-        original: [],
       },
       nucleus,
       frequency: frequencyLine.value.larmor,
@@ -62,7 +59,13 @@ export async function nmredataToJSON(nmredata, options) {
       signalData.comment = sd.comment;
       return signalData;
     });
-    spectra.push(spectrum);
+
+    let zipAndJcamp = await getSpectra(nmredata[tag], options);
+    for (let key in zipAndJcamp) {
+      if (!zipAndJcamp[key]) continue;
+      spectrum.source.file = zipAndJcamp[key];
+      spectra.push(spectrum);
+    }
   }
   return data;
 }
