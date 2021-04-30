@@ -146,7 +146,7 @@ NmrRecord.getNMReData = (sdf) => {
         tagData.headComment.push(comment);
         return;
       }
-      let value = processContent(content, { tag: tag });
+      let value = processContent(content, { tag });
       tagData.data.push({ comment, value });
     });
   });

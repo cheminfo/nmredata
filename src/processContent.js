@@ -9,7 +9,7 @@ export function processContent(content, options) {
   if (!matchEqual && !content.match(',')) {
     if (tag.toLowerCase().match(/2d/)) return processor(content, options);
     return content;
-  } else if (matchEqual && matchEqual.length === 1) {
+  } else if (matchEqual && !content.match(',')) {
     return propertyLinesProcessor(content);
   } else {
     return processor(content, options);

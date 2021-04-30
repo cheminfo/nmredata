@@ -13,7 +13,7 @@ export function parse1DSignal(content) {
     if (parseFloat(key) && i === 0) {
       signal.delta = value;
     } else {
-      signal[chooseKey(key)] = chosoeProcess(value, key);
+      signal[chooseKey(key)] = chooseProcess(value, key);
     }
   });
   return signal;
@@ -37,7 +37,7 @@ function chooseKey(entry) {
   }
 }
 
-function chosoeProcess(d, key) {
+function chooseProcess(d, key) {
   switch (key) {
     case 'l':
       return getPubAssignment(d);
