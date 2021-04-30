@@ -109,8 +109,11 @@ NmrRecord.toJSON = (options = {}) => {
   let { sdf, molecule, zipFiles } = options;
   let sdfFile = checkSdf(sdf);
   molecule = !molecule
-    ? OCLMolecule.fromMolfileWithAtomMap(sdfFile.molecules[0].molfile)
+    ? OCLMolecule.fromMolfile(sdfFile.molecules[0].molfile)
     : molecule;
+
+  molecule.addImplicitHydrogens();
+  molecule = OCLMolecule.fromMolfileWithAtomMap(molecule.toMolfile());
 
   let nmredata = NmrRecord.getNMReData(sdfFile);
   return nmredataToJSON(nmredata, {
