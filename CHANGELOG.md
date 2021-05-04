@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://www.github.com/cheminfo/nmredata/compare/v0.3.0...v0.4.0) (2021-05-04)
+
+
+### Features
+
+* **nmredataToJSON:** fix the exportation of 2D signal ([#15](https://www.github.com/cheminfo/nmredata/issues/15)) ([ab25b7c](https://www.github.com/cheminfo/nmredata/commit/ab25b7ce9d9783ad12ee27063760f6123150f83c))
+
 ## [0.3.0](https://www.github.com/cheminfo/nmredata/compare/v0.2.0...v0.3.0) (2021-04-30)
 
 
