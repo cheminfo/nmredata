@@ -63,5 +63,8 @@
     "jszip": "^3.6.0",
     "openchemlib": "^7.4.0",
     "openchemlib-utils": "^1.0.0"
+  },
+  "volta": {
+    "node": "16.0.0"
   }
 }

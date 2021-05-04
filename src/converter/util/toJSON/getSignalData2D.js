@@ -6,6 +6,7 @@ export function getSignalData2D(data, labels) {
   signalKeys.forEach((key) => {
     if (data[key]) result[key] = data[key];
   });
+
   //check if the xLabel and yLabel are labels
   for (let axis in data.delta) {
     if (!result[axis]) result[axis] = {};

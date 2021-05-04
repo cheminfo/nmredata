@@ -24,7 +24,7 @@ describe('NMReData to nmrium', () => {
     expect(experiment).toBe('zg30');
 
     let jszip = Jszip();
-    let zip = await jszip.loadAsync(source.zip, { base64: true });
+    let zip = await jszip.loadAsync(source.file.binary);
     expect(Object.keys(zip.files)).toStrictEqual([
       'AN-menthol/',
       'AN-menthol/10/',
