@@ -1,6 +1,6 @@
 import { getCoupling } from './util/getCoupling';
 
-const axisInOrder = ['y', 'x'];
+const axisInOrder = ['x', 'y'];
 
 export function parse2DSignal(content) {
   content = content.replace(/ /g, '');
