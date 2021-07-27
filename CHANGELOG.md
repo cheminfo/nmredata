@@ -1,5 +1,13 @@
 # Changelog
 
+### [0.4.1](https://www.github.com/cheminfo/nmredata/compare/v0.4.0...v0.4.1) (2021-07-27)
+
+
+### Bug Fixes
+
+* avoid throw if there is not assignment ([9e68d4f](https://www.github.com/cheminfo/nmredata/commit/9e68d4f5e8b126d06735c96807975a4f6b0e12b4))
+* wrong use of optional chaining operator ([e4146d0](https://www.github.com/cheminfo/nmredata/commit/e4146d055e8c17b75bb7177cdac766f99a6f7c67))
+
 ## [0.4.0](https://www.github.com/cheminfo/nmredata/compare/v0.3.0...v0.4.0) (2021-05-04)
 
 
