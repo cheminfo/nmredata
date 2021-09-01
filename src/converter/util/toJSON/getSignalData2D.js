@@ -13,8 +13,8 @@ export function getSignalData2D(data, labels) {
     let axisLabels = data.delta[axis];
     for (let label of axisLabels) {
       if (labels[label]) {
-        if (!result[axis].diaID) result[axis].diaID = [];
-        result[axis].diaID.push(...labels[label].diaID);
+        if (!result[axis].diaIDs) result[axis].diaIDs = [];
+        result[axis].diaIDs.push(...labels[label].diaIDs);
         result[axis].delta = parseFloat(labels[label].shift);
       } else {
         result[axis].delta = parseFloat(label);

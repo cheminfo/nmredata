@@ -41,7 +41,7 @@ export function addDiaIDtoLabels(labels, moleculeWithMap) {
         diaID.push(diaIDs[p]);
       }
     });
-    labels[l].diaID = diaID;
+    labels[l].diaIDs = diaID;
   }
   return labels;
 }
