@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.5.0](https://www.github.com/cheminfo/nmredata/compare/v0.4.1...v0.5.0) (2021-09-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* exports diaIDs instead of diaID
+
+### Features
+
+* exports diaIDs instead of diaID ([dde8bf6](https://www.github.com/cheminfo/nmredata/commit/dde8bf65ae78f640e767e142dd466f3e7353f41c))
+
 ### [0.4.1](https://www.github.com/cheminfo/nmredata/compare/v0.4.0...v0.4.1) (2021-07-27)
 
 
