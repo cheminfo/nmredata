@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://www.github.com/cheminfo/nmredata/compare/v0.5.0...v0.6.0) (2021-11-05)
+
+
+### Features
+
+* refactor integral to integration ([5bf7871](https://www.github.com/cheminfo/nmredata/commit/5bf78711e964287ad3b826b8350796f3f3186f3f))
+
 ## [0.5.0](https://www.github.com/cheminfo/nmredata/compare/v0.4.1...v0.5.0) (2021-09-01)
 
 
