@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.6.1](https://www.github.com/cheminfo/nmredata/compare/v0.6.0...v0.6.1) (2021-11-05)
+
+
+### Bug Fixes
+
+* refactor 2D signals property names ([9f1bf66](https://www.github.com/cheminfo/nmredata/commit/9f1bf66de9493b8e99e564d8fe0526b3bf50760a))
+
 ## [0.6.0](https://www.github.com/cheminfo/nmredata/compare/v0.5.0...v0.6.0) (2021-11-05)
 
 
