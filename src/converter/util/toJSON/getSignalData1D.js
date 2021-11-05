@@ -7,9 +7,9 @@ export function getSignalData1D(data, labels) {
     if (value) result[key] = value;
   });
 
-  let { nbAtoms, integral } = data;
-  result.integral = integral
-    ? Number(integral)
+  let { nbAtoms, integration } = data;
+  result.integration = integration
+    ? Number(integration)
     : nbAtoms
     ? Number(nbAtoms)
     : null;

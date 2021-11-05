@@ -3,11 +3,11 @@ import { parse1DSignal } from '../parse1DSignal';
 describe('parse1DSignal', () => {
   it('parse range', () => {
     let signal = '7.200-7.600, N=5, L=H-C1, H-C2, C-C4';
-    let { assignment, integral, nbAtoms, delta } = parse1DSignal(signal);
+    let { assignment, integration, nbAtoms, delta } = parse1DSignal(signal);
     expect(delta).toStrictEqual('7.200-7.600');
     expect(nbAtoms).toBe('5');
     expect(assignment).toStrictEqual(['h-c1', 'h-c2', 'c-c4']);
-    expect(integral).toBeUndefined();
+    expect(integration).toBeUndefined();
   });
 
   it('parse signal with J assignment', () => {
@@ -15,7 +15,7 @@ describe('parse1DSignal', () => {
       '3.4302, S=dddd, N=1, L=H4, E=28.9715, J=9.90(H3),4.80(OH),10.90(H5ax),4.50(H5eq)';
     let {
       assignment,
-      integral,
+      integration,
       nbAtoms,
       delta,
       jCoupling,
@@ -30,7 +30,7 @@ describe('parse1DSignal', () => {
       { label: 'h5ax', coupling: 10.9 },
       { label: 'h5eq', coupling: 4.5 },
     ]);
-    expect(integral).toBe('28.9715');
+    expect(integration).toBe('28.9715');
     expect(multiplicity).toBe('dddd');
   });
 });

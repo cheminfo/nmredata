@@ -31,7 +31,7 @@ function chooseKey(entry) {
       return 'nbAtoms';
     case 'e':
     case 'i':
-      return 'integral';
+      return 'integration';
     default:
       return '';
   }

@@ -81,8 +81,8 @@ export function create1DSignals(data, labels, options = {}) {
               separator = ', ';
             }
           }
-          if (range.integral) {
-            str += `, E=${Number(range.integral).toFixed(toFix)}`;
+          if (range.integration) {
+            str += `, E=${Number(range.integration).toFixed(toFix)}`;
           } else if (range.pubIntegral) {
             str += `, E=${range.putIntegral.toFixed(toFix)}`;
           } else if (range.signal[0].nbAtoms !== undefined) {
