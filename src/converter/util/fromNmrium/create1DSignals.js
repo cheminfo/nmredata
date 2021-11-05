@@ -37,7 +37,7 @@ export function create1DSignals(data, labels, options = {}) {
     let toFix = getToFix(nucleus)[0];
 
     for (let range of ranges) {
-      let signals = range.signal; //.filter((s) => s.diaID && s.diaID.length);
+      let signals = range.signals; //.filter((s) => s.diaID && s.diaID.length);
 
       for (let signal of signals) {
         let { multiplicity } = signal;
@@ -66,7 +66,7 @@ export function create1DSignals(data, labels, options = {}) {
         if (nucleus === '1H') {
           if (signal.multiplicity) str += `, S=${signal.multiplicity}`;
 
-          let jCoupling = signal.j;
+          let jCoupling = signal.js;
           if (Array.isArray(jCoupling) && jCoupling.length) {
             let separator = ', J=';
             for (let i = 0; i < jCoupling.length; i++) {

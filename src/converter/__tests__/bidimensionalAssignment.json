@@ -31,10 +31,10 @@
               "to": 49.86890700902327,
               "pubIntegral": 1
             },
-            "signal": [
+            "signals": [
               {
                 "id": "8qenJpef",
-                "peak": [
+                "peaks": [
                   {
                     "x": 4.019984400860547,
                     "y": 49.71854655549482,
@@ -84,10 +84,10 @@
               "to": 49.86890700902327,
               "pubIntegral": 1
             },
-            "signal": [
+            "signals": [
               {
                 "id": "igYGCD17",
-                "peak": [
+                "peaks": [
                   {
                     "x": 3.8214875008311453,
                     "y": 49.715833327170095,
@@ -2654,7 +2654,7 @@
         "experimentType": "hsqc",
         "experimentID": "ahNMRzuZ",
         "atomType": "H",
-        "signal": { "id": "igYGCD17", "delta": 3.821487500831145, "sign": 0 },
+        "signals": { "id": "igYGCD17", "delta": 3.821487500831145, "sign": 0 },
         "label": { "origin": "H1" },
         "link": [
           {
@@ -2662,9 +2662,9 @@
             "experimentType": "hsqc",
             "experimentID": "ahNMRzuZ",
             "atomType": ["H", "C"],
-            "signal": {
+            "signals": {
               "id": "igYGCD17",
-              "peak": [
+              "peaks": [
                 {
                   "x": 3.8214875008311453,
                   "y": 49.715833327170095,
@@ -2706,7 +2706,7 @@
         "experimentType": "hsqc",
         "experimentID": "ahNMRzuZ",
         "atomType": "H",
-        "signal": { "id": "8qenJpef", "delta": 4.03034290525484, "sign": 0 },
+        "signals": { "id": "8qenJpef", "delta": 4.03034290525484, "sign": 0 },
         "label": { "origin": "H2" },
         "link": [
           {
@@ -2714,9 +2714,9 @@
             "experimentType": "hsqc",
             "experimentID": "ahNMRzuZ",
             "atomType": ["H", "C"],
-            "signal": {
+            "signals": {
               "id": "8qenJpef",
-              "peak": [
+              "peaks": [
                 {
                   "x": 4.019984400860547,
                   "y": 49.71854655549482,
@@ -2767,7 +2767,7 @@
         "experimentType": "hsqc",
         "experimentID": "ahNMRzuZ",
         "atomType": "C",
-        "signal": { "id": "8qenJpef", "delta": 49.71865793833447, "sign": 0 },
+        "signals": { "id": "8qenJpef", "delta": 49.71865793833447, "sign": 0 },
         "label": { "origin": "C1" },
         "link": [
           {
@@ -2775,9 +2775,9 @@
             "experimentType": "hsqc",
             "experimentID": "ahNMRzuZ",
             "atomType": ["H", "C"],
-            "signal": {
+            "signals": {
               "id": "8qenJpef",
-              "peak": [
+              "peaks": [
                 {
                   "x": 4.019984400860547,
                   "y": 49.71854655549482,
@@ -2820,9 +2820,9 @@
             "experimentType": "hsqc",
             "experimentID": "ahNMRzuZ",
             "atomType": ["H", "C"],
-            "signal": {
+            "signals": {
               "id": "igYGCD17",
-              "peak": [
+              "peaks": [
                 {
                   "x": 3.8214875008311453,
                   "y": 49.715833327170095,

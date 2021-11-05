@@ -14,7 +14,7 @@ describe('processContent testing', () => {
     { corrtype: 'HMBC' },
     { pulseprogram: 'hmbcetgpl3nd' },
     { spectrum_location: 'file:dj_ca_2017_ernestin_EN4/15/pdata/1/' },
-    { delta: { y: ['h1'], x: ['3'] } },
+    { delta: { y: ['3'], x: ['h1'] } },
   ];
   /*eslint-enable camelcase*/
   it('process 2D data lines', () => {
