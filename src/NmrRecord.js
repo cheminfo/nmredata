@@ -138,7 +138,7 @@ NmrRecord.getNMReData = (sdf) => {
     let tagData = result[tag];
     let dataSplited = nmredataTags[tag].split('\n');
     dataSplited.forEach((e) => {
-      let content = e.replace(/;.*/g, '');
+      let content = e.replace(/;.*/g, '').replace(/\r/g, '');
       let comment = e.match(';') ? e.replace(/.*;+(.*)/g, '$1') : '';
       if (content.length === 0) {
         // may be a head comment. is it always true?

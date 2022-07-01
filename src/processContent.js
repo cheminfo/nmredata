@@ -37,6 +37,7 @@ function chooseProcessor(tag) {
     case 'temperature':
     case 'level':
     default:
+      return propertyLinesProcessor;
   }
 }
 
