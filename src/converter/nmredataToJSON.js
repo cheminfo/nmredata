@@ -61,6 +61,12 @@ export async function nmredataToJSON(nmredata, options) {
     });
 
     let zipAndJcamp = await getSpectra(nmredata[tag], options);
+
+    if (!zipAndJcamp.jcamp && !zipAndJcamp.file) {
+      spectra.push(spectrum);
+      continue;
+    }
+
     for (let key in zipAndJcamp) {
       if (!zipAndJcamp[key]) continue;
       spectrum.source.file = zipAndJcamp[key];
