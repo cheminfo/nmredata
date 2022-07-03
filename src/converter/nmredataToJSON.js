@@ -24,6 +24,11 @@ export async function nmredataToJSON(nmredata, options) {
     spectra: [],
   };
   let spectra = data.spectra;
+  let molecules = data.molecules;
+
+  if (nmredata.SMILES) {
+    molecules[0].smiles = nmredata.SMILES.data[0].value;
+  }
   let labels = getLabels(nmredata.ASSIGNMENT);
   labels = addDiaIDtoLabels(labels, moleculeAndMap);
   // if (nmredata['J'] && nmredata['J'].data) {
@@ -32,9 +37,10 @@ export async function nmredataToJSON(nmredata, options) {
 
   for (let tag in nmredata) {
     let ctag = tag.toLowerCase();
-    if (!tag.toLowerCase().match(/[1|2]d_/s)) continue;
+    if (!ctag.match(/[1|2]d_/s)) continue;
     let dimension = ctag.replace(/([1|2]d)_.*/, '$1');
     let is2D = dimension === '2d';
+    // console.log(nmredata[tag].data.map(a => a.value));
     let frequencyLine = nmredata[tag].data.find((e) => e.value.larmor);
     let pulseProgramLine = nmredata[tag].data.find((e) => e.value.pulseprogram);
 

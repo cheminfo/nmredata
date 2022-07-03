@@ -104,7 +104,7 @@ export class NmrRecord {
  * @param {Jszip} [options.zip] - jszip instance of the zip file that contain the spectra data.
  * @returns
  */
-
+// there is an error here, we should be able to export any index in sdf, add options use activeElement.
 NmrRecord.toJSON = (options = {}) => {
   let { sdf, molecule, zipFiles } = options;
   let sdfFile = checkSdf(sdf);

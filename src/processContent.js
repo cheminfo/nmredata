@@ -6,12 +6,17 @@ export function processContent(content, options) {
   let { tag } = options;
   let processor = chooseProcessor(tag);
   let matchEqual = content.match(/[=]/g);
-  if (!matchEqual && !content.match(',')) {
+  if (!processor && !matchEqual && !content.match(',')) {
     if (tag.toLowerCase().match(/2d/)) return processor(content, options);
     return content;
-  } else if (matchEqual && !content.match(',')) {
-    return propertyLinesProcessor(content);
   } else {
+    if (
+      tag.toLowerCase().match(/[1|2]d/) &&
+      matchEqual &&
+      !content.match(',')
+    ) {
+      return propertyLinesProcessor(content);
+    }
     return processor(content, options);
   }
 }
@@ -32,12 +37,14 @@ function chooseProcessor(tag) {
       return processAssignment;
     case 'j':
       return processAssignment; // @TODO change it
+    case 'smiles':
+    case 'inchi':
     case 'version':
     case 'solvent':
     case 'temperature':
     case 'level':
+      return (content) => content;
     default:
-      return propertyLinesProcessor;
   }
 }
 
