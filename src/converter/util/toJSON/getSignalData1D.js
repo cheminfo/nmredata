@@ -33,7 +33,7 @@ export function getSignalData1D(data, labels) {
     result.jCoupling.forEach((j, i, arr) => {
       if (j.label) {
         let label = labels[j.label];
-        if (label) arr[i].diaIDs = label.diaIDs;
+        if (label && label.diaIDs) arr[i].diaIDs = label.diaIDs;
       }
     });
   }

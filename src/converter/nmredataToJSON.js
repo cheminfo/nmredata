@@ -29,6 +29,7 @@ export async function nmredataToJSON(nmredata, options) {
   if (nmredata.SMILES) {
     molecules[0].smiles = nmredata.SMILES.data[0].value;
   }
+
   let labels = getLabels(nmredata.ASSIGNMENT);
   labels = addDiaIDtoLabels(labels, moleculeAndMap);
   // if (nmredata['J'] && nmredata['J'].data) {

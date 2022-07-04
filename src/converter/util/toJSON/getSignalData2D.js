@@ -12,8 +12,8 @@ export function getSignalData2D(data, labels) {
     if (!result[axis]) result[axis] = {};
     let axisLabels = data.delta[axis];
     for (let label of axisLabels) {
+      if (!result[axis].diaIDs) result[axis].diaIDs = [];
       if (labels[label]) {
-        if (!result[axis].diaIDs) result[axis].diaIDs = [];
         result[axis].diaIDs.push(...labels[label].diaIDs);
         result[axis].delta = parseFloat(labels[label].shift);
       } else {

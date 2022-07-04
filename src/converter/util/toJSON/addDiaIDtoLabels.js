@@ -37,12 +37,13 @@ export function addDiaIDtoLabels(labels, moleculeWithMap) {
 
   for (let l in labels) {
     let diaID = [];
-    if (!('position' in labels[l])) continue;
-    labels[l].position.forEach((p) => {
-      if (diaID.indexOf(diaIDs[p]) === -1) {
-        diaID.push(diaIDs[p]);
-      }
-    });
+    if ('position' in labels[l]) {
+      labels[l].position.forEach((p) => {
+        if (diaID.indexOf(diaIDs[p]) === -1) {
+          diaID.push(diaIDs[p]);
+        }
+      });
+    }
     labels[l].diaIDs = diaID;
   }
   return labels;
