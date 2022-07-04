@@ -18,7 +18,7 @@ export function getSignalData1D(data, labels) {
     data.assignment.forEach((assignment) => {
       let label = labels[assignment];
       if (!result.diaIDs) result.diaIDs = [];
-      if (!label) return;
+      if (!label || !label.diaIDs) return;
       result.diaIDs.push(...label.diaIDs);
     });
   }
