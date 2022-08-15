@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.7.0](https://github.com/cheminfo/nmredata/compare/v0.6.1...v0.7.0) (2022-08-15)
+
+
+### Features
+
+* export json even without xy data ([2fe9b09](https://github.com/cheminfo/nmredata/commit/2fe9b0971b0da926942d1b0ac35ed60d50512d40))
+
+
+### Bug Fixes
+
+* avoid empty lines ([2a1b605](https://github.com/cheminfo/nmredata/commit/2a1b6054dd0e635612863840f7068956337bacb4))
+* handle correctly the smiles tag ([396cd3f](https://github.com/cheminfo/nmredata/commit/396cd3fd91c8e955e9138100cdd24de46ccba8e2))
+* update dependencies ([6cec918](https://github.com/cheminfo/nmredata/commit/6cec9187e21ee1a2a4bc5e03204e3fd3627c8a45))
+
 ### [0.6.1](https://www.github.com/cheminfo/nmredata/compare/v0.6.0...v0.6.1) (2021-11-05)
 
 
