@@ -10,20 +10,15 @@ describe('NMReData to nmrium', () => {
       { zipOptions: { base64: true } },
     );
     let jsonData = await nmrRecord.toJSON(2);
-    let {
-      source,
-      signals,
-      nucleus,
-      frequency,
-      experiment,
-    } = jsonData.spectra[0];
+    let { source, signals, nucleus, frequency, experiment } =
+      jsonData.spectra[0];
 
     expect(signals).toHaveLength(14);
     expect(frequency).toBe('500.133088507');
     expect(nucleus).toBe('1H');
     expect(experiment).toBe('zg30');
 
-    let jszip = Jszip();
+    let jszip = new Jszip();
     let zip = await jszip.loadAsync(source.file.binary);
     expect(Object.keys(zip.files)).toStrictEqual([
       'AN-menthol/',

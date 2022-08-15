@@ -1,4 +1,4 @@
-import jszip from 'jszip';
+import Jszip from 'jszip';
 import { getGroupedDiastereotopicAtomIDs } from 'openchemlib-utils';
 import { Molecule as OCLMolecule } from 'openchemlib/full';
 
@@ -27,7 +27,7 @@ export function nmriumToNmrRecord(state, options = {}) {
   const { id, prefix = '\n> <NMREDATA_', filename = 'nmredata' } = options;
 
   let sdfResult = '';
-  let nmrRecord = new jszip();
+  let nmrRecord = new Jszip();
 
   let molecule = OCLMolecule.fromMolfile(molecules[0].molfile);
   molecule.addImplicitHydrogens();

@@ -133,8 +133,8 @@ export function parseSDF(sdf, options = {}) {
 
   return {
     time: Date.now() - start,
-    molecules: molecules,
+    molecules,
     labels: Object.keys(labels),
-    statistics: statistics,
+    statistics,
   };
 }
