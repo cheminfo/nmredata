@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/cheminfo/nmredata/compare/v0.7.0...v0.7.1) (2022-08-27)
+
+
+### Bug Fixes
+
+* **assignment tag:** handle when not atoms exist ([#29](https://github.com/cheminfo/nmredata/issues/29)) ([6909206](https://github.com/cheminfo/nmredata/commit/69092067102bcfd7e41c37750e9ee7ce2a33da4f))
+
 ## [0.7.0](https://github.com/cheminfo/nmredata/compare/v0.6.1...v0.7.0) (2022-08-15)
 
 
