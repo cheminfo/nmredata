@@ -18,7 +18,7 @@ export function getSignalData1D(data, labels) {
     data.assignment.forEach((assignment) => {
       let label = labels[assignment];
       if (!result.diaIDs) result.diaIDs = [];
-      if (!label) return;
+      if (!label || !label.diaIDs) return;
       result.diaIDs.push(...label.diaIDs);
     });
   }
@@ -33,7 +33,7 @@ export function getSignalData1D(data, labels) {
     result.jCoupling.forEach((j, i, arr) => {
       if (j.label) {
         let label = labels[j.label];
-        if (label) arr[i].diaIDs = label.diaIDs;
+        if (label && label.diaIDs) arr[i].diaIDs = label.diaIDs;
       }
     });
   }

@@ -11,6 +11,7 @@ export function addDiaIDtoLabels(labels, moleculeWithMap) {
   for (let l in labels) {
     let label = labels[l];
     let atoms = label.atoms;
+    if (atoms.length < 1) continue;
     label.position = [];
     if (atoms[0].toLowerCase().includes('h')) {
       // this is for implicit hidrogens
@@ -36,11 +37,13 @@ export function addDiaIDtoLabels(labels, moleculeWithMap) {
 
   for (let l in labels) {
     let diaID = [];
-    labels[l].position.forEach((p) => {
-      if (diaID.indexOf(diaIDs[p]) === -1) {
-        diaID.push(diaIDs[p]);
-      }
-    });
+    if ('position' in labels[l]) {
+      labels[l].position.forEach((p) => {
+        if (diaID.indexOf(diaIDs[p]) === -1) {
+          diaID.push(diaIDs[p]);
+        }
+      });
+    }
     labels[l].diaIDs = diaID;
   }
   return labels;
