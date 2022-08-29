@@ -1,13 +1,12 @@
 import Jszip from 'jszip';
-import { nmredata } from 'nmredata-data-test';
+import { getData } from 'nmredata-data-test';
 
 import { readNmrRecord } from '../../reader/readNmrRecord';
 
 describe('NMReData to nmrium', () => {
   it('1D assignment', async () => {
     let nmrRecord = await readNmrRecord(
-      nmredata['menthol_1D_1H_assigned_J.zip'],
-      { zipOptions: { base64: true } },
+      await getData('menthol_1D_1H_assigned_J.zip'),
     );
     let jsonData = await nmrRecord.toJSON(2);
     let { source, signals, nucleus, frequency, experiment } =
@@ -18,19 +17,13 @@ describe('NMReData to nmrium', () => {
     expect(nucleus).toBe('1H');
     expect(experiment).toBe('zg30');
 
-    let jszip = new Jszip();
-    let zip = await jszip.loadAsync(source.file.binary);
-    expect(Object.keys(zip.files)).toStrictEqual([
-      'AN-menthol/',
-      'AN-menthol/10/',
+    expect(source.file.files.map(file => file.webkitRelativePath)).toStrictEqual([
       'AN-menthol/10/uxnmr.par',
       'AN-menthol/10/prosol_History',
       'AN-menthol/10/pulseprogram',
       'AN-menthol/10/precom.output',
       'AN-menthol/10/format.temp',
       'AN-menthol/10/audita.txt',
-      'AN-menthol/10/pdata/',
-      'AN-menthol/10/pdata/1/',
       'AN-menthol/10/pdata/1/proc',
       'AN-menthol/10/pdata/1/peaks',
       'AN-menthol/10/pdata/1/peakrng',

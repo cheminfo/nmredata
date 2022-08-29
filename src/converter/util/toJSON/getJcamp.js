@@ -1,5 +1,5 @@
 export async function getJcamp(tag, options) {
-  let { zipFiles, root } = options;
+  let { files, root } = options;
   let locationLine = tag.data.find((e) => e.value.jcamp_location);
 
   if (!locationLine) {
@@ -9,13 +9,14 @@ export async function getJcamp(tag, options) {
 
   let relativePath = locationLine.value.jcamp_location;
   let pathJcamp = root + relativePath.replace(/file:/s, '');
-  if (!zipFiles[pathJcamp]) {
+  const jcampFile = files.find((file) => file.webKitRelativePath === pathJcamp);
+  if (!jcampFile) {
     new Error(`There is not jcamp with path: ${pathJcamp}`);
     return;
   }
   return {
     name: pathJcamp,
     extension: 'jdx',
-    binary: await zipFiles[pathJcamp].async('arraybuffer'),
+    files: jcampFile,
   };
 }

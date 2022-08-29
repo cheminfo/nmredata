@@ -11,7 +11,7 @@ export class NmrRecord {
       throw new Error('Cannot be called directly');
     }
     let { sdfFiles, files } = nmrRecord;
-    this.zipFiles = files;
+    this.files = files;
     this.sdfFiles = sdfFiles;
     this.activeElement = 0;
     this.nbSamples = sdfFiles.length;
@@ -72,14 +72,14 @@ export class NmrRecord {
   toJSON(i = this.activeElement) {
     let index = this.checkIndex(i);
     return NmrRecord.toJSON({
-      zipFiles: this.zipFiles,
+      files: this.files,
       sdf: this.sdfFiles[index],
     });
   }
 
-  setActiveElement(nactiveSDF) {
-    nactiveSDF = this.checkIndex(nactiveSDF);
-    this.activeElement = nactiveSDF;
+  setActiveElement(index) {
+    index = this.checkIndex(index);
+    this.activeElement = index;
   }
 
   getActiveElement() {
@@ -115,7 +115,7 @@ export class NmrRecord {
  */
 // there is an error here, we should be able to export any index in sdf, add options use activeElement.
 NmrRecord.toJSON = (options = {}) => {
-  let { sdf, molecule, zipFiles } = options;
+  let { sdf, molecule, files } = options;
   let sdfFile = checkSdf(sdf);
   molecule = !molecule
     ? OCLMolecule.fromMolfile(sdfFile.molecules[0].molfile)
@@ -128,7 +128,7 @@ NmrRecord.toJSON = (options = {}) => {
   return nmredataToJSON(nmredata, {
     molecule,
     root: sdfFile.root,
-    zipFiles,
+    files,
   });
 };
 
