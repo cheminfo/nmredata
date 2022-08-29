@@ -13,10 +13,10 @@
     "eslint-fix": "npm run eslint -- --fix",
     "build": "npm run prepare && npm run local-build",
     "local-build": "node_modules/.bin/cheminfo build --entry builder/nmredata.js --no-uglify --root nmredata",
-    "prepare": "rollup -c",
+    "prepack": "rollup -c",
     "prettier": "prettier --check src",
     "prettier-write": "prettier --write src",
-    "test": "npm run test-only && npm run eslint && npm run prettier",
+    "test": "npm run test-only && npm run eslint-fix && npm run prettier",
     "test-only": "jest"
   },
   "repository": {
@@ -24,7 +24,7 @@
     "url": "git+https://github.com/cheminfo/nmredata.git"
   },
   "keywords": [],
-  "author": "Jose Alejandro Bolaños Arroyave",
+  "author": "J. Alejandro Bolanos A. <jose.bolanos@correounivalle.edu.co>; (https://github.com/jobo322)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/cheminfo/nmredata/issues"
