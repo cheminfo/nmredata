@@ -1,4 +1,4 @@
-import { parseSDF } from "../parser/parseSDF";
+import { parseSDF } from '../parser/parseSDF';
 
 /**
  * Extract sdf files from a file list and parse all of them.

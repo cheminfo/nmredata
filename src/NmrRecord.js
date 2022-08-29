@@ -22,7 +22,7 @@ export class NmrRecord {
       throw new Error('should be at least 1 file');
     }
     const sdfFiles = await getSDF(files);
-    return new NmrRecord({ sdfFiles, files})
+    return new NmrRecord({ sdfFiles, files });
   }
 
   getMol(i = this.activeElement) {

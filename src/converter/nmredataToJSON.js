@@ -38,7 +38,8 @@ export async function nmredataToJSON(nmredata, options) {
     let nucleus = getNucleusFromTag(tag);
 
     let dimension = ctag.replace(/([1|2]d)_.*/, '$1');
-    let signalProcessor = dimension === '2d' ? getSignalData2D : getSignalData1D;
+    let signalProcessor =
+      dimension === '2d' ? getSignalData2D : getSignalData1D;
 
     let spectrum = {
       source: {
