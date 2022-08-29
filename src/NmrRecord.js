@@ -3,17 +3,26 @@ import { Molecule as OCLMolecule } from 'openchemlib/full';
 import { nmredataToJSON } from './converter/nmredataToJSON';
 import { parseSDF } from './parser/parseSDF';
 import { processContent } from './processContent';
+import { getSDF } from './util/getSDF';
 
 export class NmrRecord {
-  constructor(files) {
-    if (!Array.isArray(files) || files.length < 1) {
+  constructor(nmrRecord) {
+    if (!(nmrRecord instanceof Object)) {
       throw new Error('Cannot be called directly');
     }
-    const sdfFiles = getSDF(files);
+    let { sdfFiles, files } = nmrRecord;
     this.zipFiles = files;
     this.sdfFiles = sdfFiles;
     this.activeElement = 0;
     this.nbSamples = sdfFiles.length;
+  }
+
+  static async fromFileList(files) {
+    if (!Array.isArray(files) || files.length < 1) {
+      throw new Error('should be at least 1 file');
+    }
+    const sdfFiles = await getSDF(files);
+    return new NmrRecord({ sdfFiles, files})
   }
 
   getMol(i = this.activeElement) {
@@ -187,21 +196,4 @@ function checkSdf(sdfData, options) {
     return { ...sdf, root, filename };
   }
   return sdfData;
-}
-
-async function getSDF(files) {
-  let result = [];
-  for (const file of files) {
-    const pathFile = file.webkitRelativePath.split('/');
-    if (/^[^.].+sdf$/.exec(file.name)) {
-      const filename = file.name.replace(/\.sdf/, '');
-      const root = pathFile.slice(0, pathFile.length - 1).join('/');
-      const sdf = await file.text();
-      let parserResult = parseSDF(`${sdf}`, { mixedEOL: true });
-      parserResult.filename = filename;
-      parserResult.root = root !== '' ? `${root}/` : '';
-      result.push(parserResult);
-    }
-  }
-  return result;
 }

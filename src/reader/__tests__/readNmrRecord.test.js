@@ -1,10 +1,10 @@
-import { nmredata } from 'nmredata-data-test';
+import { getData } from 'nmredata-data-test';
 
 import { readNmrRecord } from '../../index';
 
 describe('NMReDATA reading', () => {
   it('Test nmredata read async', async () => {
-    let nr = await readNmrRecord(nmredata['menthol_1D_1H_assigned_J.zip'], {
+    let nr = await readNmrRecord(await getData('menthol_1D_1H_assigned_J.zip'), {
       zipOptions: { base64: true },
     });
     let sdfFileList = nr.getSDFList();
