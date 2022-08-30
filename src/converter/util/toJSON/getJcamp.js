@@ -16,7 +16,7 @@ export async function getJcamp(tag, options) {
   }
   return {
     name: pathJcamp,
-    extension: 'jdx',
-    files: jcampFile,
+    type: 'jcamp',
+    files: [jcampFile],
   };
 }

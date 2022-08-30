@@ -33,7 +33,7 @@ export async function getBrukerFiles(tag, options) {
   }
   return {
     name: `${pathSpectrum}`,
-    extension: 'zip',
+    type: 'brukerFiles',
     files: brukerFolder,
   };
 }
