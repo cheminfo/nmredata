@@ -1,4 +1,5 @@
 import { fileListFromZip } from 'filelist-utils';
+
 import { NmrRecord } from '../NmrRecord';
 
 /**
