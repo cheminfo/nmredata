@@ -9,7 +9,7 @@ export async function getJcamp(tag, options) {
 
   let relativePath = locationLine.value.jcamp_location;
   let pathJcamp = root + relativePath.replace(/file:/s, '');
-  const jcampFile = files.find((file) => file.webKitRelativePath === pathJcamp);
+  const jcampFile = files.find((file) => file.webkitRelativePath === pathJcamp);
   if (!jcampFile) {
     new Error(`There is not jcamp with path: ${pathJcamp}`);
     return;

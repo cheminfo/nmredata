@@ -61,7 +61,6 @@ export async function nmredataToJSON(nmredata, options) {
     });
 
     let zipAndJcamp = await getSpectra(nmredata[tag], options);
-
     if (!zipAndJcamp.jcamp && !zipAndJcamp.bruker) {
       spectra.push(spectrum);
       continue;
