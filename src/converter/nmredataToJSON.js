@@ -55,9 +55,9 @@ export async function nmredataToJSON(nmredata, options) {
 
     let signalData = nmredata[tag].data.filter((e) => e.value.delta);
     spectrum.signals = signalData.map((sd) => {
-      let signalData = signalProcessor(sd.value, labels);
-      signalData.comment = sd.comment;
-      return signalData;
+      let signalContent = signalProcessor(sd.value, labels);
+      signalContent.comment = sd.comment;
+      return signalContent;
     });
 
     let zipAndJcamp = await getSpectra(nmredata[tag], options);
