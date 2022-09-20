@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.8.0](https://github.com/cheminfo/nmredata/compare/v0.7.1...v0.8.0) (2022-09-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* use filelist-utils internally (#32)
+
+### Features
+
+* use filelist-utils internally ([#32](https://github.com/cheminfo/nmredata/issues/32)) ([38bfb9a](https://github.com/cheminfo/nmredata/commit/38bfb9ad8e1339f1680a9da9088cfae626b4ed6e))
+
 ## [0.7.1](https://github.com/cheminfo/nmredata/compare/v0.7.0...v0.7.1) (2022-08-27)
 
 
