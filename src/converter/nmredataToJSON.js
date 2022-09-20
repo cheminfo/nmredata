@@ -1,17 +1,10 @@
 import { addDiaIDtoLabels } from './util/toJSON/addDiaIDtoLabels';
-import { extractZipFolder } from './util/toJSON/extractZipFolder';
+import { getBrukerFiles } from './util/toJSON/getBrukerFiles';
 import { getJcamp } from './util/toJSON/getJcamp';
 import { getLabels } from './util/toJSON/getLabels';
 import { getNucleusFromTag } from './util/toJSON/getNucleusFromTag';
 import { getSignalData1D } from './util/toJSON/getSignalData1D';
 import { getSignalData2D } from './util/toJSON/getSignalData2D';
-
-const getSpectra = async (tagData, options) => {
-  return {
-    jcamp: await getJcamp(tagData, options),
-    file: await extractZipFolder(tagData, options),
-  };
-};
 
 export async function nmredataToJSON(nmredata, options) {
   let moleculeAndMap = options.molecule;
@@ -39,14 +32,14 @@ export async function nmredataToJSON(nmredata, options) {
   for (let tag in nmredata) {
     let ctag = tag.toLowerCase();
     if (!ctag.match(/[1|2]d_/s)) continue;
-    let dimension = ctag.replace(/([1|2]d)_.*/, '$1');
-    let is2D = dimension === '2d';
-    // console.log(nmredata[tag].data.map(a => a.value));
     let frequencyLine = nmredata[tag].data.find((e) => e.value.larmor);
     let pulseProgramLine = nmredata[tag].data.find((e) => e.value.pulseprogram);
 
     let nucleus = getNucleusFromTag(tag);
-    let signalProcessor = is2D ? getSignalData2D : getSignalData1D;
+
+    let dimension = ctag.replace(/([1|2]d)_.*/, '$1');
+    let signalProcessor =
+      dimension === '2d' ? getSignalData2D : getSignalData1D;
 
     let spectrum = {
       source: {
@@ -62,14 +55,13 @@ export async function nmredataToJSON(nmredata, options) {
 
     let signalData = nmredata[tag].data.filter((e) => e.value.delta);
     spectrum.signals = signalData.map((sd) => {
-      let signalData = signalProcessor(sd.value, labels);
-      signalData.comment = sd.comment;
-      return signalData;
+      let signalContent = signalProcessor(sd.value, labels);
+      signalContent.comment = sd.comment;
+      return signalContent;
     });
 
     let zipAndJcamp = await getSpectra(nmredata[tag], options);
-
-    if (!zipAndJcamp.jcamp && !zipAndJcamp.file) {
+    if (!zipAndJcamp.jcamp && !zipAndJcamp.bruker) {
       spectra.push(spectrum);
       continue;
     }
@@ -92,3 +84,10 @@ export async function nmredataToJSON(nmredata, options) {
 //     if (!labels.includes(to)) labels.push(to);
 //   })
 // }
+
+async function getSpectra(tagData, options) {
+  return {
+    jcamp: await getJcamp(tagData, options),
+    bruker: await getBrukerFiles(tagData, options),
+  };
+}

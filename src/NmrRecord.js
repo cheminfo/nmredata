@@ -3,22 +3,31 @@ import { Molecule as OCLMolecule } from 'openchemlib/full';
 import { nmredataToJSON } from './converter/nmredataToJSON';
 import { parseSDF } from './parser/parseSDF';
 import { processContent } from './processContent';
+import { getSDF } from './util/getSDF';
 
 export class NmrRecord {
   constructor(nmrRecord) {
     if (!(nmrRecord instanceof Object)) {
       throw new Error('Cannot be called directly');
     }
-    let { sdfFiles, zipFiles } = nmrRecord;
-    this.zipFiles = zipFiles;
-    this.sdfFiles = sdfFiles;
+    let { sdfData, files } = nmrRecord;
+    this.files = files;
+    this.sdfData = sdfData;
     this.activeElement = 0;
-    this.nbSamples = sdfFiles.length;
+    this.nbSamples = sdfData.length;
+  }
+
+  static async fromFileList(files) {
+    if (!Array.isArray(files) || files.length < 1) {
+      throw new Error('should be at least 1 file');
+    }
+    const sdfData = await getSDF(files);
+    return new NmrRecord({ sdfData, files });
   }
 
   getMol(i = this.activeElement) {
     i = this.checkIndex(i);
-    let parserResult = this.sdfFiles[i];
+    let parserResult = this.sdfData[i];
     return parserResult.molecules[0].molfile;
   }
 
@@ -30,17 +39,17 @@ export class NmrRecord {
 
   getNMReDataTags(i = this.activeElement) {
     i = this.checkIndex(i);
-    return NmrRecord.getNMReDataTags(this.sdfFiles[i]);
+    return getNMReDataTags(this.sdfData[i]);
   }
 
   getNMReData(i = this.activeElement) {
     i = this.checkIndex(i);
-    return NmrRecord.getNMReData(this.sdfFiles[i]);
+    return getNMReData(this.sdfData[i]);
   }
 
   getFileName(i = this.activeElement) {
     i = this.checkIndex(i);
-    let sdf = this.sdfFiles[i];
+    let sdf = this.sdfData[i];
     return sdf.filename;
   }
 
@@ -48,7 +57,7 @@ export class NmrRecord {
     //@TODO: check what is the result and fix
     i = this.checkIndex(i);
     let allTags = {};
-    let sdfFile = this.sdfFiles[i];
+    let sdfFile = this.sdfData[i];
     sdfFile.labels.forEach((tag) => {
       allTags[tag] = sdfFile.molecules[0][tag];
     });
@@ -56,21 +65,21 @@ export class NmrRecord {
   }
 
   getSDFList() {
-    let sdfFiles = this.sdfFiles;
-    return sdfFiles.map((sdf) => sdf.filename);
+    let sdfData = this.sdfData;
+    return sdfData.map((sdf) => sdf.filename);
   }
 
   toJSON(i = this.activeElement) {
     let index = this.checkIndex(i);
-    return NmrRecord.toJSON({
-      zipFiles: this.zipFiles,
-      sdf: this.sdfFiles[index],
+    return nmrRecordToJSON({
+      files: this.files,
+      sdf: this.sdfData[index],
     });
   }
 
-  setActiveElement(nactiveSDF) {
-    nactiveSDF = this.checkIndex(nactiveSDF);
-    this.activeElement = nactiveSDF;
+  setActiveElement(index) {
+    index = this.checkIndex(index);
+    this.activeElement = index;
   }
 
   getActiveElement() {
@@ -79,7 +88,7 @@ export class NmrRecord {
   }
 
   getSDFIndexOf(filename) {
-    let index = this.sdfFiles.findIndex((sdf) => sdf.filename === filename);
+    let index = this.sdfData.findIndex((sdf) => sdf.filename === filename);
     if (index === -1) {
       throw new Error('There is not sdf with this filename: ', filename);
     }
@@ -88,7 +97,7 @@ export class NmrRecord {
 
   checkIndex(index) {
     if (Number.isInteger(index)) {
-      if (index >= this.sdfFiles.length) throw new Error('Index out of range');
+      if (index >= this.sdfData.length) throw new Error('Index out of range');
       return index;
     } else {
       return this.getSDFIndexOf(index);
@@ -105,8 +114,8 @@ export class NmrRecord {
  * @returns
  */
 // there is an error here, we should be able to export any index in sdf, add options use activeElement.
-NmrRecord.toJSON = (options = {}) => {
-  let { sdf, molecule, zipFiles } = options;
+export const nmrRecordToJSON = (options = {}) => {
+  let { sdf, molecule, files } = options;
   let sdfFile = checkSdf(sdf);
   molecule = !molecule
     ? OCLMolecule.fromMolfile(sdfFile.molecules[0].molfile)
@@ -115,11 +124,11 @@ NmrRecord.toJSON = (options = {}) => {
   molecule.addImplicitHydrogens();
   molecule = OCLMolecule.fromMolfileWithAtomMap(molecule.toMolfile());
 
-  let nmredata = NmrRecord.getNMReData(sdfFile);
+  let nmredata = getNMReData(sdfFile);
   return nmredataToJSON(nmredata, {
     molecule,
     root: sdfFile.root,
-    zipFiles,
+    files,
   });
 };
 
@@ -129,10 +138,10 @@ NmrRecord.toJSON = (options = {}) => {
  * @returns
  */
 
-NmrRecord.getNMReData = (sdf) => {
+export const getNMReData = (sdf) => {
   let sdfFile = checkSdf(sdf);
   let result = { name: sdfFile.filename };
-  let nmredataTags = NmrRecord.getNMReDataTags(sdfFile);
+  let nmredataTags = getNMReDataTags(sdfFile);
   Object.keys(nmredataTags).forEach((tag) => {
     if (!result[tag]) result[tag] = { data: [] };
     let tagData = result[tag];
@@ -159,7 +168,7 @@ NmrRecord.getNMReData = (sdf) => {
  * @returns
  */
 
-NmrRecord.getNMReDataTags = (sdf) => {
+export const getNMReDataTags = (sdf) => {
   let sdfFile = checkSdf(sdf);
   let version = parseFloat(sdfFile.molecules[0].NMREDATA_VERSION);
   let toReplace = version > 1 ? [new RegExp(/\\\n*/g), '\n'] : [];

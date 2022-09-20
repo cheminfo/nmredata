@@ -1,3 +1,4 @@
 export { readNmrRecord } from './reader/readNmrRecord';
 export { parseSDF } from './parser/parseSDF';
-export { NmrRecord } from './NmrRecord';
+export { getSDF } from './util/getSDF';
+export * from './NmrRecord';
