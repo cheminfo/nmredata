@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset='utf-8'>
-  <title>nmredata 0.7.1 | Documentation</title>
+  <title>nmredata 0.8.0 | Documentation</title>
   <meta name='description' content='NMReDATA parser'>
   <meta name='viewport' content='width=device-width,initial-scale=1'>
   <link href='assets/bass.css' rel='stylesheet'>
@@ -15,7 +15,7 @@
       <div id='split-left' class='overflow-auto fs0 height-viewport-100'>
         <div class='py1 px2'>
           <h3 class='mb0 no-anchor'>nmredata</h3>
-          <div class='mb1'><code>0.7.1</code></div>
+          <div class='mb1'><code>0.8.0</code></div>
           <input
             placeholder='Filter'
             id='filter-input'
@@ -49,9 +49,9 @@
               
                 
                 <li><a
-                  href='#tojson'
+                  href='#getsdf'
                   class="">
-                  toJSON
+                  getSDF
                   
                 </a>
                 
@@ -59,9 +59,9 @@
               
                 
                 <li><a
-                  href='#getsdf'
+                  href='#nmrrecordtojson'
                   class="">
-                  getSDF
+                  nmrRecordToJSON
                   
                 </a>
                 
@@ -97,7 +97,7 @@
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/cheminfo/nmredata/blob/6e724a48036205577bfe1ea517613ee4377648dc/src/NmrRecord.js#L132-L154'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/cheminfo/nmredata/blob/6dba81357b773874abed16f12e7ac58dea131977/src/NmrRecord.js#L141-L163'>
       <span>src/NmrRecord.js</span>
       </a>
     
@@ -106,7 +106,7 @@
 
   <p>Returns the nmredata information of every tag in the sdf file.</p>
 
-    <div class='pre p1 fill-light mt0'>getNMReData(sdf: (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a> | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>))</div>
+    <div class='pre p1 fill-light mt0'>getNMReData</div>
   
   
 
@@ -165,7 +165,7 @@
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/cheminfo/nmredata/blob/6e724a48036205577bfe1ea517613ee4377648dc/src/NmrRecord.js#L162-L181'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/cheminfo/nmredata/blob/6dba81357b773874abed16f12e7ac58dea131977/src/NmrRecord.js#L171-L190'>
       <span>src/NmrRecord.js</span>
       </a>
     
@@ -174,7 +174,7 @@
 
   <p>Returns the nmredata lines of every tag in the sdf file.</p>
 
-    <div class='pre p1 fill-light mt0'>getNMReDataTags(sdf: (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a> | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>))</div>
+    <div class='pre p1 fill-light mt0'>getNMReDataTags</div>
   
   
 
@@ -228,12 +228,88 @@
   
   <div class='clearfix'>
     
-    <h3 class='fl m0' id='tojson'>
-      toJSON
+    <h3 class='fl m0' id='getsdf'>
+      getSDF
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/cheminfo/nmredata/blob/6e724a48036205577bfe1ea517613ee4377648dc/src/NmrRecord.js#L108-L124'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/cheminfo/nmredata/blob/6dba81357b773874abed16f12e7ac58dea131977/src/util/getSDF.js#L8-L23'>
+      <span>src/util/getSDF.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Extract sdf files from a file list and parse all of them.</p>
+
+    <div class='pre p1 fill-light mt0'>getSDF(files: PartialFileList): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>files</span> <code class='quiet'>(PartialFileList)</code>
+	    file list
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code>:
+        Array of sdf parsed files
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+          <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='nmrrecordtojson'>
+      nmrRecordToJSON
+    </h3>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/cheminfo/nmredata/blob/6dba81357b773874abed16f12e7ac58dea131977/src/NmrRecord.js#L117-L133'>
       <span>src/NmrRecord.js</span>
       </a>
     
@@ -242,7 +318,7 @@
 
   <p>format the nmredata information in a json</p>
 
-    <div class='pre p1 fill-light mt0'>toJSON(options: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</div>
+    <div class='pre p1 fill-light mt0'>nmrRecordToJSON</div>
   
   
 
@@ -340,88 +416,12 @@
   
   <div class='clearfix'>
     
-    <h3 class='fl m0' id='getsdf'>
-      getSDF
-    </h3>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/cheminfo/nmredata/blob/6e724a48036205577bfe1ea517613ee4377648dc/src/reader/readNmrRecord.js#L28-L43'>
-      <span>src/reader/readNmrRecord.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Extract sdf files from a instance of jszip of the nmrRecord and parse all of them.</p>
-
-    <div class='pre p1 fill-light mt0'>getSDF(zip: Jszip): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>zip</span> <code class='quiet'>(Jszip)</code>
-	    jszip instance of the zip file
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code>:
-        Array of sdf parsed files
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-          <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
     <h3 class='fl m0' id='readnmrrecord'>
       readNmrRecord
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/cheminfo/nmredata/blob/6e724a48036205577bfe1ea517613ee4377648dc/src/reader/readNmrRecord.js#L13-L21'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/cheminfo/nmredata/blob/6dba81357b773874abed16f12e7ac58dea131977/src/reader/readNmrRecord.js#L10-L13'>
       <span>src/reader/readNmrRecord.js</span>
       </a>
     
@@ -430,7 +430,7 @@
 
   <p>Read nmr record file and return an instance of NmrRecord class.</p>
 
-    <div class='pre p1 fill-light mt0'>readNmrRecord(zipFile: (<a href="https://nodejs.org/api/buffer.html">buffer</a> | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>), options: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</div>
+    <div class='pre p1 fill-light mt0'>readNmrRecord(zipFile: (<a href="https://nodejs.org/api/buffer.html">buffer</a> | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>))</div>
   
   
 
@@ -451,41 +451,6 @@
 	    zip file in memory, if it is a string e.g base64 it is need to specify the enconding. See jszip for the encoding allowed
 
           </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>
-            = <code>{}</code>)</code>
-	    options.
-
-          </div>
-          
-          <table class='mt1 mb2 fixed-table h5 col-12'>
-            <colgroup>
-              <col width='30%' />
-              <col width='70%' />
-            </colgroup>
-            <thead>
-              <tr class='bold fill-light'>
-                <th>Name</th>
-                <th>Description</th>
-              </tr>
-            </thead>
-            <tbody class='mt1'>
-              
-                <tr>
-  <td class='break-word'><span class='code bold'>options.zipOptions</span> <code class='quiet'><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>?</code>
-  </td>
-  <td class='break-word'><span>jszip options.
-</span></td>
-</tr>
-
-
-              
-            </tbody>
-          </table>
           
         </div>
       
