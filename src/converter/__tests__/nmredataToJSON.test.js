@@ -16,9 +16,7 @@ describe('NMReData to nmrium', () => {
     expect(nucleus).toBe('1H');
     expect(experiment).toBe('zg30');
 
-    expect(
-      source.file.files.map((file) => file.webkitRelativePath),
-    ).toStrictEqual([
+    expect(source.file.files.map((file) => file.relativePath)).toStrictEqual([
       'AN-menthol/10/uxnmr.par',
       'AN-menthol/10/prosol_History',
       'AN-menthol/10/pulseprogram',

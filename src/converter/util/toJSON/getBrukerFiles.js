@@ -16,15 +16,14 @@ export async function getBrukerFiles(tag, options) {
   let brukerFolder = [];
   for (let file of files) {
     if (
-      toCheck !==
-      file.webkitRelativePath.replace(/([.*/]*\w+\/[0-9]+\/).*/, '$1')
+      toCheck !== file.relativePath.replace(/([.*/]*\w+\/[0-9]+\/).*/, '$1')
     ) {
       continue;
     }
-    if (file.webkitRelativePath.match('pdata')) {
+    if (file.relativePath.match('pdata')) {
       if (
         toCheck2 !==
-        file.webkitRelativePath.replace(/.*\/[0-9]+\/pdata\/([0-9]+)\/.*/, '$1')
+        file.relativePath.replace(/.*\/[0-9]+\/pdata\/([0-9]+)\/.*/, '$1')
       ) {
         continue;
       }

@@ -1,4 +1,4 @@
-import { fileListFromZip } from 'filelist-utils';
+import { fileCollectionFromZip } from 'filelist-utils';
 
 import { NmrRecord } from '../NmrRecord';
 
@@ -8,6 +8,6 @@ import { NmrRecord } from '../NmrRecord';
  * @return {} An Object with two properties zip and sdfFiles.
  */
 export async function readNmrRecord(zipFile) {
-  const files = await fileListFromZip(zipFile);
-  return NmrRecord.fromFileList(files);
+  const fileCollection = await fileCollectionFromZip(zipFile);
+  return NmrRecord.fromFileList(fileCollection.files);
 }
