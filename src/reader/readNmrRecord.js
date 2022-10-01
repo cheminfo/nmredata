@@ -9,5 +9,5 @@ import { NmrRecord } from '../NmrRecord';
  */
 export async function readNmrRecord(zipFile) {
   const fileCollection = await fileCollectionFromZip(zipFile);
-  return NmrRecord.fromFileList(fileCollection.files);
+  return NmrRecord.fromFileCollection(fileCollection);
 }

@@ -1,5 +1,7 @@
+import { FileCollection } from 'filelist-utils';
+
 export async function getBrukerFiles(tag, options) {
-  let { files, root } = options;
+  let { fileCollection, root } = options;
 
   let locationLine = tag.data.find((e) => e.value.spectrum_location);
 
@@ -14,7 +16,7 @@ export async function getBrukerFiles(tag, options) {
   let toCheck2 = pathSpectrum.replace(/.*\/[0-9]+\/pdata\/([0-9]+)\/.*/, '$1');
 
   let brukerFolder = [];
-  for (let file of files) {
+  for (let file of fileCollection) {
     if (
       toCheck !== file.relativePath.replace(/([.*/]*\w+\/[0-9]+\/).*/, '$1')
     ) {
@@ -33,6 +35,6 @@ export async function getBrukerFiles(tag, options) {
   return {
     name: `${pathSpectrum}`,
     type: 'brukerFiles',
-    files: brukerFolder,
+    fileCollection: new FileCollection(brukerFolder),
   };
 }
