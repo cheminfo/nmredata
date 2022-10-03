@@ -1,5 +1,7 @@
+import { FileCollection } from 'filelist-utils';
+
 export async function getJcamp(tag, options) {
-  let { files, root } = options;
+  let { fileCollection, root } = options;
   let locationLine = tag.data.find((e) => e.value.jcamp_location);
 
   if (!locationLine) {
@@ -9,7 +11,9 @@ export async function getJcamp(tag, options) {
 
   let relativePath = locationLine.value.jcamp_location;
   let pathJcamp = root + relativePath.replace(/file:/s, '');
-  const jcampFile = files.find((file) => file.webkitRelativePath === pathJcamp);
+  const jcampFile = fileCollection.files.find(
+    (file) => file.relativePath === pathJcamp,
+  );
   if (!jcampFile) {
     new Error(`There is not jcamp with path: ${pathJcamp}`);
     return;
@@ -17,6 +21,6 @@ export async function getJcamp(tag, options) {
   return {
     name: pathJcamp,
     type: 'jcamp',
-    files: [jcampFile],
+    fileCollection: new FileCollection([jcampFile]),
   };
 }

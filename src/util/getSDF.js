@@ -8,7 +8,7 @@ import { parseSDF } from '../parser/parseSDF';
 export async function getSDF(files) {
   let result = [];
   for (const file of files) {
-    const pathFile = file.webkitRelativePath.split('/');
+    const pathFile = file.relativePath.split('/');
     if (/^[^.].+sdf$/.exec(file.name)) {
       const filename = file.name.replace(/\.sdf/, '');
       const root = pathFile.slice(0, pathFile.length - 1).join('/');
