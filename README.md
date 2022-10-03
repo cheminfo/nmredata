@@ -14,6 +14,10 @@ For further information about the format you can also check [nmredata.org](www.n
 
 `$ npm install nmredata`
 
+For tests, also install
+
+`$npm i nmredata-data-test`
+
 ## Usage
 
 ```js
