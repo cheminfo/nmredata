@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.0](https://github.com/cheminfo/nmredata/compare/v0.8.0...v0.9.0) (2022-10-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* use filecollection (#35)
+
+### Features
+
+* use filecollection ([#35](https://github.com/cheminfo/nmredata/issues/35)) ([0c30f15](https://github.com/cheminfo/nmredata/commit/0c30f15b10436641e36f5516d4dd54d3c0a8d52f))
+
 ## [0.8.0](https://github.com/cheminfo/nmredata/compare/v0.7.1...v0.8.0) (2022-09-20)
 
 
