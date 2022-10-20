@@ -11,13 +11,11 @@
   "scripts": {
     "eslint": "eslint src",
     "eslint-fix": "npm run eslint -- --fix",
-    "build": "npm run prepare && npm run local-build",
-    "local-build": "node_modules/.bin/cheminfo build --entry builder/nmredata.js --no-uglify --root nmredata",
     "prepack": "rollup -c",
     "prettier": "prettier --check src",
     "prettier-write": "prettier --write src",
     "test": "npm run test-only && npm run eslint && npm run prettier",
-    "test-only": "jest"
+    "test-only": "jest --coverage"
   },
   "repository": {
     "type": "git",
@@ -30,39 +28,19 @@
     "url": "https://github.com/cheminfo/nmredata/issues"
   },
   "homepage": "https://github.com/cheminfo/nmredata#readme",
-  "jest": {
-    "testEnvironment": "node"
-  },
-  "prettier": {
-    "arrowParens": "always",
-    "semi": true,
-    "singleQuote": true,
-    "tabWidth": 2,
-    "trailingComma": "all"
-  },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-jest": "^29.1.2",
-    "babel-plugin-remove-comments": "^2.0.0",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
-    "babel-preset-babili": "^0.1.4",
-    "cheminfo-tools": "^1.23.3",
-    "codecov": "^3.8.2",
-    "eslint": "^8.24.0",
+    "eslint": "^8.25.0",
     "eslint-config-cheminfo": "^8.0.2",
-    "esm": "^3.2.25",
-    "jest": "^29.1.2",
+    "jest": "^29.2.1",
     "nmredata-data-test": "^0.4.0",
     "prettier": "^2.7.1",
-    "rollup": "^2.79.1"
+    "rollup": "^3.2.3"
   },
   "dependencies": {
-    "filelist-utils": "^0.11.0",
+    "filelist-utils": "^1.0.1",
     "jszip": "^3.10.1",
     "openchemlib": "^8.0.1",
     "openchemlib-utils": "^2.0.0"
-  },
-  "volta": {
-    "node": "16.16.0"
   }
 }
