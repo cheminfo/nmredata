@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/cheminfo/nmredata/compare/v0.9.0...v0.9.1) (2022-10-20)
+
+
+### Bug Fixes
+
+* update and simplify deps ([9113f76](https://github.com/cheminfo/nmredata/commit/9113f76953e3dbc44195b56e420b9db1d24587cf))
+
 ## [0.9.0](https://github.com/cheminfo/nmredata/compare/v0.8.0...v0.9.0) (2022-10-03)
 
 
