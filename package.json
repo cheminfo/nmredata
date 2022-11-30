@@ -41,6 +41,6 @@
     "filelist-utils": "^1.0.1",
     "jszip": "^3.10.1",
     "openchemlib": "^8.0.1",
-    "openchemlib-utils": "^2.0.0"
+    "openchemlib-utils": "^2.1.2"
   }
 }
