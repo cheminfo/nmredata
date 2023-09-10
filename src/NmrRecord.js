@@ -172,7 +172,6 @@ export const getNMReData = (sdf) => {
 export const getNMReDataTags = (sdf) => {
   let sdfFile = checkSdf(sdf);
   let version = parseFloat(sdfFile.molecules[0].NMREDATA_VERSION);
-  let toReplace = version > 1 ? [new RegExp(/\\\n*/g), '\n'] : [];
 
   let nmredataTags = {};
   for (let tag of sdfFile.labels) {
@@ -183,7 +182,7 @@ export const getNMReDataTags = (sdf) => {
         version > 1
           ? sdfFile.molecules[0][tag].replace(/\n*/g, '')
           : sdfFile.molecules[0][tag];
-      data = data.replace(toReplace[0], toReplace[1]);
+      data = String(data).replace(/\\\n*/g, '\n');
       nmredataTags[key] = data;
     }
   }
