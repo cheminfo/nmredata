@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.5](https://github.com/cheminfo/nmredata/compare/v0.9.4...v0.9.5) (2023-09-10)
+
+
+### Bug Fixes
+
+* ensure string in data version ([91f0dd1](https://github.com/cheminfo/nmredata/commit/91f0dd1c4666f6efc9d06ed855a146681ba882b2))
+
 ## [0.9.4](https://github.com/cheminfo/nmredata/compare/v0.9.3...v0.9.4) (2023-08-24)
 
 
