@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.6](https://github.com/cheminfo/nmredata/compare/v0.9.5...v0.9.6) (2023-09-21)
+
+
+### Bug Fixes
+
+* support to nmredata extension n multiple spectrum sources ([#44](https://github.com/cheminfo/nmredata/issues/44)) ([bf6f2d6](https://github.com/cheminfo/nmredata/commit/bf6f2d653c1aa1975f5362c4922cbc34f881fbb3))
+
 ## [0.9.5](https://github.com/cheminfo/nmredata/compare/v0.9.4...v0.9.5) (2023-09-10)
 
 
