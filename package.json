@@ -1,6 +1,6 @@
 {
   "name": "nmredata",
-  "version": "0.9.6",
+  "version": "0.9.7",
   "description": "NMReDATA parser",
   "main": "./lib/index.js",
   "module": "./src/index.js",
