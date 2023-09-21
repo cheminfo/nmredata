@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.7](https://github.com/cheminfo/nmredata/compare/v0.9.6...v0.9.7) (2023-09-21)
+
+
+### Bug Fixes
+
+* sdf parser result contains the extension ([e5976f9](https://github.com/cheminfo/nmredata/commit/e5976f9dda72ef0a880e10d4891c2c83cc8b5fb5))
+
 ## [0.9.6](https://github.com/cheminfo/nmredata/compare/v0.9.5...v0.9.6) (2023-09-21)
 
 
