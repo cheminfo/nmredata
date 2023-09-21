@@ -9,10 +9,13 @@ export async function getSDF(files) {
   let result = [];
   for (const file of files) {
     const pathFile = file.relativePath.split('/');
-    if (/^[^.].+sdf$/.exec(file.name)) {
-      const filename = file.name.replace(/\.sdf/, '');
+    if (/^[^.].+sdf|nmredata$/.exec(file.name)) {
+      const filename = file.name.replace(/\.sdf|nmredata/, '');
       const root = pathFile.slice(0, pathFile.length - 1).join('/');
       const sdf = await file.text();
+
+      if (!sdf.match('NMREDATA')) continue;
+
       let parserResult = parseSDF(`${sdf}`, { mixedEOL: true });
       parserResult.filename = filename;
       parserResult.root = root !== '' ? `${root}/` : '';
