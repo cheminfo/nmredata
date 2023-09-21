@@ -18,9 +18,11 @@ export async function getJcamp(tag, options) {
     new Error(`There is not jcamp with path: ${pathJcamp}`);
     return;
   }
-  return {
-    name: pathJcamp,
-    type: 'jcamp',
-    fileCollection: new FileCollection([jcampFile]),
-  };
+  return [
+    {
+      name: pathJcamp,
+      type: 'jcamp',
+      fileCollection: new FileCollection([jcampFile]),
+    },
+  ];
 }
