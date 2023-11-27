@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.8](https://github.com/cheminfo/nmredata/compare/v0.9.7...v0.9.8) (2023-11-27)
+
+
+### Bug Fixes
+
+* avoid error in getNMReDataTags ([3ac3aba](https://github.com/cheminfo/nmredata/commit/3ac3ababfdc8d39155fa69b69c47edd2c1c603fc))
+
 ## [0.9.7](https://github.com/cheminfo/nmredata/compare/v0.9.6...v0.9.7) (2023-09-21)
 
 
