@@ -170,20 +170,18 @@ export const getNMReData = (sdf) => {
  */
 
 export const getNMReDataTags = (sdf) => {
-  let sdfFile = checkSdf(sdf);
-  let version = parseFloat(sdfFile.molecules[0].NMREDATA_VERSION);
-
-  let nmredataTags = {};
+  const sdfFile = checkSdf(sdf);
+  const version = parseFloat(sdfFile.molecules[0].NMREDATA_VERSION);
+  const nmredataTags = {};
   for (let tag of sdfFile.labels) {
     if (tag.toLowerCase().match('nmredata')) {
-      if (!sdfFile.molecules[0][tag]) continue;
-      let key = tag.replace(/NMREDATA_/, '');
-      let data =
-        version > 1
-          ? sdfFile.molecules[0][tag].replace(/\n*/g, '')
-          : sdfFile.molecules[0][tag];
-      data = String(data).replace(/\\\n*/g, '\n');
-      nmredataTags[key] = data;
+      if (!sdfFile.molecules[0]?.[tag]) continue;
+
+      const key = tag.replace(/NMREDATA_/, '');
+      let value = String(sdfFile.molecules[0][tag]);
+      value = version > 1 ? value.replace(/\n*/g, '') : value;
+      value = value.replace(/\\\n*/g, '\n');
+      nmredataTags[key] = value;
     }
   }
   return nmredataTags;
