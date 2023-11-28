@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.9](https://github.com/cheminfo/nmredata/compare/v0.9.8...v0.9.9) (2023-11-28)
+
+
+### Bug Fixes
+
+* default processor pass as one line data ([519f412](https://github.com/cheminfo/nmredata/commit/519f4120c734ceae41bdac6149c010321aebed0e))
+
 ## [0.9.8](https://github.com/cheminfo/nmredata/compare/v0.9.7...v0.9.8) (2023-11-27)
 
 
