@@ -17,6 +17,7 @@ export function processContent(content, options) {
     ) {
       return propertyLinesProcessor(content);
     }
+
     return processor(content, options);
   }
 }
@@ -43,8 +44,8 @@ function chooseProcessor(tag) {
     case 'solvent':
     case 'temperature':
     case 'level':
-      return (content) => content;
     default:
+      return (content) => content;
   }
 }
 
