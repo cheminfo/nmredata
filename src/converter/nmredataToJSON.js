@@ -19,7 +19,7 @@ export async function nmredataToJSON(nmredata, options) {
   let spectra = data.spectra;
   let molecules = data.molecules;
 
-  if (nmredata.SMILES) {
+  if (nmredata.SMILES?.data.length > 0) {
     molecules[0].smiles = nmredata.SMILES.data[0].value;
   }
 
@@ -48,7 +48,7 @@ export async function nmredataToJSON(nmredata, options) {
       nucleus,
       frequency: frequencyLine.value.larmor,
       experiment: pulseProgramLine
-        ? pulseProgramLine.value.pulseprogram
+        ? pulseProgramLine.value.pulseprogram.trim()
         : dimension,
       headComment: nmredata[tag].headComment,
     };
