@@ -50,4 +50,16 @@ describe('NMReData to nmrium', () => {
       'AN-menthol/10/specpar',
     ]);
   });
+
+  it('1D data with more than one carbon spectra', async () => {
+    const nmrRecord = await readNmrRecord(
+      await getData('3,5-Bis(trifluoromethyl)aniline-sym.zip'),
+    );
+    let jsonData = await nmrRecord.toJSON();
+
+    //dept135 is under tag #2 so it is what is testing.
+    expect(
+      jsonData.spectra.some((s) => s.experiment === 'dept135'),
+    ).toBeTruthy();
+  });
 });
