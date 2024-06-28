@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.10](https://github.com/cheminfo/nmredata/compare/v0.9.9...v0.9.10) (2024-06-28)
+
+
+### Bug Fixes
+
+* load raw bruker data ([#52](https://github.com/cheminfo/nmredata/issues/52)) ([97afbd5](https://github.com/cheminfo/nmredata/commit/97afbd5403c0d96dc2f45db43ecd2473e600d555))
+
 ## [0.9.9](https://github.com/cheminfo/nmredata/compare/v0.9.8...v0.9.9) (2023-11-28)
 
 
