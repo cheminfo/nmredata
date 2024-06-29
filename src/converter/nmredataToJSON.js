@@ -60,6 +60,7 @@ export async function nmredataToJSON(nmredata, options) {
       return signalContent;
     });
 
+    // eslint-disable-next-line no-await-in-loop
     let zipAndJcamp = await getSpectra(nmredata[tag], options);
     if (!zipAndJcamp.jcamp && !zipAndJcamp.bruker) {
       spectra.push(spectrum);

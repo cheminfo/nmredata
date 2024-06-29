@@ -1,6 +1,6 @@
 import Jszip from 'jszip';
-import { getGroupedDiastereotopicAtomIDs } from 'openchemlib-utils';
 import { Molecule as OCLMolecule } from 'openchemlib/full';
+import { getGroupedDiastereotopicAtomIDs } from 'openchemlib-utils';
 
 import { create1DSignals } from './util/fromNmrium/create1DSignals';
 import { create2DSignals } from './util/fromNmrium/create2DSignals';

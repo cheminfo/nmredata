@@ -5,6 +5,8 @@ export async function getJcamp(tag, options) {
   let locationLine = tag.data.find((e) => e.value.jcamp_location);
 
   if (!locationLine) {
+    // TODO: fix this
+    // eslint-disable-next-line no-new
     new Error(`There is not spectrum for ${tag}`);
     return;
   }
@@ -15,6 +17,8 @@ export async function getJcamp(tag, options) {
     (file) => file.relativePath === pathJcamp,
   );
   if (!jcampFile) {
+    // TODO: fix this
+    // eslint-disable-next-line no-new
     new Error(`There is not jcamp with path: ${pathJcamp}`);
     return;
   }

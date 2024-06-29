@@ -6,6 +6,8 @@ export async function extractZipFolder(tag, options) {
   let locationLine = tag.data.find((e) => e.value.spectrum_location);
 
   if (!locationLine) {
+    // TODO: fix this
+    // eslint-disable-next-line no-new
     new Error(`There is not spectrum for ${tag}`);
     return;
   }
@@ -24,7 +26,9 @@ export async function extractZipFolder(tag, options) {
       }
     }
     if (file.endsWith('/')) continue;
-    zipFolder.file(file, await zipFiles[file].async('arraybuffer'));
+    // eslint-disable-next-line no-await-in-loop
+    const arrayBuffer = await zipFiles[file].async('arraybuffer');
+    zipFolder.file(file, arrayBuffer);
   }
   return {
     name: `${pathSpectrum}`,

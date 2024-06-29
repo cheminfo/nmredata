@@ -10,6 +10,7 @@ export async function getSDF(files) {
   for (const file of files) {
     const pathFile = file.relativePath.split('/');
     if (/^[^.].+sdf|nmredata$/.exec(file.name)) {
+      // eslint-disable-next-line no-await-in-loop
       const sdf = await file.text();
       if (!sdf.match('NMREDATA')) continue;
 

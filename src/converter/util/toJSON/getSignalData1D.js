@@ -11,8 +11,8 @@ export function getSignalData1D(data, labels) {
   result.integration = integration
     ? Number(integration)
     : nbAtoms
-    ? Number(nbAtoms)
-    : null;
+      ? Number(nbAtoms)
+      : null;
 
   if (data.assignment) {
     data.assignment.forEach((assignment) => {

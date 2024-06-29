@@ -8,6 +8,8 @@ export async function getBrukerFiles(tag, options) {
   const sources = [];
   for (const locationLine of locationLines) {
     if (!locationLine) {
+      // TODO: fix this
+      // eslint-disable-next-line no-new
       new Error(`There is not spectrum for ${tag}`);
       return;
     }
