@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.11](https://github.com/cheminfo/nmredata/compare/v0.9.10...v0.9.11) (2024-06-29)
+
+
+### Bug Fixes
+
+* update dependencies ([de4ea47](https://github.com/cheminfo/nmredata/commit/de4ea478d6c414e7b51e2a101e37144d30d69f84))
+
 ## [0.9.10](https://github.com/cheminfo/nmredata/compare/v0.9.9...v0.9.10) (2024-06-28)
 
 
