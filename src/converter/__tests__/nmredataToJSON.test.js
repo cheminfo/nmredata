@@ -1,4 +1,5 @@
 import { getData } from 'nmredata-data-test';
+import { describe, expect, it } from 'vitest';
 
 import { readNmrRecord } from '../../reader/readNmrRecord';
 

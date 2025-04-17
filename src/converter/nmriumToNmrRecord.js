@@ -1,5 +1,5 @@
 import Jszip from 'jszip';
-import { Molecule as OCLMolecule } from 'openchemlib/full';
+import { Molecule as OCLMolecule } from 'openchemlib';
 import { getGroupedDiastereotopicAtomIDs } from 'openchemlib-utils';
 
 import { create1DSignals } from './util/fromNmrium/create1DSignals';

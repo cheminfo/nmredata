@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { parse2DSignal } from '../parse2DSignal';
 
 let signalWithCoupling = 'A/X, Ja=5, J1=4(M), 6.1(K), J2=2(M), 3.1(K)';

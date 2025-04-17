@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { processContent } from '../processContent';
 
 describe('processContent testing', () => {

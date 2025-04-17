@@ -1,4 +1,4 @@
-import { Molecule as OCLMolecule } from 'openchemlib/full';
+import { Molecule as OCLMolecule } from 'openchemlib';
 
 import { nmredataToJSON } from './converter/nmredataToJSON';
 import { parseSDF } from './parser/parseSDF';

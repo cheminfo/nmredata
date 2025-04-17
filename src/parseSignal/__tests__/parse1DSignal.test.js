@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { parse1DSignal } from '../parse1DSignal';
 
 describe('parse1DSignal', () => {

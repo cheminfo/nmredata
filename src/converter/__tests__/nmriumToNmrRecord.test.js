@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { NmrRecord } from '../../NmrRecord';
 import { readNmrRecord } from '../../reader/readNmrRecord';
 import { nmriumToNmrRecord } from '../nmriumToNmrRecord';
