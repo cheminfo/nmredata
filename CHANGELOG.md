@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/cheminfo/nmredata/compare/v0.9.11...v1.0.0) (2025-04-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* update OCL to v9
+
+### Features
+
+* update OCL to v9 ([f2058d4](https://github.com/cheminfo/nmredata/commit/f2058d4bcbdf6e12dd8ff71218a4f3e9606e133b))
+
 ## [0.9.11](https://github.com/cheminfo/nmredata/compare/v0.9.10...v0.9.11) (2024-06-29)
 
 
