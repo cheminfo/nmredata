@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/cheminfo/nmredata/compare/v1.0.0...v1.0.1) (2025-05-09)
+
+
+### Bug Fixes
+
+* update openchemlib-utils ([4395b6f](https://github.com/cheminfo/nmredata/commit/4395b6f99bbe23d50c359ee664c1e06835d457de))
+
 ## [1.0.0](https://github.com/cheminfo/nmredata/compare/v0.9.11...v1.0.0) (2025-04-17)
 
 
